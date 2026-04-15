@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi App con Supabase</title>
+</head>
+<body>
+    <h1>Probando conexión</h1>
+    <button id="btnCargar">Cargar datos</button>
+    <div id="resultado"></div>
+
+    <!-- IMPORTANTE: type="module" es obligatorio -->
+    <script type="module">
+        // Importar el cliente que creamos
+        import { supabase } from './conexion.js'
+
+        // Probar la conexión consultando una tabla
+        document.getElementById('btnCargar').onclick = async () => {
+            const { data, error } = await supabase
+                .from('conductores')   // ← Cambia por el nombre de TU tabla
+                .select('*')
+                .limit(5)
+            
+            if (error) {
+                document.getElementById('resultado').innerHTML = 
+                    `❌ Error: ${error.message}`
+            } else {
+                document.getElementById('resultado').innerHTML = 
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`
+            }
+        }
+    </script>
+</body>
+</html>
