@@ -2,33 +2,488 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi App con Supabase</title>
-</head>
-<body>
-    <h1>Probando conexión</h1>
-    <button id="btnCargar">Cargar datos</button>
-    <div id="resultado"></div>
-
-    <!-- IMPORTANTE: type="module" es obligatorio -->
-    <script type="module">
-        // Importar el cliente que creamos
-        import { supabase } from './conexion.js'
-
-        // Probar la conexión consultando una tabla
-        document.getElementById('btnCargar').onclick = async () => {
-            const { data, error } = await supabase
-                .from('conductores')   // ← Cambia por el nombre de TU tabla
-                .select('*')
-                .limit(5)
-            
-            if (error) {
-                document.getElementById('resultado').innerHTML = 
-                    `❌ Error: ${error.message}`
-            } else {
-                document.getElementById('resultado').innerHTML = 
-                    `<pre>${JSON.stringify(data, null, 2)}</pre>`
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Conductores - Supabase</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        h1 {
+            color: #1a2a3a;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1::before {
+            content: "🚗";
+            font-size: 32px;
+        }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background-color: #2c7da0;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1f5e7a;
+            transform: translateY(-1px);
+        }
+        .btn-edit {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .btn-edit:hover {
+            background-color: #e0a800;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+        .btn-refresh {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-refresh:hover {
+            background-color: #138496;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #2c7da0;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        .acciones {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #2c7da0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 2px rgba(44,125,160,0.2);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+        .estado {
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+        }
+        .estado-exito {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .estado-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .estado-cargando {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .contador {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            th, td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .acciones {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Conductores</h1>
+        
+        <div id="estado" class="estado"></div>
+        
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="abrirModalAgregar()">➕ Nuevo Conductor</button>
+            <button class="btn btn-refresh" onclick="cargarConductores()">🔄 Refrescar</button>
+        </div>
+        
+        <div id="tabla-contenedor">
+            <!-- Aquí se cargará la tabla dinámicamente -->
+            <div style="text-align: center; padding: 40px;">
+                <div class="estado-cargando" style="display: inline-block; padding: 10px 20px;">
+                    Cargando conductores...
+                </div>
+            </div>
+        </div>
+        
+        <div id="contador" class="contador"></div>
+    </div>
+    
+    <!-- Modal para Agregar/Editar -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-titulo">Nuevo Conductor</h3>
+            <form id="conductor-form">
+                <input type="hidden" id="conductor-id">
+                <div class="form-group">
+                    <label for="nombre">Nombre completo *</label>
+                    <input type="text" id="nombre" required placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label for="edad">Edad</label>
+                    <input type="number" id="edad" placeholder="Ej: 35">
+                </div>
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <input type="text" id="ciudad" placeholder="Ej: Madrid">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { supabase } from './conexion.js';
+        
+        // Variables globales
+        let modoEdicion = false;
+        
+        // Elementos del DOM
+        const estadoDiv = document.getElementById('estado');
+        const tablaContenedor = document.getElementById('tabla-contenedor');
+        const contadorDiv = document.getElementById('contador');
+        const modal = document.getElementById('modal');
+        const modalTitulo = document.getElementById('modal-titulo');
+        const conductorForm = document.getElementById('conductor-form');
+        const conductorIdInput = document.getElementById('conductor-id');
+        const nombreInput = document.getElementById('nombre');
+        const edadInput = document.getElementById('edad');
+        const ciudadInput = document.getElementById('ciudad');
+        
+        // Mostrar mensaje de estado
+        function mostrarEstado(mensaje, tipo) {
+            estadoDiv.textContent = mensaje;
+            estadoDiv.className = `estado estado-${tipo}`;
+            estadoDiv.style.display = 'block';
+            setTimeout(() => {
+                estadoDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Cargar conductores desde Supabase
+        window.cargarConductores = async function() {
+            try {
+                // Mostrar carga
+                tablaContenedor.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="estado-cargando" style="display: inline-block; padding: 10px 20px;">Cargando datos...</div></div>';
+                
+                const { data, error } = await supabase
+                    .from('conductores')
+                    .select('*')
+                    .order('id', { ascending: true });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (!data || data.length === 0) {
+                    tablaContenedor.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 8px;">
+                            <p style="font-size: 18px; color: #666;">📋 No hay conductores registrados</p>
+                            <button class="btn btn-primary" onclick="abrirModalAgregar()" style="margin-top: 15px;">➕ Agregar el primero</button>
+                        </div>
+                    `;
+                    contadorDiv.textContent = 'Total: 0 conductores';
+                    return;
+                }
+                
+                // Generar tabla HTML
+                let tablaHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Edad</th>
+                                <th>Ciudad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.forEach(conductor => {
+                    tablaHTML += `
+                        <tr>
+                            <td>${conductor.id}</td>
+                            <td><strong>${escapeHtml(conductor.nombre) || '-'}</strong></td>
+                            <td>${conductor.edad || '-'}</td>
+                            <td>${escapeHtml(conductor.ciudad) || '-'}</td>
+                            <td class="acciones">
+                                <button class="btn btn-edit" onclick="editarConductor(${conductor.id})">✏️ Editar</button>
+                                <button class="btn btn-delete" onclick="eliminarConductor(${conductor.id})">🗑️ Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tablaHTML += `
+                        </tbody>
+                    </table>
+                `;
+                
+                tablaContenedor.innerHTML = tablaHTML;
+                contadorDiv.textContent = `Total: ${data.length} conductores`;
+                
+                mostrarEstado(`✅ ${data.length} conductores cargados correctamente`, 'exito');
+                
+            } catch (error) {
+                console.error('Error al cargar conductores:', error);
+                tablaContenedor.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #f8d7da; border-radius: 8px; color: #721c24;">
+                        <p>❌ Error al cargar los datos</p>
+                        <p style="font-size: 14px;">${error.message}</p>
+                        <button class="btn btn-refresh" onclick="cargarConductores()" style="margin-top: 15px;">🔄 Intentar de nuevo</button>
+                    </div>
+                `;
+                mostrarEstado(`❌ Error: ${error.message}`, 'error');
+            }
+        };
+        
+        // Función para escapar HTML (seguridad)
+        function escapeHtml(texto) {
+            if (!texto) return texto;
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML;
+        }
+        
+        // Abrir modal para agregar
+        window.abrirModalAgregar = function() {
+            modoEdicion = false;
+            modalTitulo.textContent = '➕ Nuevo Conductor';
+            conductorIdInput.value = '';
+            nombreInput.value = '';
+            edadInput.value = '';
+            ciudadInput.value = '';
+            modal.style.display = 'flex';
+        };
+        
+        // Abrir modal para editar
+        window.editarConductor = async function(id) {
+            try {
+                const { data, error } = await supabase
+                    .from('conductores')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                modoEdicion = true;
+                modalTitulo.textContent = '✏️ Editar Conductor';
+                conductorIdInput.value = data.id;
+                nombreInput.value = data.nombre || '';
+                edadInput.value = data.edad || '';
+                ciudadInput.value = data.ciudad || '';
+                modal.style.display = 'flex';
+                
+            } catch (error) {
+                mostrarEstado(`❌ Error al cargar conductor: ${error.message}`, 'error');
+            }
+        };
+        
+        // Eliminar conductor
+        window.eliminarConductor = async function(id) {
+            if (!confirm('¿Estás seguro de eliminar este conductor? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('conductores')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                mostrarEstado('✅ Conductor eliminado correctamente', 'exito');
+                cargarConductores();
+                
+            } catch (error) {
+                mostrarEstado(`❌ Error al eliminar: ${error.message}`, 'error');
+            }
+        };
+        
+        // Cerrar modal
+        window.cerrarModal = function() {
+            modal.style.display = 'none';
+        };
+        
+        // Guardar conductor (crear o actualizar)
+        conductorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const datos = {
+                nombre: nombreInput.value.trim(),
+                edad: edadInput.value ? parseInt(edadInput.value) : null,
+                ciudad: ciudadInput.value.trim()
+            };
+            
+            if (!datos.nombre) {
+                mostrarEstado('❌ El nombre es obligatorio', 'error');
+                return;
+            }
+            
+            try {
+                if (modoEdicion) {
+                    // Actualizar
+                    const { error } = await supabase
+                        .from('conductores')
+                        .update(datos)
+                        .eq('id', conductorIdInput.value);
+                    
+                    if (error) throw error;
+                    mostrarEstado('✅ Conductor actualizado correctamente', 'exito');
+                } else {
+                    // Crear nuevo
+                    const { error } = await supabase
+                        .from('conductores')
+                        .insert([datos]);
+                    
+                    if (error) throw error;
+                    mostrarEstado('✅ Conductor agregado correctamente', 'exito');
+                }
+                
+                cerrarModal();
+                cargarConductores();
+                
+            } catch (error) {
+                mostrarEstado(`❌ Error al guardar: ${error.message}`, 'error');
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        };
+        
+        // Cargar conductores al iniciar
+        cargarConductores();
     </script>
 </body>
 </html>
