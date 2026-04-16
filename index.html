@@ -61,6 +61,16 @@
             text-align: center;
         }
 
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
         .add-btn {
             background: #3b82f6;
             border: none;
@@ -78,6 +88,10 @@
         .add-btn:active {
             background: #2563eb;
             transform: scale(0.95);
+        }
+
+        .add-btn.hidden {
+            display: none;
         }
 
         /* Sidebar Mobile */
@@ -181,6 +195,72 @@
             letter-spacing: 1px;
         }
 
+        /* Login Screen */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .login-box p {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 24px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 12px;
+        }
+
         /* Main Content */
         .main-content {
             margin-top: 76px;
@@ -221,7 +301,7 @@
             background: transparent;
         }
 
-        /* Tabla (Datagridview) - Scroll horizontal */
+        /* Tabla */
         .table-wrapper {
             background: white;
             border-radius: 12px;
@@ -283,6 +363,11 @@
         .btn-delete {
             background: #ef4444;
             color: white;
+        }
+
+        .btn-edit.disabled, .btn-delete.disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         /* Modal */
@@ -421,48 +506,53 @@
     </style>
 </head>
 <body>
-    <!-- Header Mobile -->
-    <div class="mobile-header">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="header-title" id="titulo-tabla">Empresas</div>
-        <button class="add-btn" onclick="mostrarModalAgregar()">+</button>
-    </div>
-
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-    <!-- Sidebar Mobile -->
-    <div class="sidebar-mobile" id="sidebarMobile">
-        <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
-        <div class="sidebar-header">
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
             <h2>🚍 Transporte</h2>
-            <p>Sistema de Gestión</p>
-        </div>
-        <div class="nav-list">
-            <div class="nav-section-title">📋 TABLAS</div>
-            <button class="nav-item" onclick="cargarTabla('empresas')">🏢 Empresas</button>
-            <button class="nav-item" onclick="cargarTabla('contratantes')">👤 Contratantes</button>
-            <button class="nav-item" onclick="cargarTabla('subcontratantes')">📋 Subcontratantes</button>
-            <button class="nav-item" onclick="cargarTabla('ordenes')">📦 Órdenes</button>
-            <button class="nav-item" onclick="cargarTabla('carpetas')">📁 Carpetas</button>
-            <button class="nav-item" onclick="cargarTabla('conductores')">🚌 Conductores</button>
-            <button class="nav-item" onclick="cargarTabla('buses')">🚎 Buses</button>
-            <button class="nav-item" onclick="cargarTabla('usuarios')">👥 Usuarios</button>
-            <button class="nav-item" onclick="cargarTabla('cuentacorriente')">🏦 Cuenta Corriente</button>
-            <button class="nav-item" onclick="cargarTabla('pagos')">💸 Pagos</button>
+            <p>Ingrese sus credenciales</p>
+            <input type="text" id="loginUsuario" class="login-input" placeholder="Usuario" autocomplete="off">
+            <input type="password" id="loginPassword" class="login-input" placeholder="Contraseña">
+            <button class="login-btn" onclick="iniciarSesion()">Ingresar</button>
+            <div id="loginError" class="login-error"></div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="search-container">
-            <div class="search-box">
-                <span>🔍</span>
-                <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
+    <!-- App principal (oculta hasta login) -->
+    <div id="app" style="display: none;">
+        <!-- Header Mobile -->
+        <div class="mobile-header">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <div class="header-title" id="titulo-tabla">Empresas</div>
+            <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar Mobile -->
+        <div class="sidebar-mobile" id="sidebarMobile">
+            <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+            <div class="sidebar-header">
+                <h2>🚍 Transporte</h2>
+                <p id="userInfo">Cargando...</p>
+            </div>
+            <div class="nav-list" id="navList">
+                <!-- Los botones se generan según permisos -->
             </div>
         </div>
-        <div id="table-container">
-            <div class="loading">Cargando datos...</div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="search-container">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
+                </div>
+            </div>
+            <div id="table-container">
+                <div class="loading">Cargando datos...</div>
+            </div>
         </div>
     </div>
 
@@ -486,9 +576,46 @@
     <script type="module">
         import { supabase } from './conexion.js';
 
-        window.tablaActual = 'empresas';
+        // Variables globales
+        window.usuarioActual = null;
+        window.permisos = null;
+        window.tablaActual = null;
         window.datosActuales = [];
         window.editandoId = null;
+
+        // Configuración de permisos por rol
+        const configPermisos = {
+            administracion: {
+                puedeEditar: ['pagos', 'cuentacorriente'],
+                soloVer: ['ordenes', 'carpetas']
+            },
+            marketing: {
+                puedeEditar: ['ordenes', 'contratantes', 'subcontratantes'],
+                soloVer: ['carpetas', 'pagos', 'cuentacorriente']
+            },
+            trafico: {
+                puedeEditar: ['ordenes', 'carpetas', 'buses', 'conductores', 'contratantes', 'subcontratantes'],
+                soloVer: ['pagos', 'cuentacorriente']
+            },
+            contratante: {
+                puedeEditar: [],
+                soloVer: ['ordenes', 'carpetas']
+            }
+        };
+
+        // Todas las tablas disponibles
+        const todasLasTablas = [
+            { id: 'empresas', nombre: '🏢 Empresas', soloLectura: true },
+            { id: 'contratantes', nombre: '👤 Contratantes' },
+            { id: 'subcontratantes', nombre: '📋 Subcontratantes' },
+            { id: 'ordenes', nombre: '📦 Órdenes' },
+            { id: 'carpetas', nombre: '📁 Carpetas' },
+            { id: 'conductores', nombre: '🚌 Conductores' },
+            { id: 'buses', nombre: '🚎 Buses' },
+            { id: 'usuarios', nombre: '👥 Usuarios', soloLectura: true },
+            { id: 'cuentacorriente', nombre: '🏦 Cuenta Corriente' },
+            { id: 'pagos', nombre: '💸 Pagos' }
+        ];
 
         // Relaciones para mostrar nombres
         window.relaciones = {
@@ -541,6 +668,94 @@
             }
         }
 
+        // Obtener tablas que puede ver el usuario
+        function getTablasPermitidas() {
+            if (!window.permisos) return [];
+            
+            const permitidas = [];
+            
+            // Agregar tablas que puede editar
+            window.permisos.puedeEditar.forEach(tabla => {
+                const info = todasLasTablas.find(t => t.id === tabla);
+                if (info) permitidas.push({ ...info, puedeEditar: true });
+            });
+            
+            // Agregar tablas que solo puede ver
+            window.permisos.soloVer.forEach(tabla => {
+                const info = todasLasTablas.find(t => t.id === tabla);
+                if (info && !permitidas.find(p => p.id === tabla)) {
+                    permitidas.push({ ...info, puedeEditar: false });
+                }
+            });
+            
+            return permitidas;
+        }
+
+        // Generar sidebar según permisos
+        function generarSidebar() {
+            const navList = document.getElementById('navList');
+            const tablasPermitidas = getTablasPermitidas();
+            
+            let html = `<div class="nav-section-title">📋 MIS TABLAS</div>`;
+            
+            tablasPermitidas.forEach(tabla => {
+                html += `<button class="nav-item" onclick="cargarTabla('${tabla.id}')">${tabla.nombre}</button>`;
+            });
+            
+            navList.innerHTML = html;
+        }
+
+        // Verificar si puede editar una tabla
+        function puedeEditarTabla(tablaId) {
+            if (!window.permisos) return false;
+            return window.permisos.puedeEditar.includes(tablaId);
+        }
+
+        // Verificar si puede ver una tabla
+        function puedeVerTabla(tablaId) {
+            if (!window.permisos) return false;
+            return window.permisos.puedeEditar.includes(tablaId) || window.permisos.soloVer.includes(tablaId);
+        }
+
+        // Filtrar órdenes para contratante
+        async function filtrarPorContratante(data, tabla) {
+            if (window.usuarioActual?.nivel !== 'contratante') return data;
+            
+            if (tabla === 'ordenes') {
+                // Obtener el contratante asociado a este usuario
+                const { data: contratante } = await supabase
+                    .from('contratantes')
+                    .select('id')
+                    .eq('usuario_id', window.usuarioActual.id)
+                    .single();
+                
+                if (contratante) {
+                    return data.filter(item => item.contratante_id === contratante.id);
+                }
+            }
+            
+            if (tabla === 'carpetas') {
+                // Primero obtener órdenes del contratante
+                const { data: contratante } = await supabase
+                    .from('contratantes')
+                    .select('id')
+                    .eq('usuario_id', window.usuarioActual.id)
+                    .single();
+                
+                if (contratante) {
+                    const { data: ordenes } = await supabase
+                        .from('ordenes')
+                        .select('id')
+                        .eq('contratante_id', contratante.id);
+                    
+                    const ordenesIds = ordenes?.map(o => o.id) || [];
+                    return data.filter(item => ordenesIds.includes(item.orden_id));
+                }
+            }
+            
+            return data;
+        }
+
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarMobile');
             const overlay = document.getElementById('sidebarOverlay');
@@ -549,19 +764,33 @@
         };
 
         window.cargarTabla = async (tabla) => {
-            window.tablaActual = tabla;
-            document.getElementById('titulo-tabla').innerHTML = tabla.charAt(0).toUpperCase() + tabla.slice(1);
+            if (!puedeVerTabla(tabla)) {
+                mostrarToast('No tiene permiso para ver esta tabla', true);
+                return;
+            }
             
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            window.tablaActual = tabla;
+            const puedeEditar = puedeEditarTabla(tabla);
+            
+            document.getElementById('titulo-tabla').innerHTML = tabla.charAt(0).toUpperCase() + tabla.slice(1);
+            document.getElementById('searchInput').value = '';
+            
+            // Mostrar/ocultar botón agregar
+            const addBtn = document.querySelector('.add-btn');
+            if (addBtn) {
+                addBtn.style.display = puedeEditar ? 'flex' : 'none';
+            }
             
             toggleSidebar();
             
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
-            document.getElementById('searchInput').value = '';
             
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
+                
+                // Filtrar por contratante si corresponde
+                data = await filtrarPorContratante(data, tabla);
                 
                 // Cargar nombres relacionados
                 if (window.relaciones[tabla]) {
@@ -582,7 +811,7 @@
                 }
                 
                 window.datosActuales = data;
-                renderizarTabla();
+                renderizarTabla(puedeEditar);
             } catch (error) {
                 console.error(error);
                 document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
@@ -590,10 +819,11 @@
         };
 
         window.filtrarTabla = () => {
-            renderizarTabla();
+            const puedeEditar = puedeEditarTabla(window.tablaActual);
+            renderizarTabla(puedeEditar);
         };
 
-        function renderizarTabla() {
+        function renderizarTabla(puedeEditar) {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             let datosFiltrados = window.datosActuales;
             
@@ -613,48 +843,52 @@
                 return;
             }
             
-            // Obtener columnas (excluir campos de nombre relacionado)
-            const columnas = Object.keys(datosFiltrados[0]).filter(key => !key.includes('_nombre'));
+            // Obtener columnas (excluir created_at y campos de nombre relacionado)
+            const columnas = Object.keys(datosFiltrados[0]).filter(key => 
+                key !== 'created_at' && !key.includes('_nombre')
+            );
             
             let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
-            // Cabeceras
             columnas.forEach(col => {
                 let nombreMostrar = col.replace(/_/g, ' ').toUpperCase();
                 html += `<th>${nombreMostrar}</th>`;
             });
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
-            // Filas
             datosFiltrados.forEach(item => {
                 html += '<tr>';
                 columnas.forEach(col => {
                     let valor = item[col];
                     
-                    // Mostrar nombre relacionado si existe
                     if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                         if (item[`${col}_nombre`]) {
                             valor = item[`${col}_nombre`];
                         }
                     }
                     
-                    // Formatear fechas
                     if (col.includes('fecha') && valor) {
                         valor = formatearFecha(valor);
                     }
                     
-                    // Acortar textos largos
                     if (typeof valor === 'string' && valor.length > 30) {
                         valor = valor.substring(0, 30) + '...';
                     }
                     
                     html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                 });
-                html += `<td class="actions-cell">
-                            <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
-                            <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                         </td>`;
-                html += '</tr>';
+                
+                if (puedeEditar) {
+                    html += `<td class="actions-cell">
+                                <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
+                                <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
+                              </td>`;
+                } else {
+                    html += `<td class="actions-cell">
+                                <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
+                              </td>`;
+                }
+                html += '<tr>';
             });
             
             html += '</tbody></table></div>';
@@ -662,6 +896,10 @@
         }
 
         window.mostrarModalAgregar = () => {
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para agregar registros', true);
+                return;
+            }
             window.editandoId = null;
             document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
             cargarFormulario();
@@ -669,6 +907,10 @@
         };
 
         window.editarRegistro = async (id) => {
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para editar', true);
+                return;
+            }
             window.editandoId = id;
             document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
             const registro = window.datosActuales.find(r => r.id === id);
@@ -691,6 +933,7 @@
                 return;
             }
             
+            // Excluir id, created_at
             const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
             
             let html = '';
@@ -742,6 +985,13 @@
 
         document.getElementById('modal-form').onsubmit = async (e) => {
             e.preventDefault();
+            
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para modificar', true);
+                cerrarModal();
+                return;
+            }
+            
             const formData = new FormData(e.target);
             const datos = {};
             
@@ -753,6 +1003,11 @@
                         datos[key] = value;
                     }
                 }
+            }
+            
+            // Agregar usuario_id automático para ciertas tablas
+            if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') {
+                datos.usuario_id = window.usuarioActual.id;
             }
             
             try {
@@ -778,6 +1033,11 @@
         };
 
         window.eliminarRegistro = async (id) => {
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para eliminar', true);
+                return;
+            }
+            
             if (confirm('¿Eliminar este registro?')) {
                 const { error } = await supabase
                     .from(window.tablaActual)
@@ -798,8 +1058,76 @@
             window.editandoId = null;
         };
 
-        // Iniciar
-        window.cargarTabla('empresas');
+        // LOGIN
+        window.iniciarSesion = async () => {
+            const usuario = document.getElementById('loginUsuario').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!usuario || !password) {
+                document.getElementById('loginError').textContent = 'Complete ambos campos';
+                return;
+            }
+            
+            document.getElementById('loginError').textContent = '';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('usuario', usuario)
+                    .eq('contraseña', password);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+                    return;
+                }
+                
+                const user = data[0];
+                const rol = user.nivel;
+                
+                // Verificar que el rol sea válido
+                if (!configPermisos[rol]) {
+                    document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
+                    return;
+                }
+                
+                window.usuarioActual = user;
+                window.permisos = configPermisos[rol];
+                
+                // Mostrar app y ocultar login
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                
+                // Actualizar info del usuario en sidebar
+                document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                
+                // Generar sidebar según permisos
+                generarSidebar();
+                
+                // Cargar primera tabla disponible
+                const tablasPermitidas = getTablasPermitidas();
+                if (tablasPermitidas.length > 0) {
+                    window.cargarTabla(tablasPermitidas[0].id);
+                }
+                
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Error de conexión';
+                console.error(error);
+            }
+        };
+        
+        window.cerrarSesion = () => {
+            window.usuarioActual = null;
+            window.permisos = null;
+            window.tablaActual = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('loginUsuario').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').textContent = '';
+        };
     </script>
 </body>
 </html>
