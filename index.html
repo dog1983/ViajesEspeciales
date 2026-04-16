@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#1e293b">
-    <title>Transporte Gestión - Tesorería</title>
+    <title>Transporte Gestión</title>
     <style>
         * {
             margin: 0;
@@ -17,7 +17,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f1f5f9;
             overflow-x: hidden;
-            touch-action: pan-y;
         }
 
         /* Header Mobile */
@@ -49,7 +48,6 @@
             align-items: center;
             justify-content: center;
             border-radius: 12px;
-            transition: background 0.2s;
         }
 
         .menu-btn:active {
@@ -75,7 +73,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
 
         .add-btn:active {
@@ -157,7 +154,6 @@
             font-size: 1rem;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
             font-weight: 500;
             width: 100%;
             margin-bottom: 4px;
@@ -165,7 +161,6 @@
 
         .nav-item:active {
             background: #334155;
-            transform: scale(0.98);
         }
 
         .nav-item.active {
@@ -189,13 +184,13 @@
         /* Main Content */
         .main-content {
             margin-top: 76px;
-            padding: 16px;
+            padding: 12px;
             padding-bottom: 80px;
         }
 
         /* Search Bar */
         .search-container {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             position: sticky;
             top: 76px;
             background: #f1f5f9;
@@ -206,15 +201,15 @@
         .search-box {
             background: white;
             border-radius: 50px;
-            padding: 12px 20px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            gap: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
 
         .search-box span {
-            font-size: 20px;
+            font-size: 18px;
             color: #94a3b8;
         }
 
@@ -222,168 +217,72 @@
             flex: 1;
             border: none;
             outline: none;
-            font-size: 1rem;
+            font-size: 0.9rem;
             background: transparent;
         }
 
-        /* Dashboard Cards */
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
+        /* Tabla (Datagridview) - Scroll horizontal */
+        .table-wrapper {
             background: white;
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
 
-        .stat-card .stat-icon {
-            font-size: 28px;
-            margin-bottom: 8px;
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            min-width: 600px;
         }
 
-        .stat-card .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e293b;
+        .data-table th {
+            background: #f8fafc;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            white-space: nowrap;
         }
 
-        .stat-card .stat-label {
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 4px;
+        .data-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            white-space: nowrap;
         }
 
-        /* Tarjetas (Cards) para móvil */
-        .cards-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.2s;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .card:active {
-            transform: scale(0.99);
+        .data-table tr:active {
             background: #f8fafc;
         }
 
-        .card-header {
+        .actions-cell {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
+            gap: 8px;
+            white-space: nowrap;
         }
 
-        .card-title {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 1rem;
-        }
-
-        .card-badge {
-            background: #3b82f6;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
+        .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .card-badge-success {
-            background: #10b981;
-        }
-
-        .card-badge-warning {
-            background: #eab308;
-        }
-
-        .card-content {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .card-field {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 0.85rem;
-        }
-
-        .card-field-icon {
-            font-size: 18px;
-            min-width: 28px;
-        }
-
-        .card-field-label {
-            font-weight: 600;
-            color: #64748b;
-            min-width: 100px;
-        }
-
-        .card-field-value {
-            color: #334155;
-            flex: 1;
-            word-break: break-word;
-        }
-
-        .card-field-value.monto {
-            font-weight: 700;
-            color: #10b981;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .card-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 12px;
-            border: none;
-            font-size: 0.85rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            border: none;
+            font-weight: 500;
         }
 
-        .card-btn-edit {
+        .btn-edit {
             background: #eab308;
             color: white;
         }
 
-        .card-btn-delete {
+        .btn-delete {
             background: #ef4444;
             color: white;
-        }
-
-        .card-btn-view {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .card-btn:active {
-            transform: scale(0.97);
         }
 
         /* Modal */
@@ -397,7 +296,6 @@
             background: rgba(0,0,0,0.5);
             z-index: 300;
             align-items: flex-end;
-            animation: fadeIn 0.2s;
         }
 
         .modal.show {
@@ -410,7 +308,6 @@
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
         }
 
         .modal-header {
@@ -422,7 +319,6 @@
             position: sticky;
             top: 0;
             background: white;
-            z-index: 10;
         }
 
         .modal-header h3 {
@@ -463,7 +359,6 @@
             border-radius: 12px;
             font-size: 1rem;
             font-family: inherit;
-            transition: border-color 0.2s;
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -498,7 +393,6 @@
             color: #475569;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
@@ -511,32 +405,6 @@
             color: #94a3b8;
         }
 
-        .empty-state span {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 16px;
-        }
-
-        /* Animations */
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -548,22 +416,7 @@
             border-radius: 12px;
             text-align: center;
             z-index: 400;
-            animation: slideUp 0.3s;
             font-size: 0.9rem;
-        }
-
-        /* Scroll suave */
-        .modal-body::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .modal-body::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
         }
     </style>
 </head>
@@ -571,7 +424,7 @@
     <!-- Header Mobile -->
     <div class="mobile-header">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="header-title" id="titulo-tabla">Dashboard Tesorería</div>
+        <div class="header-title" id="titulo-tabla">Empresas</div>
         <button class="add-btn" onclick="mostrarModalAgregar()">+</button>
     </div>
 
@@ -583,16 +436,10 @@
         <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
         <div class="sidebar-header">
             <h2>🚍 Transporte</h2>
-            <p>Sistema de Gestión Móvil</p>
+            <p>Sistema de Gestión</p>
         </div>
         <div class="nav-list">
-            <div class="nav-section-title">📊 TESORERÍA</div>
-            <button class="nav-item" onclick="cargarDashboard()">💰 Dashboard</button>
-            <button class="nav-item" onclick="cargarTabla('cuentacorriente')">🏦 Cuenta Corriente</button>
-            <button class="nav-item" onclick="cargarTabla('pagos')">💸 Pagos</button>
-            
-            <div class="nav-divider"></div>
-            <div class="nav-section-title">🚛 OPERACIONES</div>
+            <div class="nav-section-title">📋 TABLAS</div>
             <button class="nav-item" onclick="cargarTabla('empresas')">🏢 Empresas</button>
             <button class="nav-item" onclick="cargarTabla('contratantes')">👤 Contratantes</button>
             <button class="nav-item" onclick="cargarTabla('subcontratantes')">📋 Subcontratantes</button>
@@ -601,18 +448,20 @@
             <button class="nav-item" onclick="cargarTabla('conductores')">🚌 Conductores</button>
             <button class="nav-item" onclick="cargarTabla('buses')">🚎 Buses</button>
             <button class="nav-item" onclick="cargarTabla('usuarios')">👥 Usuarios</button>
+            <button class="nav-item" onclick="cargarTabla('cuentacorriente')">🏦 Cuenta Corriente</button>
+            <button class="nav-item" onclick="cargarTabla('pagos')">💸 Pagos</button>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="search-container" id="searchContainer" style="display: none;">
+        <div class="search-container">
             <div class="search-box">
                 <span>🔍</span>
-                <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarDatos()">
+                <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
             </div>
         </div>
-        <div id="cards-container" class="cards-container">
+        <div id="table-container">
             <div class="loading">Cargando datos...</div>
         </div>
     </div>
@@ -637,10 +486,8 @@
     <script type="module">
         import { supabase } from './conexion.js';
 
-        // Variables globales
-        window.tablaActual = 'dashboard';
+        window.tablaActual = 'empresas';
         window.datosActuales = [];
-        window.datosFiltrados = [];
         window.editandoId = null;
 
         // Relaciones para mostrar nombres
@@ -676,40 +523,6 @@
             }
         };
 
-        // Nombres amigables para los campos
-        window.nombresCampos = {
-            id: 'ID',
-            created_at: 'Creado',
-            nombre: 'Nombre',
-            empresa_id: 'Empresa',
-            contratante_id: 'Contratante',
-            contratante: 'Contratante',
-            subcontratante: 'Subcontratante',
-            telefono: 'Teléfono',
-            cuit: 'CUIT',
-            fecha_ida: 'Fecha Ida',
-            hora_ida: 'Hora Ida',
-            origen: 'Origen',
-            destino: 'Destino',
-            cantidad_buses: 'Cant. Buses',
-            cotizacion: 'Cotización',
-            confecciono: 'Confeccionó',
-            conductor1_id: 'Conductor 1',
-            conductor2_id: 'Conductor 2',
-            interno_id: 'Interno',
-            micro_num: 'Micro N°',
-            contacto: 'Contacto',
-            kmcomprados: 'KM Comprados',
-            fechacompra: 'Fecha Compra',
-            obs_compra: 'Observación Compra',
-            monto: 'Monto',
-            orden_id: 'Orden ID',
-            fecha_pago: 'Fecha Pago',
-            obs_pago: 'Observación Pago',
-            usuario_id: 'Usuario'
-        };
-
-        // Mostrar toast
         function mostrarToast(mensaje, esError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -719,16 +532,15 @@
             setTimeout(() => toast.remove(), 2000);
         }
 
-        // Formatear monto
-        function formatearMonto(monto) {
-            return new Intl.NumberFormat('es-AR', {
-                style: 'currency',
-                currency: 'ARS',
-                minimumFractionDigits: 0
-            }).format(monto);
+        function formatearFecha(fecha) {
+            if (!fecha) return '-';
+            try {
+                return new Date(fecha).toLocaleDateString('es-AR');
+            } catch(e) {
+                return fecha;
+            }
         }
 
-        // Toggle sidebar
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarMobile');
             const overlay = document.getElementById('sidebarOverlay');
@@ -736,146 +548,16 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         };
 
-        // Cargar Dashboard
-        window.cargarDashboard = async () => {
-            window.tablaActual = 'dashboard';
-            document.getElementById('titulo-tabla').innerHTML = '💰 Dashboard Tesorería';
-            document.getElementById('searchContainer').style.display = 'none';
-            document.querySelector('.add-btn').style.display = 'flex';
-            
-            // Actualizar botón activo
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById('cards-container').innerHTML = '<div class="loading">Cargando datos...</div>';
-            
-            try {
-                // Obtener datos para el dashboard
-                const { data: cuentas } = await supabase.from('cuentacorriente').select('*, contratantes(contratante)');
-                const { data: pagos } = await supabase.from('pagos').select('*, ordenes(*)');
-                const { data: ordenes } = await supabase.from('ordenes').select('*');
-                
-                // Calcular totales
-                const totalComprado = cuentas?.reduce((sum, c) => sum + (parseFloat(c.monto) || 0), 0) || 0;
-                const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0) || 0;
-                const totalOrdenes = ordenes?.reduce((sum, o) => sum + (parseFloat(o.cotizacion) || 0), 0) || 0;
-                const saldoPendiente = totalOrdenes - totalPagado;
-                
-                let html = `
-                    <div class="dashboard-stats">
-                        <div class="stat-card">
-                            <div class="stat-icon">💰</div>
-                            <div class="stat-value">${formatearMonto(totalComprado)}</div>
-                            <div class="stat-label">Total Comprado (CC)</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">💸</div>
-                            <div class="stat-value">${formatearMonto(totalPagado)}</div>
-                            <div class="stat-label">Total Pagado</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📊</div>
-                            <div class="stat-value">${formatearMonto(totalOrdenes)}</div>
-                            <div class="stat-label">Total Órdenes</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">⏳</div>
-                            <div class="stat-value ${saldoPendiente > 0 ? 'monto' : ''}">${formatearMonto(saldoPendiente)}</div>
-                            <div class="stat-label">Saldo Pendiente</div>
-                        </div>
-                    </div>
-                `;
-                
-                // Últimos movimientos
-                html += `<h3 style="margin: 20px 0 12px; color: #1e293b;">📋 Últimos Movimientos</h3>`;
-                
-                const ultimosMovimientos = [];
-                if (cuentas) cuentas.forEach(c => ultimosMovimientos.push({ tipo: 'compra', ...c, fecha: c.fechacompra }));
-                if (pagos) pagos.forEach(p => ultimosMovimientos.push({ tipo: 'pago', ...p, fecha: p.fecha_pago }));
-                ultimosMovimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 10);
-                
-                for (let mov of ultimosMovimientos) {
-                    if (mov.tipo === 'compra') {
-                        const contratante = mov.contratantes?.contratante || 'N/A';
-                        html += `
-                            <div class="card">
-                                <div class="card-header">
-                                    <div class="card-title">💰 Compra de KM</div>
-                                    <div class="card-badge">${new Date(mov.fechacompra).toLocaleDateString('es-AR')}</div>
-                                </div>
-                                <div class="card-content">
-                                    <div class="card-field">
-                                        <div class="card-field-icon">👤</div>
-                                        <div class="card-field-label">Contratante:</div>
-                                        <div class="card-field-value">${contratante}</div>
-                                    </div>
-                                    <div class="card-field">
-                                        <div class="card-field-icon">📏</div>
-                                        <div class="card-field-label">KM Comprados:</div>
-                                        <div class="card-field-value">${mov.kmcomprados} km</div>
-                                    </div>
-                                    <div class="card-field">
-                                        <div class="card-field-icon">💰</div>
-                                        <div class="card-field-label">Monto:</div>
-                                        <div class="card-field-value monto">${formatearMonto(mov.monto)}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        const ordenInfo = mov.ordenes?.id || mov.orden_id;
-                        html += `
-                            <div class="card">
-                                <div class="card-header">
-                                    <div class="card-title">💸 Pago Registrado</div>
-                                    <div class="card-badge">${new Date(mov.fecha_pago).toLocaleDateString('es-AR')}</div>
-                                </div>
-                                <div class="card-content">
-                                    <div class="card-field">
-                                        <div class="card-field-icon">📦</div>
-                                        <div class="card-field-label">Orden ID:</div>
-                                        <div class="card-field-value">${ordenInfo}</div>
-                                    </div>
-                                    <div class="card-field">
-                                        <div class="card-field-icon">💰</div>
-                                        <div class="card-field-label">Monto:</div>
-                                        <div class="card-field-value monto">${formatearMonto(mov.monto)}</div>
-                                    </div>
-                                    ${mov.obs_pago ? `<div class="card-field">
-                                        <div class="card-field-icon">📝</div>
-                                        <div class="card-field-label">Observación:</div>
-                                        <div class="card-field-value">${mov.obs_pago}</div>
-                                    </div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-                
-                document.getElementById('cards-container').innerHTML = html;
-            } catch (error) {
-                console.error(error);
-                document.getElementById('cards-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
-            }
-        };
-
-        // Cargar tabla principal
         window.cargarTabla = async (tabla) => {
             window.tablaActual = tabla;
             document.getElementById('titulo-tabla').innerHTML = tabla.charAt(0).toUpperCase() + tabla.slice(1);
-            document.getElementById('searchContainer').style.display = 'block';
-            document.querySelector('.add-btn').style.display = 'flex';
             
-            // Actualizar botón activo
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(tabla.charAt(0).toUpperCase() + tabla.slice(1))) {
-                    btn.classList.add('active');
-                }
-            });
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             
             toggleSidebar();
             
-            document.getElementById('cards-container').innerHTML = '<div class="loading">Cargando datos...</div>';
+            document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
+            document.getElementById('searchInput').value = '';
             
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
@@ -900,27 +582,29 @@
                 }
                 
                 window.datosActuales = data;
-                window.datosFiltrados = [...data];
-                renderizarCards();
+                renderizarTabla();
             } catch (error) {
                 console.error(error);
-                document.getElementById('cards-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+                document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
             }
         };
 
-        // Filtrar datos
-        window.filtrarDatos = () => {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            window.datosFiltrados = window.datosActuales.filter(item => {
-                return JSON.stringify(Object.values(item)).toLowerCase().includes(searchText);
-            });
-            renderizarCards();
+        window.filtrarTabla = () => {
+            renderizarTabla();
         };
 
-        // Renderizar tarjetas
-        function renderizarCards() {
-            if (!window.datosFiltrados || window.datosFiltrados.length === 0) {
-                document.getElementById('cards-container').innerHTML = `
+        function renderizarTabla() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            let datosFiltrados = window.datosActuales;
+            
+            if (searchText) {
+                datosFiltrados = window.datosActuales.filter(item => {
+                    return JSON.stringify(Object.values(item)).toLowerCase().includes(searchText);
+                });
+            }
+            
+            if (!datosFiltrados || datosFiltrados.length === 0) {
+                document.getElementById('table-container').innerHTML = `
                     <div class="empty-state">
                         <span>📭</span>
                         <p>No hay datos disponibles</p>
@@ -929,93 +613,64 @@
                 return;
             }
             
-            let html = '';
-            window.datosFiltrados.forEach(item => {
-                const camposImportantes = Object.keys(item).filter(key => 
-                    key !== 'id' && key !== 'created_at' && !key.includes('_nombre')
-                ).slice(0, 4);
-                
-                // Título dinámico según la tabla
-                let titulo = '';
-                if (window.tablaActual === 'cuentacorriente') {
-                    titulo = item.contratante_id_nombre || `Compra ID: ${item.id}`;
-                } else if (window.tablaActual === 'pagos') {
-                    titulo = `Pago Orden ${item.orden_id}`;
-                } else {
-                    titulo = item.nombre || item.contratante || item.subcontratante || `ID: ${item.id}`;
-                }
-                
-                html += `
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">${titulo}</div>
-                            <div class="card-badge ${window.tablaActual === 'pagos' ? 'card-badge-success' : ''}">ID: ${item.id}</div>
-                        </div>
-                        <div class="card-content">
-                `;
-                
-                // Mostrar campos importantes
-                for (let campo of camposImportantes) {
-                    let valor = item[campo];
-                    let nombreMostrar = window.nombresCampos[campo] || campo.replace(/_/g, ' ').toUpperCase();
+            // Obtener columnas (excluir campos de nombre relacionado)
+            const columnas = Object.keys(datosFiltrados[0]).filter(key => !key.includes('_nombre'));
+            
+            let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
+            
+            // Cabeceras
+            columnas.forEach(col => {
+                let nombreMostrar = col.replace(/_/g, ' ').toUpperCase();
+                html += `<th>${nombreMostrar}</th>`;
+            });
+            html += `<th>ACCIONES</th></tr></thead><tbody>`;
+            
+            // Filas
+            datosFiltrados.forEach(item => {
+                html += '<tr>';
+                columnas.forEach(col => {
+                    let valor = item[col];
                     
-                    // Si hay nombre relacionado
-                    if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][campo]) {
-                        if (item[`${campo}_nombre`]) {
-                            valor = item[`${campo}_nombre`];
+                    // Mostrar nombre relacionado si existe
+                    if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                        if (item[`${col}_nombre`]) {
+                            valor = item[`${col}_nombre`];
                         }
                     }
                     
                     // Formatear fechas
-                    if (typeof valor === 'string' && (valor.includes('202') || valor.includes('-'))) {
-                        try {
-                            valor = new Date(valor).toLocaleDateString('es-AR');
-                        } catch(e) {}
+                    if (col.includes('fecha') && valor) {
+                        valor = formatearFecha(valor);
                     }
                     
-                    // Formatear montos
-                    if (campo === 'monto' || campo === 'cotizacion') {
-                        if (valor && !isNaN(parseFloat(valor))) {
-                            valor = formatearMonto(parseFloat(valor));
-                        }
+                    // Acortar textos largos
+                    if (typeof valor === 'string' && valor.length > 30) {
+                        valor = valor.substring(0, 30) + '...';
                     }
                     
-                    if (valor && valor.toString().trim()) {
-                        html += `
-                            <div class="card-field">
-                                <div class="card-field-icon">📌</div>
-                                <div class="card-field-label">${nombreMostrar}:</div>
-                                <div class="card-field-value ${campo === 'monto' || campo === 'cotizacion' ? 'monto' : ''}">${valor}</div>
-                            </div>
-                        `;
-                    }
-                }
-                
-                html += `
-                        </div>
-                        <div class="card-actions">
-                            <button class="card-btn card-btn-edit" onclick="editarRegistro(${item.id})">✏️ Editar</button>
-                            <button class="card-btn card-btn-delete" onclick="eliminarRegistro(${item.id})">🗑️ Eliminar</button>
-                        </div>
-                    </div>
-                `;
+                    html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
+                });
+                html += `<td class="actions-cell">
+                            <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
+                            <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
+                         </td>`;
+                html += '</tr>';
             });
             
-            document.getElementById('cards-container').innerHTML = html;
+            html += '</tbody></table></div>';
+            document.getElementById('table-container').innerHTML = html;
         }
 
-        // Mostrar modal agregar
         window.mostrarModalAgregar = () => {
             window.editandoId = null;
-            document.getElementById('modal-titulo').textContent = `➕ Agregar ${window.tablaActual === 'dashboard' ? 'registro' : window.tablaActual}`;
+            document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
             cargarFormulario();
             document.getElementById('modal').classList.add('show');
         };
 
-        // Editar registro
         window.editarRegistro = async (id) => {
             window.editandoId = id;
-            document.getElementById('modal-titulo').textContent = `✏️ Editar ${window.tablaActual}`;
+            document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
             const registro = window.datosActuales.find(r => r.id === id);
             if (registro) {
                 cargarFormulario(registro);
@@ -1023,14 +678,7 @@
             }
         };
 
-        // Cargar formulario dinámico
         async function cargarFormulario(registro = null) {
-            if (window.tablaActual === 'dashboard') {
-                mostrarToast('Selecciona una tabla específica para agregar datos', true);
-                cerrarModal();
-                return;
-            }
-            
             const container = document.getElementById('modal-campos');
             
             const { data: columnas, error } = await supabase
@@ -1048,16 +696,15 @@
             let html = '';
             for (let col of estructura) {
                 let valor = registro ? registro[col] : '';
-                let label = window.nombresCampos[col] || col.replace(/_/g, ' ').toUpperCase();
+                let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                // Si es relación, mostrar select
                 if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_${col}">`;
+                    html += `<select name="${col}">`;
                     html += `<option value="">Seleccionar...</option>`;
                     if (opciones) {
                         opciones.forEach(op => {
@@ -1071,20 +718,20 @@
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<input type="date" name="${col}" value="${fechaValor}" placeholder="${label}">`;
+                    html += `<input type="date" name="${col}" value="${fechaValor}">`;
                     html += `</div>`;
                 } else if (col.includes('hora')) {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<input type="time" name="${col}" value="${valor || ''}" placeholder="${label}">`;
+                    html += `<input type="time" name="${col}" value="${valor || ''}">`;
                     html += `</div>`;
                 } else {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    if (col.includes('obs') || col === 'observacion') {
-                        html += `<textarea name="${col}" rows="3" placeholder="${label}">${valor || ''}</textarea>`;
+                    if (col.includes('obs')) {
+                        html += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
                     } else {
-                        html += `<input type="${col === 'monto' ? 'number' : 'text'}" name="${col}" value="${valor || ''}" placeholder="${label}">`;
+                        html += `<input type="${col === 'monto' ? 'number' : 'text'}" name="${col}" value="${valor || ''}">`;
                     }
                     html += `</div>`;
                 }
@@ -1093,7 +740,6 @@
             container.innerHTML = html;
         }
 
-        // Guardar registro
         document.getElementById('modal-form').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1101,9 +747,7 @@
             
             for (let [key, value] of formData.entries()) {
                 if (value && value.toString().trim()) {
-                    if (key.includes('fecha') && value) {
-                        datos[key] = value;
-                    } else if (key === 'monto') {
+                    if (key === 'monto') {
                         datos[key] = parseFloat(value);
                     } else {
                         datos[key] = value;
@@ -1118,50 +762,44 @@
                         .update(datos)
                         .eq('id', window.editandoId);
                     if (error) throw error;
-                    mostrarToast('✅ Registro actualizado');
+                    mostrarToast('Registro actualizado');
                 } else {
                     const { error } = await supabase
                         .from(window.tablaActual)
                         .insert([datos]);
                     if (error) throw error;
-                    mostrarToast('✅ Registro agregado');
+                    mostrarToast('Registro agregado');
                 }
                 cerrarModal();
-                if (window.tablaActual === 'dashboard') {
-                    window.cargarDashboard();
-                } else {
-                    window.cargarTabla(window.tablaActual);
-                }
+                window.cargarTabla(window.tablaActual);
             } catch (error) {
-                mostrarToast('❌ Error: ' + error.message, true);
+                mostrarToast('Error: ' + error.message, true);
             }
         };
 
-        // Eliminar registro
         window.eliminarRegistro = async (id) => {
-            if (confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) {
+            if (confirm('¿Eliminar este registro?')) {
                 const { error } = await supabase
                     .from(window.tablaActual)
                     .delete()
                     .eq('id', id);
                 
                 if (error) {
-                    mostrarToast('❌ Error: ' + error.message, true);
+                    mostrarToast('Error: ' + error.message, true);
                 } else {
-                    mostrarToast('✅ Registro eliminado');
+                    mostrarToast('Registro eliminado');
                     window.cargarTabla(window.tablaActual);
                 }
             }
         };
 
-        // Cerrar modal
         window.cerrarModal = () => {
             document.getElementById('modal').classList.remove('show');
             window.editandoId = null;
         };
 
-        // Cargar dashboard inicial
-        window.cargarDashboard();
+        // Iniciar
+        window.cargarTabla('empresas');
     </script>
 </body>
 </html>
