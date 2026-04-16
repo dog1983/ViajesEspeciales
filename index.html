@@ -19,7 +19,6 @@
             overflow-x: hidden;
         }
 
-        /* Header Mobile */
         .mobile-header {
             position: fixed;
             top: 0;
@@ -94,7 +93,6 @@
             display: none;
         }
 
-        /* Sidebar Mobile */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -195,7 +193,6 @@
             letter-spacing: 1px;
         }
 
-        /* Login Screen */
         .login-container {
             position: fixed;
             top: 0;
@@ -261,14 +258,12 @@
             margin-top: 12px;
         }
 
-        /* Main Content */
         .main-content {
             margin-top: 76px;
             padding: 12px;
             padding-bottom: 80px;
         }
 
-        /* Search Bar */
         .search-container {
             margin-bottom: 12px;
             position: sticky;
@@ -301,7 +296,6 @@
             background: transparent;
         }
 
-        /* Tabla */
         .table-wrapper {
             background: white;
             border-radius: 12px;
@@ -365,12 +359,6 @@
             color: white;
         }
 
-        .btn-edit.disabled, .btn-delete.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -506,7 +494,6 @@
     </style>
 </head>
 <body>
-    <!-- Pantalla de Login -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <h2>🚍 Transporte</h2>
@@ -518,31 +505,24 @@
         </div>
     </div>
 
-    <!-- App principal (oculta hasta login) -->
     <div id="app" style="display: none;">
-        <!-- Header Mobile -->
         <div class="mobile-header">
             <button class="menu-btn" onclick="toggleSidebar()">☰</button>
             <div class="header-title" id="titulo-tabla">Empresas</div>
             <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
         </div>
 
-        <!-- Sidebar Overlay -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-        <!-- Sidebar Mobile -->
         <div class="sidebar-mobile" id="sidebarMobile">
             <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
             <div class="sidebar-header">
                 <h2>🚍 Transporte</h2>
                 <p id="userInfo">Cargando...</p>
             </div>
-            <div class="nav-list" id="navList">
-                <!-- Los botones se generan según permisos -->
-            </div>
+            <div class="nav-list" id="navList"></div>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
             <div class="search-container">
                 <div class="search-box">
@@ -556,7 +536,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -576,14 +555,12 @@
     <script type="module">
         import { supabase } from './conexion.js';
 
-        // Variables globales
         window.usuarioActual = null;
         window.permisos = null;
         window.tablaActual = null;
         window.datosActuales = [];
         window.editandoId = null;
 
-        // Configuración de permisos por rol
         const configPermisos = {
             administracion: {
                 puedeEditar: ['pagos', 'cuentacorriente'],
@@ -603,7 +580,6 @@
             }
         };
 
-        // Todas las tablas disponibles
         const todasLasTablas = [
             { id: 'empresas', nombre: '🏢 Empresas', soloLectura: true },
             { id: 'contratantes', nombre: '👤 Contratantes' },
@@ -617,7 +593,6 @@
             { id: 'pagos', nombre: '💸 Pagos' }
         ];
 
-        // Relaciones para mostrar nombres
         window.relaciones = {
             ordenes: {
                 empresas_id: { tabla: 'empresas', campo: 'nombre' },
@@ -668,19 +643,53 @@
             }
         }
 
-        // Obtener tablas que puede ver el usuario
+        // Filtrar órdenes y carpetas para contratante (CORREGIDO)
+        async function filtrarPorContratante(data, tabla) {
+            if (window.usuarioActual?.nivel !== 'contratante') return data;
+            
+            const { data: contratanteData } = await supabase
+                .from('contratantes')
+                .select('id')
+                .eq('usuario_id', window.usuarioActual.id)
+                .single();
+            
+            if (!contratanteData) {
+                return [];
+            }
+            
+            const contratanteId = contratanteData.id;
+            
+            const { data: subcontratantesData } = await supabase
+                .from('subcontratantes')
+                .select('id')
+                .eq('contratante', contratanteId);
+            
+            const subcontratantesIds = subcontratantesData?.map(s => s.id) || [];
+            
+            if (subcontratantesIds.length === 0) {
+                return [];
+            }
+            
+            if (tabla === 'ordenes') {
+                return data.filter(item => subcontratantesIds.includes(item.subcontratante));
+            }
+            
+            if (tabla === 'carpetas') {
+                return data.filter(item => subcontratantesIds.includes(item.subcontratante_id));
+            }
+            
+            return data;
+        }
+
         function getTablasPermitidas() {
             if (!window.permisos) return [];
-            
             const permitidas = [];
             
-            // Agregar tablas que puede editar
             window.permisos.puedeEditar.forEach(tabla => {
                 const info = todasLasTablas.find(t => t.id === tabla);
                 if (info) permitidas.push({ ...info, puedeEditar: true });
             });
             
-            // Agregar tablas que solo puede ver
             window.permisos.soloVer.forEach(tabla => {
                 const info = todasLasTablas.find(t => t.id === tabla);
                 if (info && !permitidas.find(p => p.id === tabla)) {
@@ -691,7 +700,6 @@
             return permitidas;
         }
 
-        // Generar sidebar según permisos
         function generarSidebar() {
             const navList = document.getElementById('navList');
             const tablasPermitidas = getTablasPermitidas();
@@ -705,55 +713,14 @@
             navList.innerHTML = html;
         }
 
-        // Verificar si puede editar una tabla
         function puedeEditarTabla(tablaId) {
             if (!window.permisos) return false;
             return window.permisos.puedeEditar.includes(tablaId);
         }
 
-        // Verificar si puede ver una tabla
         function puedeVerTabla(tablaId) {
             if (!window.permisos) return false;
             return window.permisos.puedeEditar.includes(tablaId) || window.permisos.soloVer.includes(tablaId);
-        }
-
-        // Filtrar órdenes para contratante
-        async function filtrarPorContratante(data, tabla) {
-            if (window.usuarioActual?.nivel !== 'contratante') return data;
-            
-            if (tabla === 'ordenes') {
-                // Obtener el contratante asociado a este usuario
-                const { data: contratante } = await supabase
-                    .from('contratantes')
-                    .select('id')
-                    .eq('usuario_id', window.usuarioActual.id)
-                    .single();
-                
-                if (contratante) {
-                    return data.filter(item => item.contratante_id === contratante.id);
-                }
-            }
-            
-            if (tabla === 'carpetas') {
-                // Primero obtener órdenes del contratante
-                const { data: contratante } = await supabase
-                    .from('contratantes')
-                    .select('id')
-                    .eq('usuario_id', window.usuarioActual.id)
-                    .single();
-                
-                if (contratante) {
-                    const { data: ordenes } = await supabase
-                        .from('ordenes')
-                        .select('id')
-                        .eq('contratante_id', contratante.id);
-                    
-                    const ordenesIds = ordenes?.map(o => o.id) || [];
-                    return data.filter(item => ordenesIds.includes(item.orden_id));
-                }
-            }
-            
-            return data;
         }
 
         window.toggleSidebar = () => {
@@ -775,24 +742,20 @@
             document.getElementById('titulo-tabla').innerHTML = tabla.charAt(0).toUpperCase() + tabla.slice(1);
             document.getElementById('searchInput').value = '';
             
-            // Mostrar/ocultar botón agregar
             const addBtn = document.querySelector('.add-btn');
             if (addBtn) {
                 addBtn.style.display = puedeEditar ? 'flex' : 'none';
             }
             
             toggleSidebar();
-            
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
             
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
                 
-                // Filtrar por contratante si corresponde
                 data = await filtrarPorContratante(data, tabla);
                 
-                // Cargar nombres relacionados
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
                         for (let [campoId, relacion] of Object.entries(window.relaciones[tabla])) {
@@ -843,7 +806,6 @@
                 return;
             }
             
-            // Obtener columnas (excluir created_at y campos de nombre relacionado)
             const columnas = Object.keys(datosFiltrados[0]).filter(key => 
                 key !== 'created_at' && !key.includes('_nombre')
             );
@@ -882,13 +844,13 @@
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                              </td>`;
+                               </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                              </td>`;
+                               </td>`;
                 }
-                html += '<tr>';
+                html += '</tr>';
             });
             
             html += '</tbody></table></div>';
@@ -933,7 +895,6 @@
                 return;
             }
             
-            // Excluir id, created_at
             const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
             
             let html = '';
@@ -1005,7 +966,6 @@
                 }
             }
             
-            // Agregar usuario_id automático para ciertas tablas
             if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') {
                 datos.usuario_id = window.usuarioActual.id;
             }
@@ -1058,7 +1018,6 @@
             window.editandoId = null;
         };
 
-        // LOGIN
         window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -1087,7 +1046,6 @@
                 const user = data[0];
                 const rol = user.nivel;
                 
-                // Verificar que el rol sea válido
                 if (!configPermisos[rol]) {
                     document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
                     return;
@@ -1096,17 +1054,12 @@
                 window.usuarioActual = user;
                 window.permisos = configPermisos[rol];
                 
-                // Mostrar app y ocultar login
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                
-                // Actualizar info del usuario en sidebar
                 document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
                 
-                // Generar sidebar según permisos
                 generarSidebar();
                 
-                // Cargar primera tabla disponible
                 const tablasPermitidas = getTablasPermitidas();
                 if (tablasPermitidas.length > 0) {
                     window.cargarTabla(tablasPermitidas[0].id);
