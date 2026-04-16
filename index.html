@@ -307,7 +307,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.75rem;
-            min-width: 600px;
+            min-width: 500px;
         }
 
         .data-table th {
@@ -498,45 +498,87 @@
             font-size: 0.9rem;
         }
 
-        .detail-section {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 12px;
+        /* Estilos para la Hoja de Ruta */
+        .hoja-ruta {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 16px;
+        }
+
+        .hoja-header {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 12px;
             margin-bottom: 16px;
         }
 
-        .detail-section h4 {
+        .hoja-header h2 {
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+
+        .hoja-header .subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .hoja-section {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #fefce8;
+        }
+
+        .hoja-section-title {
+            font-weight: bold;
+            font-size: 0.8rem;
             color: #1e293b;
             margin-bottom: 8px;
-            font-size: 0.9rem;
+            border-left: 3px solid #3b82f6;
+            padding-left: 8px;
         }
 
-        .detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 8px;
-            font-size: 0.85rem;
+        .hoja-row {
+            display: flex;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
         }
 
-        .detail-grid span:first-child {
+        .hoja-label {
             font-weight: 600;
+            width: 100px;
             color: #475569;
         }
 
-        .detail-grid span:last-child {
-            color: #334155;
+        .hoja-value {
+            flex: 1;
+            color: #1e293b;
         }
 
-        .two-columns {
+        .hoja-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .conductor-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+        }
+
+        .conductor-box h5 {
+            font-size: 0.7rem;
+            color: #3b82f6;
+            margin-bottom: 6px;
         }
 
         .print-btn {
             background: #64748b;
-            margin-right: 8px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -605,7 +647,7 @@
         window.tablaActual = null;
         window.datosActuales = [];
         window.editandoId = null;
-        window.modalModo = 'form'; // 'form' o 'detalle'
+        window.modalModo = 'form';
 
         const configPermisos = {
             administracion: {
@@ -683,13 +725,23 @@
         function formatearFecha(fecha) {
             if (!fecha) return '-';
             try {
+                const date = new Date(fecha);
+                return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } catch(e) {
+                return fecha;
+            }
+        }
+
+        function formatearFechaCorta(fecha) {
+            if (!fecha) return '-';
+            try {
                 return new Date(fecha).toLocaleDateString('es-AR');
             } catch(e) {
                 return fecha;
             }
         }
 
-        // Ver detalle de carpeta (Hoja de Ruta)
+        // Ver detalle de carpeta - NUEVA HOJA DE RUTA
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -713,51 +765,45 @@
                 // Empresa
                 const { data: empresa } = await supabase
                     .from('empresas')
-                    .select('nombre')
+                    .select('*')
                     .eq('id', orden.empresas_id)
                     .single();
                 
                 // Subcontratante
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
-                    .select('subcontratante')
+                    .select('*')
                     .eq('id', orden.subcontratante)
                     .single();
                 
                 // Contratante (a través del subcontratante)
-                const { data: subcon } = await supabase
-                    .from('subcontratantes')
-                    .select('contratante')
-                    .eq('id', orden.subcontratante)
-                    .single();
-                
-                let contratanteNombre = '';
-                if (subcon && subcon.contratante) {
-                    const { data: contratante } = await supabase
+                let contratante = null;
+                if (subcontratante && subcontratante.contratante) {
+                    const { data: c } = await supabase
                         .from('contratantes')
-                        .select('contratante')
-                        .eq('id', subcon.contratante)
+                        .select('*')
+                        .eq('id', subcontratante.contratante)
                         .single();
-                    contratanteNombre = contratante?.contratante || '';
+                    contratante = c;
                 }
                 
-                // Conductor 1
-                let conductor1 = { legajo: '-', dni: '-', telefono: '-', nombre: '-' };
+                // Conductor 1 (con vto_reg en lugar de telefono)
+                let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
                     const { data: c1 } = await supabase
                         .from('conductores')
-                        .select('legajo, dni, telefono, nombre')
+                        .select('legajo, dni, vto_reg, nombre')
                         .eq('id', carpeta.conductor1_id)
                         .single();
                     if (c1) conductor1 = c1;
                 }
                 
                 // Conductor 2
-                let conductor2 = { legajo: '-', dni: '-', telefono: '-', nombre: '-' };
+                let conductor2 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor2_id) {
                     const { data: c2 } = await supabase
                         .from('conductores')
-                        .select('legajo, dni, telefono, nombre')
+                        .select('legajo, dni, vto_reg, nombre')
                         .eq('id', carpeta.conductor2_id)
                         .single();
                     if (c2) conductor2 = c2;
@@ -774,78 +820,158 @@
                     if (b) bus = b;
                 }
                 
-                const detalleHtml = `
-                    <div style="padding: 4px;">
-                        <!-- Datos de la Orden -->
-                        <div class="detail-section">
-                            <h4>📦 DATOS DE LA ORDEN N° ${orden.id}</h4>
-                            <div class="detail-grid">
-                                <span>Empresa:</span><span>${empresa?.nombre || '-'}</span>
-                                <span>Contratante:</span><span>${contratanteNombre}</span>
-                                <span>Subcontratante:</span><span>${subcontratante?.subcontratante || '-'}</span>
-                                <span>Fecha Ida:</span><span>${formatearFecha(orden.fecha_ida)}</span>
-                                <span>Hora Ida:</span><span>${orden.hora_ida || '-'}</span>
-                                <span>Dirección Origen:</span><span>${orden.direccion_origen || '-'}</span>
-                                <span>Origen:</span><span>${orden.origen || '-'}</span>
-                                <span>Dirección Destino:</span><span>${orden.direccion_destino || '-'}</span>
-                                <span>Destino:</span><span>${orden.destino || '-'}</span>
-                                <span>Fecha Regreso:</span><span>${formatearFecha(orden.fecha_regreso)}</span>
-                                <span>Hora Regreso:</span><span>${orden.hora_regreso || '-'}</span>
-                                <span>Paradas:</span><span>${orden.paradas || '-'}</span>
-                                <span>Movimientos:</span><span>${orden.movimientos || '-'}</span>
-                                <span>Comidas:</span><span>${orden.comidas || '-'}</span>
-                                <span>Alojamiento:</span><span>${orden.alojamiento || '-'}</span>
-                                <span>Obs Gastos:</span><span>${orden.obs_gastos || '-'}</span>
+                // Formatear vto_reg
+                const vtoReg1 = conductor1.vto_reg ? formatearFechaCorta(conductor1.vto_reg) : '-';
+                const vtoReg2 = conductor2.vto_reg ? formatearFechaCorta(conductor2.vto_reg) : '-';
+                
+                const hojaHtml = `
+                    <div class="hoja-ruta">
+                        <div class="hoja-header">
+                            <h2>${empresa?.nombre || 'EMPRESA'}</h2>
+                            <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
+                            <div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📋 CONTRATANTE</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Contratante:</span>
+                                <span class="hoja-value">${contratante?.contratante || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">CUIT:</span>
+                                <span class="hoja-value">${contratante?.cuit || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Subcontratante:</span>
+                                <span class="hoja-value">${subcontratante?.subcontratante || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Contacto:</span>
+                                <span class="hoja-value">${carpeta.contacto || subcontratante?.telefono || '-'}</span>
                             </div>
                         </div>
                         
-                        <!-- Conductores -->
-                        <div class="two-columns">
-                            <div class="detail-section">
-                                <h4>🚌 CONDUCTOR 1</h4>
-                                <div class="detail-grid">
-                                    <span>Nombre:</span><span>${conductor1.nombre}</span>
-                                    <span>Legajo:</span><span>${conductor1.legajo}</span>
-                                    <span>DNI:</span><span>${conductor1.dni}</span>
-                                    <span>Teléfono:</span><span>${conductor1.telefono}</span>
-                                </div>
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">⚠️ OBSERVACIONES ANTES DE INICIAR</div>
+                            <div class="hoja-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🚌 IDA</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Fecha:</span>
+                                <span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span>
                             </div>
-                            <div class="detail-section">
-                                <h4>🚌 CONDUCTOR 2</h4>
-                                <div class="detail-grid">
-                                    <span>Nombre:</span><span>${conductor2.nombre}</span>
-                                    <span>Legajo:</span><span>${conductor2.legajo}</span>
-                                    <span>DNI:</span><span>${conductor2.dni}</span>
-                                    <span>Teléfono:</span><span>${conductor2.telefono}</span>
-                                </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Hora:</span>
+                                <span class="hoja-value">${orden.hora_ida || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Origen:</span>
+                                <span class="hoja-value">${orden.direccion_origen || '-'} - ${orden.origen || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Destino:</span>
+                                <span class="hoja-value">${orden.direccion_destino || '-'} - ${orden.destino || '-'}</span>
                             </div>
                         </div>
                         
-                        <!-- Bus -->
-                        <div class="detail-section">
-                            <h4>🚎 INTERNO / BUS</h4>
-                            <div class="detail-grid">
-                                <span>Interno:</span><span>${bus.Interno}</span>
-                                <span>Dominio:</span><span>${bus.Dominio}</span>
-                                <span>Capacidad:</span><span>${bus.Capacidad}</span>
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🔄 REGRESO</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Fecha:</span>
+                                <span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Hora:</span>
+                                <span class="hoja-value">${orden.hora_regreso || '-'}</span>
                             </div>
                         </div>
                         
-                        <!-- Datos de la Carpeta -->
-                        <div class="detail-section">
-                            <h4>📋 DATOS DE LA CARPETA</h4>
-                            <div class="detail-grid">
-                                <span>Micro N°:</span><span>${carpeta.micro_num || '-'}</span>
-                                <span>Contacto:</span><span>${carpeta.contacto || '-'}</span>
-                                <span>Observaciones antes de iniciar:</span><span>${carpeta.obs_antes_iniciar || '-'}</span>
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📍 PARADAS Y MOVIMIENTOS</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Paradas:</span>
+                                <span class="hoja-value">${orden.paradas || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Movimiento:</span>
+                                <span class="hoja-value">${orden.movimientos || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Comidas:</span>
+                                <span class="hoja-value">${orden.comidas || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Alojamiento:</span>
+                                <span class="hoja-value">${orden.alojamiento || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🚎 INTERNO / BUS</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Interno:</span>
+                                <span class="hoja-value">${bus.Interno}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Dominio:</span>
+                                <span class="hoja-value">${bus.Dominio}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Capacidad:</span>
+                                <span class="hoja-value">${bus.Capacidad}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-grid-2">
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 1</h5>
+                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor1.nombre}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor1.legajo}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor1.dni}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg1}</span></div>
+                            </div>
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 2</h5>
+                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor2.nombre}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor2.legajo}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor2.dni}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg2}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div>
+                            <div class="hoja-value" style="font-style:italic;">${orden.obs_gastos || 'Sin observaciones'}</div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📏 KILOMETRAJE</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Km al iniciar:</span>
+                                <span class="hoja-value">_______________</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Km al finalizar:</span>
+                                <span class="hoja-value">_______________</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Total Km:</span>
+                                <span class="hoja-value">_______________</span>
                             </div>
                         </div>
                     </div>
                 `;
                 
                 window.modalModo = 'detalle';
-                document.getElementById('modal-titulo').textContent = `📋 Hoja de Ruta - Carpeta #${carpetaId}`;
-                document.getElementById('modal-campos').innerHTML = detalleHtml;
+                document.getElementById('modal-titulo').textContent = `📋 HOJA DE RUTA - Viaje N° ${orden.id}`;
+                document.getElementById('modal-campos').innerHTML = hojaHtml;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
                 
@@ -864,31 +990,23 @@
                 .eq('usuario_id', window.usuarioActual.id)
                 .single();
             
-            if (!contratanteData) {
-                return [];
-            }
-            
-            const contratanteId = contratanteData.id;
+            if (!contratanteData) return [];
             
             const { data: subcontratantesData } = await supabase
                 .from('subcontratantes')
                 .select('id')
-                .eq('contratante', contratanteId);
+                .eq('contratante', contratanteData.id);
             
             const subcontratantesIds = subcontratantesData?.map(s => s.id) || [];
             
-            if (subcontratantesIds.length === 0) {
-                return [];
-            }
+            if (subcontratantesIds.length === 0) return [];
             
             if (tabla === 'ordenes') {
                 return data.filter(item => subcontratantesIds.includes(item.subcontratante));
             }
-            
             if (tabla === 'carpetas') {
                 return data.filter(item => subcontratantesIds.includes(item.subcontratante_id));
             }
-            
             return data;
         }
 
@@ -916,11 +1034,9 @@
             const tablasPermitidas = getTablasPermitidas();
             
             let html = `<div class="nav-section-title">📋 MIS TABLAS</div>`;
-            
             tablasPermitidas.forEach(tabla => {
                 html += `<button class="nav-item" onclick="cargarTabla('${tabla.id}')">${tabla.nombre}</button>`;
             });
-            
             navList.innerHTML = html;
         }
 
@@ -954,9 +1070,7 @@
             document.getElementById('searchInput').value = '';
             
             const addBtn = document.querySelector('.add-btn');
-            if (addBtn) {
-                addBtn.style.display = puedeEditar ? 'flex' : 'none';
-            }
+            if (addBtn) addBtn.style.display = puedeEditar ? 'flex' : 'none';
             
             toggleSidebar();
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
@@ -1017,14 +1131,31 @@
                 return;
             }
             
-            const columnas = Object.keys(datosFiltrados[0]).filter(key => 
-                key !== 'created_at' && !key.includes('_nombre')
-            );
+            // Para la tabla carpetas, mostrar columnas específicas
+            let columnas;
+            if (window.tablaActual === 'carpetas') {
+                columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
+            } else {
+                columnas = Object.keys(datosFiltrados[0]).filter(key => 
+                    key !== 'created_at' && !key.includes('_nombre')
+                );
+            }
             
             let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
+            // Cabeceras personalizadas para carpetas
+            const nombresColumnas = {
+                id: 'ID',
+                orden_id: 'ORDEN ID',
+                subcontratante_id: 'SUBCONTRATANTE',
+                obs_antes_iniciar: 'OBS ANTES DE INICIAR',
+                origen: 'ORIGEN',
+                destino: 'DESTINO',
+                interno_id: 'INTERNO ID'
+            };
+            
             columnas.forEach(col => {
-                let nombreMostrar = col.replace(/_/g, ' ').toUpperCase();
+                let nombreMostrar = nombresColumnas[col] || col.replace(/_/g, ' ').toUpperCase();
                 html += `<th>${nombreMostrar}</th>`;
             });
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
@@ -1034,6 +1165,7 @@
                 columnas.forEach(col => {
                     let valor = item[col];
                     
+                    // Mostrar nombre relacionado si existe
                     if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                         if (item[`${col}_nombre`]) {
                             valor = item[`${col}_nombre`];
@@ -1041,37 +1173,36 @@
                     }
                     
                     if (col.includes('fecha') && valor) {
-                        valor = formatearFecha(valor);
+                        valor = formatearFechaCorta(valor);
                     }
                     
-                    if (typeof valor === 'string' && valor.length > 30) {
-                        valor = valor.substring(0, 30) + '...';
+                    if (typeof valor === 'string' && valor.length > 40) {
+                        valor = valor.substring(0, 40) + '...';
                     }
                     
                     html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                 });
                 
-                // Botones de acción según tabla
                 if (window.tablaActual === 'carpetas') {
                     html += `<td class="actions-cell">
                                 <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                             </td>`;
+                              </td>`;
                 } else if (puedeEditar) {
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                             </td>`;
+                              </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                             </td>`;
+                              </td>`;
                 }
                 html += '</tr>';
             });
             
-            html += '</tbody></table></div>';
+            html += '</tbody> nahil</div>';
             document.getElementById('table-container').innerHTML = html;
         }
 
@@ -1084,7 +1215,6 @@
             window.editandoId = null;
             document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
             document.getElementById('modal-footer').style.display = 'flex';
-            document.getElementById('modal-save-btn').style.display = 'flex';
             cargarFormulario();
             document.getElementById('modal').classList.add('show');
         };
@@ -1098,7 +1228,6 @@
             window.editandoId = id;
             document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
             document.getElementById('modal-footer').style.display = 'flex';
-            document.getElementById('modal-save-btn').style.display = 'flex';
             const registro = window.datosActuales.find(r => r.id === id);
             if (registro) {
                 cargarFormulario(registro);
@@ -1168,10 +1297,9 @@
             container.innerHTML = html;
         }
 
-        document.getElementById('modal-form')?.remove();
+        // Crear formulario dinámico
         const modalForm = document.createElement('form');
         modalForm.id = 'modal-form';
-        modalForm.innerHTML = '<div class="modal-body" id="modal-campos"></div>';
         const modalContent = document.querySelector('#modal .modal-content');
         const modalHeader = modalContent.querySelector('.modal-header');
         const modalFooterElem = modalContent.querySelector('.modal-footer');
