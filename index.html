@@ -3,105 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Conductores - Supabase</title>
+    <title>Sistema de Gestión de Transporte</title>
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f7fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 24px;
-        }
-        h1 {
-            color: #1a2a3a;
-            margin-top: 0;
+
+        /* Dashboard Layout */
+        .dashboard {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            height: 100vh;
         }
-        h1::before {
-            content: "🚗";
-            font-size: 32px;
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
-        .toolbar {
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .nav-buttons {
+            flex: 1;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: #334155;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 15px;
         }
-        .btn {
-            padding: 10px 20px;
+
+        .top-bar h1 {
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+
+        .btn-add {
+            background: #3b82f6;
+            color: white;
             border: none;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: background 0.2s;
         }
-        .btn-primary {
-            background-color: #2c7da0;
-            color: white;
+
+        .btn-add:hover {
+            background: #2563eb;
         }
-        .btn-primary:hover {
-            background-color: #1f5e7a;
-            transform: translateY(-1px);
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
         }
-        .btn-edit {
-            background-color: #ffc107;
-            color: #333;
+
+        /* Tabla */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
         }
-        .btn-edit:hover {
-            background-color: #e0a800;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        .btn-refresh {
-            background-color: #17a2b8;
-            color: white;
-        }
-        .btn-refresh:hover {
-            background-color: #138496;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+
         th {
-            background-color: #2c7da0;
-            color: white;
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
             font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
         }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
         tr:hover {
-            background-color: #f1f5f9;
+            background: #f8fafc;
         }
-        .acciones {
+
+        .actions {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
+
+        .btn-edit, .btn-delete {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-edit {
+            background: #eab308;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #ca8a04;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -109,381 +196,396 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.5);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
+
         .modal-content {
             background: white;
-            padding: 25px;
             border-radius: 12px;
+            padding: 24px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 80vh;
+            overflow-y: auto;
         }
+
         .modal-content h3 {
-            margin-top: 0;
-            color: #2c7da0;
+            margin-bottom: 20px;
+            color: #1e293b;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
-        }
-        .form-group input {
+
+        .modal-content input, .modal-content select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 0.9rem;
         }
-        .form-group input:focus {
-            outline: none;
-            border-color: #2c7da0;
-            box-shadow: 0 0 0 2px rgba(44,125,160,0.2);
-        }
+
         .modal-buttons {
             display: flex;
+            gap: 12px;
             justify-content: flex-end;
-            gap: 10px;
             margin-top: 20px;
         }
-        .btn-cancel {
-            background-color: #6c757d;
+
+        .modal-buttons button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-save {
+            background: #10b981;
             color: white;
         }
-        .btn-cancel:hover {
-            background-color: #5a6268;
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
         }
-        .estado {
+
+        .search-box {
             margin-bottom: 20px;
-            padding: 12px;
-            border-radius: 6px;
-            display: none;
         }
-        .estado-exito {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        .search-box input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
         }
-        .estado-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
         }
-        .estado-cargando {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .contador {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-            text-align: right;
-        }
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            th, td {
-                padding: 8px 10px;
-                font-size: 13px;
-            }
-            .acciones {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Gestión de Conductores</h1>
-        
-        <div id="estado" class="estado"></div>
-        
-        <div class="toolbar">
-            <button class="btn btn-primary" onclick="abrirModalAgregar()">➕ Nuevo Conductor</button>
-            <button class="btn btn-refresh" onclick="cargarConductores()">🔄 Refrescar</button>
+    <div class="dashboard">
+        <!-- Sidebar con navegación -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>🚍 Transporte</h2>
+                <p>Sistema de Gestión</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="cargarTabla('empresas')">🏢 Empresas</button>
+                <button class="nav-btn" onclick="cargarTabla('contratantes')">👤 Contratantes</button>
+                <button class="nav-btn" onclick="cargarTabla('subcontratantes')">📋 Subcontratantes</button>
+                <button class="nav-btn" onclick="cargarTabla('ordenes')">📦 Órdenes</button>
+                <button class="nav-btn" onclick="cargarTabla('carpetas')">📁 Carpetas</button>
+                <button class="nav-btn" onclick="cargarTabla('conductores')">🚌 Conductores</button>
+                <button class="nav-btn" onclick="cargarTabla('buses')">🚎 Buses</button>
+                <button class="nav-btn" onclick="cargarTabla('usuarios')">👥 Usuarios</button>
+            </div>
         </div>
-        
-        <div id="tabla-contenedor">
-            <!-- Aquí se cargará la tabla dinámicamente -->
-            <div style="text-align: center; padding: 40px;">
-                <div class="estado-cargando" style="display: inline-block; padding: 10px 20px;">
-                    Cargando conductores...
+
+        <!-- Contenido principal -->
+        <div class="main-content">
+            <div class="top-bar">
+                <h1 id="titulo-tabla">Empresas</h1>
+                <button class="btn-add" onclick="mostrarModalAgregar()">+ Nuevo Registro</button>
+            </div>
+            <div class="content-area">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar..." onkeyup="filtrarTabla()">
+                </div>
+                <div id="tabla-container" class="table-container">
+                    <div class="loading">Cargando datos...</div>
                 </div>
             </div>
         </div>
-        
-        <div id="contador" class="contador"></div>
     </div>
-    
-    <!-- Modal para Agregar/Editar -->
+
+    <!-- Modal para agregar/editar -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-titulo">Nuevo Conductor</h3>
-            <form id="conductor-form">
-                <input type="hidden" id="conductor-id">
-                <div class="form-group">
-                    <label for="nombre">Nombre completo *</label>
-                    <input type="text" id="nombre" required placeholder="Ej: Juan Pérez">
-                </div>
-                <div class="form-group">
-                    <label for="edad">Edad</label>
-                    <input type="number" id="edad" placeholder="Ej: 35">
-                </div>
-                <div class="form-group">
-                    <label for="ciudad">Ciudad</label>
-                    <input type="text" id="ciudad" placeholder="Ej: Madrid">
-                </div>
+            <h3 id="modal-titulo">Agregar Registro</h3>
+            <form id="modal-form">
+                <div id="modal-campos"></div>
                 <div class="modal-buttons">
-                    <button type="button" class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <script type="module">
         import { supabase } from './conexion.js';
-        
+
         // Variables globales
-        let modoEdicion = false;
-        
-        // Elementos del DOM
-        const estadoDiv = document.getElementById('estado');
-        const tablaContenedor = document.getElementById('tabla-contenedor');
-        const contadorDiv = document.getElementById('contador');
-        const modal = document.getElementById('modal');
-        const modalTitulo = document.getElementById('modal-titulo');
-        const conductorForm = document.getElementById('conductor-form');
-        const conductorIdInput = document.getElementById('conductor-id');
-        const nombreInput = document.getElementById('nombre');
-        const edadInput = document.getElementById('edad');
-        const ciudadInput = document.getElementById('ciudad');
-        
-        // Mostrar mensaje de estado
-        function mostrarEstado(mensaje, tipo) {
-            estadoDiv.textContent = mensaje;
-            estadoDiv.className = `estado estado-${tipo}`;
-            estadoDiv.style.display = 'block';
-            setTimeout(() => {
-                estadoDiv.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Cargar conductores desde Supabase
-        window.cargarConductores = async function() {
-            try {
-                // Mostrar carga
-                tablaContenedor.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="estado-cargando" style="display: inline-block; padding: 10px 20px;">Cargando datos...</div></div>';
-                
-                const { data, error } = await supabase
-                    .from('conductores')
-                    .select('*')
-                    .order('id', { ascending: true });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                if (!data || data.length === 0) {
-                    tablaContenedor.innerHTML = `
-                        <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 8px;">
-                            <p style="font-size: 18px; color: #666;">📋 No hay conductores registrados</p>
-                            <button class="btn btn-primary" onclick="abrirModalAgregar()" style="margin-top: 15px;">➕ Agregar el primero</button>
-                        </div>
-                    `;
-                    contadorDiv.textContent = 'Total: 0 conductores';
-                    return;
-                }
-                
-                // Generar tabla HTML
-                let tablaHTML = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Edad</th>
-                                <th>Ciudad</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                data.forEach(conductor => {
-                    tablaHTML += `
-                        <tr>
-                            <td>${conductor.id}</td>
-                            <td><strong>${escapeHtml(conductor.nombre) || '-'}</strong></td>
-                            <td>${conductor.edad || '-'}</td>
-                            <td>${escapeHtml(conductor.ciudad) || '-'}</td>
-                            <td class="acciones">
-                                <button class="btn btn-edit" onclick="editarConductor(${conductor.id})">✏️ Editar</button>
-                                <button class="btn btn-delete" onclick="eliminarConductor(${conductor.id})">🗑️ Eliminar</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                tablaHTML += `
-                        </tbody>
-                    </table>
-                `;
-                
-                tablaContenedor.innerHTML = tablaHTML;
-                contadorDiv.textContent = `Total: ${data.length} conductores`;
-                
-                mostrarEstado(`✅ ${data.length} conductores cargados correctamente`, 'exito');
-                
-            } catch (error) {
-                console.error('Error al cargar conductores:', error);
-                tablaContenedor.innerHTML = `
-                    <div style="text-align: center; padding: 40px; background: #f8d7da; border-radius: 8px; color: #721c24;">
-                        <p>❌ Error al cargar los datos</p>
-                        <p style="font-size: 14px;">${error.message}</p>
-                        <button class="btn btn-refresh" onclick="cargarConductores()" style="margin-top: 15px;">🔄 Intentar de nuevo</button>
-                    </div>
-                `;
-                mostrarEstado(`❌ Error: ${error.message}`, 'error');
+        window.tablaActual = 'empresas';
+        window.datosActuales = [];
+        window.editandoId = null;
+        window.columnasCache = {};
+
+        // Definir las relaciones para mostrar nombres en lugar de IDs
+        window.relaciones = {
+            ordenes: {
+                empresas_id: { tabla: 'empresas', campo: 'nombre' },
+                subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
+                confecciono: { tabla: 'usuarios', campo: 'nombre' }
+            },
+            subcontratantes: {
+                contratante: { tabla: 'contratantes', campo: 'contratante' }
+            },
+            carpetas: {
+                orden_id: { tabla: 'ordenes', campo: 'id' },
+                subcontratante_id: { tabla: 'subcontratantes', campo: 'subcontratante' },
+                conductor1_id: { tabla: 'conductores', campo: 'nombre' },
+                conductor2_id: { tabla: 'conductores', campo: 'nombre' },
+                interno_id: { tabla: 'buses', campo: 'Interno' }
+            },
+            conductores: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
+            },
+            buses: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
             }
         };
-        
-        // Función para escapar HTML (seguridad)
-        function escapeHtml(texto) {
-            if (!texto) return texto;
-            const div = document.createElement('div');
-            div.textContent = texto;
-            return div.innerHTML;
-        }
-        
-        // Abrir modal para agregar
-        window.abrirModalAgregar = function() {
-            modoEdicion = false;
-            modalTitulo.textContent = '➕ Nuevo Conductor';
-            conductorIdInput.value = '';
-            nombreInput.value = '';
-            edadInput.value = '';
-            ciudadInput.value = '';
-            modal.style.display = 'flex';
-        };
-        
-        // Abrir modal para editar
-        window.editarConductor = async function(id) {
+
+        // Función principal para cargar una tabla
+        window.cargarTabla = async (tabla) => {
+            window.tablaActual = tabla;
+            document.getElementById('titulo-tabla').innerHTML = tabla.charAt(0).toUpperCase() + tabla.slice(1);
+            
+            // Actualizar botón activo
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar loading
+            document.getElementById('tabla-container').innerHTML = '<div class="loading">Cargando datos...</div>';
+            
             try {
-                const { data, error } = await supabase
-                    .from('conductores')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                // Obtener datos con relaciones
+                let query = supabase.from(tabla).select('*');
+                
+                // Si hay relaciones definidas, obtener los datos relacionados
+                let { data, error } = await query;
                 
                 if (error) throw error;
                 
-                modoEdicion = true;
-                modalTitulo.textContent = '✏️ Editar Conductor';
-                conductorIdInput.value = data.id;
-                nombreInput.value = data.nombre || '';
-                edadInput.value = data.edad || '';
-                ciudadInput.value = data.ciudad || '';
-                modal.style.display = 'flex';
+                // Si hay relaciones, obtener los nombres
+                if (window.relaciones[tabla]) {
+                    for (let item of data) {
+                        for (let [campoId, relacion] of Object.entries(window.relaciones[tabla])) {
+                            if (item[campoId]) {
+                                const { data: relacionData } = await supabase
+                                    .from(relacion.tabla)
+                                    .select(relacion.campo)
+                                    .eq('id', item[campoId])
+                                    .single();
+                                if (relacionData) {
+                                    item[`${campoId}_nombre`] = relacionData[relacion.campo];
+                                }
+                            }
+                        }
+                    }
+                }
                 
+                window.datosActuales = data;
+                window.filtrarTabla();
             } catch (error) {
-                mostrarEstado(`❌ Error al cargar conductor: ${error.message}`, 'error');
+                console.error('Error:', error);
+                document.getElementById('tabla-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
             }
         };
-        
-        // Eliminar conductor
-        window.eliminarConductor = async function(id) {
-            if (!confirm('¿Estás seguro de eliminar este conductor? Esta acción no se puede deshacer.')) {
+
+        // Filtrar tabla
+        window.filtrarTabla = () => {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const datosFiltrados = window.datosActuales.filter(item => {
+                return JSON.stringify(item).toLowerCase().includes(searchText);
+            });
+            renderizarTabla(datosFiltrados);
+        };
+
+        // Renderizar tabla
+        function renderizarTabla(datos) {
+            if (!datos || datos.length === 0) {
+                document.getElementById('tabla-container').innerHTML = '<div class="loading">No hay datos</div>';
                 return;
             }
             
+            // Obtener columnas
+            const columnas = Object.keys(datos[0]).filter(key => !key.includes('_nombre'));
+            
+            let html = '<table><thead><tr>';
+            columnas.forEach(col => {
+                let nombreMostrar = col.replace(/_/g, ' ').toUpperCase();
+                html += `<th>${nombreMostrar}</th>`;
+            });
+            html += '<th>ACCIONES</th></tr></thead><tbody>';
+            
+            datos.forEach(item => {
+                html += '<tr>';
+                columnas.forEach(col => {
+                    let valor = item[col];
+                    // Si existe un nombre relacionado, mostrarlo
+                    if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                        if (item[`${col}_nombre`]) {
+                            valor = item[`${col}_nombre`];
+                        }
+                    }
+                    // Formatear fechas
+                    if (typeof valor === 'string' && valor.includes('202')) {
+                        valor = new Date(valor).toLocaleDateString();
+                    }
+                    html += `<td>${valor || '-'}</td>`;
+                });
+                html += `<td class="actions">
+                            <button class="btn-edit" onclick="editarRegistro(${item.id})">✏️ Editar</button>
+                            <button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️ Eliminar</button>
+                        </td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('tabla-container').innerHTML = html;
+        }
+
+        // Mostrar modal para agregar
+        window.mostrarModalAgregar = () => {
+            window.editandoId = null;
+            document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
+            cargarFormulario();
+            document.getElementById('modal').style.display = 'flex';
+        };
+
+        // Editar registro
+        window.editarRegistro = async (id) => {
+            window.editandoId = id;
+            document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
+            
+            const registro = window.datosActuales.find(r => r.id === id);
+            if (registro) {
+                cargarFormulario(registro);
+                document.getElementById('modal').style.display = 'flex';
+            }
+        };
+
+        // Cargar formulario dinámico
+        async function cargarFormulario(registro = null) {
+            const container = document.getElementById('modal-campos');
+            
+            // Obtener estructura de la tabla
+            const { data: columnas, error } = await supabase
+                .from(window.tablaActual)
+                .select('*')
+                .limit(1);
+            
+            if (error) return;
+            
+            const estructura = columnas && columnas[0] ? Object.keys(columnas[0]) : ['id', 'created_at'];
+            
+            let html = '';
+            for (let col of estructura) {
+                if (col === 'id' || col === 'created_at') continue;
+                
+                let valor = registro ? registro[col] : '';
+                
+                // Si es una relación, mostrar select
+                if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                    const relacion = window.relaciones[window.tablaActual][col];
+                    const { data: opciones } = await supabase.from(relacion.tabla).select('*');
+                    
+                    html += `<label>${col.replace(/_/g, ' ').toUpperCase()}</label>`;
+                    html += `<select name="${col}">`;
+                    html += `<option value="">Seleccionar...</option>`;
+                    if (opciones) {
+                        opciones.forEach(op => {
+                            const selected = valor == op.id ? 'selected' : '';
+                            html += `<option value="${op.id}" ${selected}>${op[relacion.campo] || op.id}</option>`;
+                        });
+                    }
+                    html += `</select>`;
+                } else {
+                    html += `<label>${col.replace(/_/g, ' ').toUpperCase()}</label>`;
+                    html += `<input type="text" name="${col}" value="${valor || ''}" placeholder="${col}">`;
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Guardar registro
+        document.getElementById('modal-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const datos = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value && value.trim()) {
+                    datos[key] = value;
+                }
+            }
+            
             try {
+                if (window.editandoId) {
+                    const { error } = await supabase
+                        .from(window.tablaActual)
+                        .update(datos)
+                        .eq('id', window.editandoId);
+                    if (error) throw error;
+                    alert('Registro actualizado');
+                } else {
+                    const { error } = await supabase
+                        .from(window.tablaActual)
+                        .insert([datos]);
+                    if (error) throw error;
+                    alert('Registro agregado');
+                }
+                cerrarModal();
+                window.cargarTabla(window.tablaActual);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        // Eliminar registro
+        window.eliminarRegistro = async (id) => {
+            if (confirm('¿Estás seguro de eliminar este registro?')) {
                 const { error } = await supabase
-                    .from('conductores')
+                    .from(window.tablaActual)
                     .delete()
                     .eq('id', id);
                 
-                if (error) throw error;
-                
-                mostrarEstado('✅ Conductor eliminado correctamente', 'exito');
-                cargarConductores();
-                
-            } catch (error) {
-                mostrarEstado(`❌ Error al eliminar: ${error.message}`, 'error');
-            }
-        };
-        
-        // Cerrar modal
-        window.cerrarModal = function() {
-            modal.style.display = 'none';
-        };
-        
-        // Guardar conductor (crear o actualizar)
-        conductorForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const datos = {
-                nombre: nombreInput.value.trim(),
-                edad: edadInput.value ? parseInt(edadInput.value) : null,
-                ciudad: ciudadInput.value.trim()
-            };
-            
-            if (!datos.nombre) {
-                mostrarEstado('❌ El nombre es obligatorio', 'error');
-                return;
-            }
-            
-            try {
-                if (modoEdicion) {
-                    // Actualizar
-                    const { error } = await supabase
-                        .from('conductores')
-                        .update(datos)
-                        .eq('id', conductorIdInput.value);
-                    
-                    if (error) throw error;
-                    mostrarEstado('✅ Conductor actualizado correctamente', 'exito');
+                if (error) {
+                    alert('Error: ' + error.message);
                 } else {
-                    // Crear nuevo
-                    const { error } = await supabase
-                        .from('conductores')
-                        .insert([datos]);
-                    
-                    if (error) throw error;
-                    mostrarEstado('✅ Conductor agregado correctamente', 'exito');
+                    alert('Registro eliminado');
+                    window.cargarTabla(window.tablaActual);
                 }
-                
-                cerrarModal();
-                cargarConductores();
-                
-            } catch (error) {
-                mostrarEstado(`❌ Error al guardar: ${error.message}`, 'error');
-            }
-        });
-        
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            if (event.target === modal) {
-                cerrarModal();
             }
         };
-        
-        // Cargar conductores al iniciar
-        cargarConductores();
+
+        // Cerrar modal
+        window.cerrarModal = () => {
+            document.getElementById('modal').style.display = 'none';
+            window.editandoId = null;
+        };
+
+        // Cargar tabla inicial
+        window.cargarTabla('empresas');
     </script>
 </body>
 </html>
