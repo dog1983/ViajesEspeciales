@@ -340,7 +340,7 @@
             white-space: nowrap;
         }
 
-        .btn-edit, .btn-delete {
+        .btn-edit, .btn-delete, .btn-view {
             padding: 6px 12px;
             border-radius: 8px;
             font-size: 0.7rem;
@@ -356,6 +356,11 @@
 
         .btn-delete {
             background: #ef4444;
+            color: white;
+        }
+
+        .btn-view {
+            background: #3b82f6;
             color: white;
         }
 
@@ -392,6 +397,7 @@
             position: sticky;
             top: 0;
             background: white;
+            z-index: 10;
         }
 
         .modal-header h3 {
@@ -491,6 +497,47 @@
             z-index: 400;
             font-size: 0.9rem;
         }
+
+        .detail-section {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-section h4 {
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .detail-grid span:first-child {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .detail-grid span:last-child {
+            color: #334155;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .print-btn {
+            background: #64748b;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -542,13 +589,11 @@
                 <h3 id="modal-titulo">Agregar Registro</h3>
                 <button class="modal-close" onclick="cerrarModal()">✕</button>
             </div>
-            <form id="modal-form">
-                <div class="modal-body" id="modal-campos"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn-save">Guardar</button>
-                </div>
-            </form>
+            <div class="modal-body" id="modal-campos"></div>
+            <div class="modal-footer" id="modal-footer">
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn-save" id="modal-save-btn">Guardar</button>
+            </div>
         </div>
     </div>
 
@@ -560,6 +605,7 @@
         window.tablaActual = null;
         window.datosActuales = [];
         window.editandoId = null;
+        window.modalModo = 'form'; // 'form' o 'detalle'
 
         const configPermisos = {
             administracion: {
@@ -643,7 +689,172 @@
             }
         }
 
-        // Filtrar órdenes y carpetas para contratante (CORREGIDO)
+        // Ver detalle de carpeta (Hoja de Ruta)
+        window.verDetalleCarpeta = async (carpetaId) => {
+            try {
+                mostrarToast('Cargando hoja de ruta...');
+                
+                const { data: carpeta, error } = await supabase
+                    .from('carpetas')
+                    .select('*')
+                    .eq('id', carpetaId)
+                    .single();
+                
+                if (error) throw error;
+                
+                const { data: orden, error: errOrden } = await supabase
+                    .from('ordenes')
+                    .select('*')
+                    .eq('id', carpeta.orden_id)
+                    .single();
+                
+                if (errOrden) throw errOrden;
+                
+                // Empresa
+                const { data: empresa } = await supabase
+                    .from('empresas')
+                    .select('nombre')
+                    .eq('id', orden.empresas_id)
+                    .single();
+                
+                // Subcontratante
+                const { data: subcontratante } = await supabase
+                    .from('subcontratantes')
+                    .select('subcontratante')
+                    .eq('id', orden.subcontratante)
+                    .single();
+                
+                // Contratante (a través del subcontratante)
+                const { data: subcon } = await supabase
+                    .from('subcontratantes')
+                    .select('contratante')
+                    .eq('id', orden.subcontratante)
+                    .single();
+                
+                let contratanteNombre = '';
+                if (subcon && subcon.contratante) {
+                    const { data: contratante } = await supabase
+                        .from('contratantes')
+                        .select('contratante')
+                        .eq('id', subcon.contratante)
+                        .single();
+                    contratanteNombre = contratante?.contratante || '';
+                }
+                
+                // Conductor 1
+                let conductor1 = { legajo: '-', dni: '-', telefono: '-', nombre: '-' };
+                if (carpeta.conductor1_id) {
+                    const { data: c1 } = await supabase
+                        .from('conductores')
+                        .select('legajo, dni, telefono, nombre')
+                        .eq('id', carpeta.conductor1_id)
+                        .single();
+                    if (c1) conductor1 = c1;
+                }
+                
+                // Conductor 2
+                let conductor2 = { legajo: '-', dni: '-', telefono: '-', nombre: '-' };
+                if (carpeta.conductor2_id) {
+                    const { data: c2 } = await supabase
+                        .from('conductores')
+                        .select('legajo, dni, telefono, nombre')
+                        .eq('id', carpeta.conductor2_id)
+                        .single();
+                    if (c2) conductor2 = c2;
+                }
+                
+                // Bus
+                let bus = { Dominio: '-', Capacidad: '-', Interno: '-' };
+                if (carpeta.interno_id) {
+                    const { data: b } = await supabase
+                        .from('buses')
+                        .select('Dominio, Capacidad, Interno')
+                        .eq('id', carpeta.interno_id)
+                        .single();
+                    if (b) bus = b;
+                }
+                
+                const detalleHtml = `
+                    <div style="padding: 4px;">
+                        <!-- Datos de la Orden -->
+                        <div class="detail-section">
+                            <h4>📦 DATOS DE LA ORDEN N° ${orden.id}</h4>
+                            <div class="detail-grid">
+                                <span>Empresa:</span><span>${empresa?.nombre || '-'}</span>
+                                <span>Contratante:</span><span>${contratanteNombre}</span>
+                                <span>Subcontratante:</span><span>${subcontratante?.subcontratante || '-'}</span>
+                                <span>Fecha Ida:</span><span>${formatearFecha(orden.fecha_ida)}</span>
+                                <span>Hora Ida:</span><span>${orden.hora_ida || '-'}</span>
+                                <span>Dirección Origen:</span><span>${orden.direccion_origen || '-'}</span>
+                                <span>Origen:</span><span>${orden.origen || '-'}</span>
+                                <span>Dirección Destino:</span><span>${orden.direccion_destino || '-'}</span>
+                                <span>Destino:</span><span>${orden.destino || '-'}</span>
+                                <span>Fecha Regreso:</span><span>${formatearFecha(orden.fecha_regreso)}</span>
+                                <span>Hora Regreso:</span><span>${orden.hora_regreso || '-'}</span>
+                                <span>Paradas:</span><span>${orden.paradas || '-'}</span>
+                                <span>Movimientos:</span><span>${orden.movimientos || '-'}</span>
+                                <span>Comidas:</span><span>${orden.comidas || '-'}</span>
+                                <span>Alojamiento:</span><span>${orden.alojamiento || '-'}</span>
+                                <span>Obs Gastos:</span><span>${orden.obs_gastos || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Conductores -->
+                        <div class="two-columns">
+                            <div class="detail-section">
+                                <h4>🚌 CONDUCTOR 1</h4>
+                                <div class="detail-grid">
+                                    <span>Nombre:</span><span>${conductor1.nombre}</span>
+                                    <span>Legajo:</span><span>${conductor1.legajo}</span>
+                                    <span>DNI:</span><span>${conductor1.dni}</span>
+                                    <span>Teléfono:</span><span>${conductor1.telefono}</span>
+                                </div>
+                            </div>
+                            <div class="detail-section">
+                                <h4>🚌 CONDUCTOR 2</h4>
+                                <div class="detail-grid">
+                                    <span>Nombre:</span><span>${conductor2.nombre}</span>
+                                    <span>Legajo:</span><span>${conductor2.legajo}</span>
+                                    <span>DNI:</span><span>${conductor2.dni}</span>
+                                    <span>Teléfono:</span><span>${conductor2.telefono}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bus -->
+                        <div class="detail-section">
+                            <h4>🚎 INTERNO / BUS</h4>
+                            <div class="detail-grid">
+                                <span>Interno:</span><span>${bus.Interno}</span>
+                                <span>Dominio:</span><span>${bus.Dominio}</span>
+                                <span>Capacidad:</span><span>${bus.Capacidad}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Datos de la Carpeta -->
+                        <div class="detail-section">
+                            <h4>📋 DATOS DE LA CARPETA</h4>
+                            <div class="detail-grid">
+                                <span>Micro N°:</span><span>${carpeta.micro_num || '-'}</span>
+                                <span>Contacto:</span><span>${carpeta.contacto || '-'}</span>
+                                <span>Observaciones antes de iniciar:</span><span>${carpeta.obs_antes_iniciar || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                window.modalModo = 'detalle';
+                document.getElementById('modal-titulo').textContent = `📋 Hoja de Ruta - Carpeta #${carpetaId}`;
+                document.getElementById('modal-campos').innerHTML = detalleHtml;
+                document.getElementById('modal-footer').style.display = 'none';
+                document.getElementById('modal').classList.add('show');
+                
+            } catch (error) {
+                mostrarToast('Error al cargar el detalle: ' + error.message, true);
+            }
+        };
+
+        // Filtrar órdenes y carpetas para contratante
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
             
@@ -840,15 +1051,22 @@
                     html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                 });
                 
-                if (puedeEditar) {
+                // Botones de acción según tabla
+                if (window.tablaActual === 'carpetas') {
+                    html += `<td class="actions-cell">
+                                <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
+                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                             </td>`;
+                } else if (puedeEditar) {
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                               </td>`;
+                             </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                               </td>`;
+                             </td>`;
                 }
                 html += '</tr>';
             });
@@ -862,8 +1080,11 @@
                 mostrarToast('No tiene permiso para agregar registros', true);
                 return;
             }
+            window.modalModo = 'form';
             window.editandoId = null;
             document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
+            document.getElementById('modal-footer').style.display = 'flex';
+            document.getElementById('modal-save-btn').style.display = 'flex';
             cargarFormulario();
             document.getElementById('modal').classList.add('show');
         };
@@ -873,8 +1094,11 @@
                 mostrarToast('No tiene permiso para editar', true);
                 return;
             }
+            window.modalModo = 'form';
             window.editandoId = id;
             document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
+            document.getElementById('modal-footer').style.display = 'flex';
+            document.getElementById('modal-save-btn').style.display = 'flex';
             const registro = window.datosActuales.find(r => r.id === id);
             if (registro) {
                 cargarFormulario(registro);
@@ -944,7 +1168,16 @@
             container.innerHTML = html;
         }
 
-        document.getElementById('modal-form').onsubmit = async (e) => {
+        document.getElementById('modal-form')?.remove();
+        const modalForm = document.createElement('form');
+        modalForm.id = 'modal-form';
+        modalForm.innerHTML = '<div class="modal-body" id="modal-campos"></div>';
+        const modalContent = document.querySelector('#modal .modal-content');
+        const modalHeader = modalContent.querySelector('.modal-header');
+        const modalFooterElem = modalContent.querySelector('.modal-footer');
+        modalContent.insertBefore(modalForm, modalFooterElem);
+        
+        modalForm.onsubmit = async (e) => {
             e.preventDefault();
             
             if (!puedeEditarTabla(window.tablaActual)) {
@@ -1016,6 +1249,8 @@
         window.cerrarModal = () => {
             document.getElementById('modal').classList.remove('show');
             window.editandoId = null;
+            window.modalModo = 'form';
+            document.getElementById('modal-footer').style.display = 'flex';
         };
 
         window.iniciarSesion = async () => {
