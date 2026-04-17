@@ -89,10 +89,6 @@
             transform: scale(0.95);
         }
 
-        .add-btn.hidden {
-            display: none;
-        }
-
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -178,19 +174,6 @@
         .nav-item.active {
             background: #3b82f6;
             color: white;
-        }
-
-        .nav-divider {
-            height: 1px;
-            background: #334155;
-            margin: 12px 0;
-        }
-
-        .nav-section-title {
-            color: #94a3b8;
-            font-size: 0.7rem;
-            padding: 12px 16px 4px;
-            letter-spacing: 1px;
         }
 
         .login-container {
@@ -330,10 +313,6 @@
             white-space: nowrap;
         }
 
-        .data-table tr:active {
-            background: #f8fafc;
-        }
-
         .actions-cell {
             display: flex;
             gap: 8px;
@@ -438,11 +417,6 @@
             border-radius: 12px;
             font-size: 1rem;
             font-family: inherit;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #3b82f6;
         }
 
         .modal-footer {
@@ -576,9 +550,99 @@
             margin-bottom: 6px;
         }
 
-        .print-btn {
-            background: #64748b;
+        /* Estilos para destacar origen/destino */
+        .viaje-destacado {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
             margin-bottom: 12px;
+        }
+        
+        .viaje-destacado .hoja-row {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .viaje-destacado .hoja-label {
+            width: 110px;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .viaje-destacado .hoja-value {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        /* Cuadro de texto fijo para paradas y movimientos */
+        .texto-fijo {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            min-height: 80px;
+            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: 0.75rem;
+            margin-top: 6px;
+        }
+        
+        .texto-fijo.vacio {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Botones de acción en hoja */
+        .hoja-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+        
+        .hoja-actions button {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-print {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-pdf {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Estilos para impresión */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .hoja-ruta, .hoja-ruta * {
+                visibility: visible;
+            }
+            .hoja-ruta {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 20px;
+                margin: 0;
+            }
+            .hoja-actions {
+                display: none;
+            }
+            .modal {
+                display: none !important;
+            }
+            button {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -741,7 +805,112 @@
             }
         }
 
-        // Ver detalle de carpeta - NUEVA HOJA DE RUTA
+        // Función para imprimir
+        function imprimirHoja() {
+            window.print();
+        }
+
+        // Función para compartir como PDF
+        async function compartirPDF() {
+            const hojaElement = document.querySelector('.hoja-ruta');
+            if (!hojaElement) return;
+            
+            try {
+                mostrarToast('Generando PDF...');
+                const htmlContent = hojaElement.outerHTML;
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Hoja de Ruta</title>
+                            <style>
+                                body {
+                                    font-family: 'Courier New', monospace;
+                                    padding: 20px;
+                                    margin: 0;
+                                }
+                                .hoja-ruta {
+                                    max-width: 800px;
+                                    margin: 0 auto;
+                                }
+                                .hoja-header {
+                                    text-align: center;
+                                    border-bottom: 2px solid #000;
+                                    padding-bottom: 12px;
+                                    margin-bottom: 16px;
+                                }
+                                .hoja-section {
+                                    border: 1px solid #ccc;
+                                    border-radius: 8px;
+                                    padding: 12px;
+                                    margin-bottom: 12px;
+                                }
+                                .hoja-section-title {
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                    border-left: 3px solid #3b82f6;
+                                    padding-left: 8px;
+                                }
+                                .hoja-row {
+                                    display: flex;
+                                    margin-bottom: 6px;
+                                }
+                                .hoja-label {
+                                    font-weight: 600;
+                                    width: 100px;
+                                }
+                                .hoja-value {
+                                    flex: 1;
+                                }
+                                .viaje-destacado {
+                                    background: #dbeafe;
+                                    border: 2px solid #3b82f6;
+                                }
+                                .texto-fijo {
+                                    border: 1px solid #ccc;
+                                    border-radius: 8px;
+                                    padding: 10px;
+                                    min-height: 80px;
+                                    margin-top: 6px;
+                                }
+                                .hoja-grid-2 {
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr;
+                                    gap: 8px;
+                                }
+                                .conductor-box {
+                                    border: 1px solid #ccc;
+                                    border-radius: 8px;
+                                    padding: 8px;
+                                }
+                                @media print {
+                                    body {
+                                        margin: 0;
+                                        padding: 0;
+                                    }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            ${htmlContent}
+                            <script>
+                                window.onload = () => {
+                                    setTimeout(() => {
+                                        window.print();
+                                        window.close();
+                                    }, 500);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } catch (error) {
+                mostrarToast('Error al generar PDF: ' + error.message, true);
+            }
+        }
+
+        // Ver detalle de carpeta - NUEVA HOJA DE RUTA MEJORADA
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -776,7 +945,7 @@
                     .eq('id', orden.subcontratante)
                     .single();
                 
-                // Contratante (a través del subcontratante)
+                // Contratante
                 let contratante = null;
                 if (subcontratante && subcontratante.contratante) {
                     const { data: c } = await supabase
@@ -787,7 +956,7 @@
                     contratante = c;
                 }
                 
-                // Conductor 1 (con vto_reg en lugar de telefono)
+                // Conductor 1
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
                     const { data: c1 } = await supabase
@@ -820,12 +989,20 @@
                     if (b) bus = b;
                 }
                 
-                // Formatear vto_reg
                 const vtoReg1 = conductor1.vto_reg ? formatearFechaCorta(conductor1.vto_reg) : '-';
                 const vtoReg2 = conductor2.vto_reg ? formatearFechaCorta(conductor2.vto_reg) : '-';
                 
+                // Preparar paradas y movimientos (con soporte para texto multilínea)
+                const paradasTexto = orden.paradas || '';
+                const movimientosTexto = orden.movimientos || '';
+                
                 const hojaHtml = `
                     <div class="hoja-ruta">
+                        <div class="hoja-actions">
+                            <button class="btn-print" onclick="imprimirHoja()">🖨️ Imprimir</button>
+                            <button class="btn-pdf" onclick="compartirPDF()">📄 Compartir PDF</button>
+                        </div>
+                        
                         <div class="hoja-header">
                             <h2>${empresa?.nombre || 'EMPRESA'}</h2>
                             <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
@@ -857,47 +1034,60 @@
                             <div class="hoja-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
                         </div>
                         
-                        <div class="hoja-section">
+                        <!-- SECCIÓN DESTACADA DE VIAJE (IDA) -->
+                        <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🚌 IDA</div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Fecha:</span>
+                                <span class="hoja-label">📅 Fecha:</span>
                                 <span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span>
                             </div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Hora:</span>
+                                <span class="hoja-label">⏰ Hora:</span>
                                 <span class="hoja-value">${orden.hora_ida || '-'}</span>
                             </div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Origen:</span>
-                                <span class="hoja-value">${orden.direccion_origen || '-'} - ${orden.origen || '-'}</span>
+                                <span class="hoja-label">📍 Dirección Origen:</span>
+                                <span class="hoja-value">${orden.direccion_origen || '-'}</span>
                             </div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Destino:</span>
-                                <span class="hoja-value">${orden.direccion_destino || '-'} - ${orden.destino || '-'}</span>
+                                <span class="hoja-label">🏁 Origen:</span>
+                                <span class="hoja-value">${orden.origen || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">📍 Dirección Destino:</span>
+                                <span class="hoja-value">${orden.direccion_destino || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">🏁 Destino:</span>
+                                <span class="hoja-value">${orden.destino || '-'}</span>
                             </div>
                         </div>
                         
-                        <div class="hoja-section">
+                        <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🔄 REGRESO</div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Fecha:</span>
+                                <span class="hoja-label">📅 Fecha:</span>
                                 <span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span>
                             </div>
                             <div class="hoja-row">
-                                <span class="hoja-label">Hora:</span>
+                                <span class="hoja-label">⏰ Hora:</span>
                                 <span class="hoja-value">${orden.hora_regreso || '-'}</span>
                             </div>
                         </div>
                         
+                        <!-- PARADAS - Cuadro de texto fijo -->
                         <div class="hoja-section">
-                            <div class="hoja-section-title">📍 PARADAS Y MOVIMIENTOS</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Paradas:</span>
-                                <span class="hoja-value">${orden.paradas || '-'}</span>
+                            <div class="hoja-section-title">📍 PARADAS</div>
+                            <div class="texto-fijo ${!paradasTexto ? 'vacio' : ''}">
+                                ${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
                             </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Movimiento:</span>
-                                <span class="hoja-value">${orden.movimientos || '-'}</span>
+                        </div>
+                        
+                        <!-- MOVIMIENTOS - Cuadro de texto fijo -->
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🔄 MOVIMIENTOS</div>
+                            <div class="texto-fijo ${!movimientosTexto ? 'vacio' : ''}">
+                                ${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
                             </div>
                         </div>
                         
@@ -974,6 +1164,10 @@
                 document.getElementById('modal-campos').innerHTML = hojaHtml;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
+                
+                // Exponer funciones para los botones
+                window.imprimirHoja = imprimirHoja;
+                window.compartirPDF = compartirPDF;
                 
             } catch (error) {
                 mostrarToast('Error al cargar el detalle: ' + error.message, true);
@@ -1131,7 +1325,6 @@
                 return;
             }
             
-            // Para la tabla carpetas, mostrar columnas específicas
             let columnas;
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
@@ -1143,7 +1336,6 @@
             
             let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
-            // Cabeceras personalizadas para carpetas
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
@@ -1165,7 +1357,6 @@
                 columnas.forEach(col => {
                     let valor = item[col];
                     
-                    // Mostrar nombre relacionado si existe
                     if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                         if (item[`${col}_nombre`]) {
                             valor = item[`${col}_nombre`];
@@ -1202,7 +1393,7 @@
                 html += '</tr>';
             });
             
-            html += '</tbody> nahil</div>';
+            html += '</tbody></table></div>';
             document.getElementById('table-container').innerHTML = html;
         }
 
@@ -1297,11 +1488,9 @@
             container.innerHTML = html;
         }
 
-        // Crear formulario dinámico
         const modalForm = document.createElement('form');
         modalForm.id = 'modal-form';
         const modalContent = document.querySelector('#modal .modal-content');
-        const modalHeader = modalContent.querySelector('.modal-header');
         const modalFooterElem = modalContent.querySelector('.modal-footer');
         modalContent.insertBefore(modalForm, modalFooterElem);
         
