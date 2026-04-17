@@ -477,7 +477,7 @@
             font-size: 0.9rem;
         }
 
-        /* Estilos para informes - OCUPA TODA LA HOJA A4 */
+        /* Estilos para informes */
         .reporte {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
@@ -657,6 +657,7 @@
         <div class="mobile-header">
             <button class="menu-btn" onclick="toggleSidebar()">☰</button>
             <div class="header-title" id="titulo-tabla">Empresas</div>
+            <button class="add-btn" onclick="mostrarModalAgregar()" id="addBtnGlobal">+</button>
             <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
         </div>
 
@@ -813,7 +814,6 @@
         async function getKmDisponibles(contratanteId) {
             if (!contratanteId) return 0;
             
-            // Sumar todos los km comprados
             const { data: compras, error: err1 } = await supabase
                 .from('cuentacorriente')
                 .select('kmcomprados')
@@ -823,7 +823,6 @@
             
             const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados) || 0), 0) || 0;
             
-            // Sumar todos los km descontados de órdenes con forma_pago = 'cuenta_corriente'
             const { data: ordenesCC, error: err2 } = await supabase
                 .from('ordenes')
                 .select('km_descontados')
@@ -835,6 +834,25 @@
             const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
             
             return totalComprados - totalDescontados;
+        }
+
+        // Actualizar km_descontados automáticamente desde el campo kilometros
+        function actualizarKmDescontados() {
+            const kmInput = document.getElementById('field_kilometros');
+            const kmDescontadosInput = document.getElementById('field_km_descontados');
+            const formaPagoSelect = document.getElementById('forma_pago_select');
+            
+            if (kmInput && kmDescontadosInput && formaPagoSelect) {
+                if (formaPagoSelect.value === 'cuenta_corriente' && kmInput.value) {
+                    kmDescontadosInput.value = kmInput.value;
+                    kmDescontadosInput.readOnly = true;
+                    kmDescontadosInput.style.backgroundColor = '#f0f0f0';
+                } else {
+                    kmDescontadosInput.value = 0;
+                    kmDescontadosInput.readOnly = false;
+                    kmDescontadosInput.style.backgroundColor = 'white';
+                }
+            }
         }
 
         // Función para imprimir reporte de orden
@@ -1070,21 +1088,18 @@
                 
                 if (error) throw error;
                 
-                // Empresa
                 const { data: empresa } = await supabase
                     .from('empresas')
                     .select('nombre')
                     .eq('id', orden.empresas_id)
                     .single();
                 
-                // Subcontratante
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
                     .select('subcontratante, contratante')
                     .eq('id', orden.subcontratante)
                     .single();
                 
-                // Contratante (para KM disponibles)
                 let contratante = null;
                 let kmDisponibles = 0;
                 if (subcontratante && subcontratante.contratante) {
@@ -1097,7 +1112,6 @@
                     kmDisponibles = await getKmDisponibles(subcontratante.contratante);
                 }
                 
-                // Usuario que confeccionó
                 const { data: usuario } = await supabase
                     .from('usuarios')
                     .select('nombre')
@@ -1111,8 +1125,6 @@
                 const obsGastosTexto = orden.obs_gastos || '';
                 
                 const formaPagoTexto = orden.forma_pago === 'cuenta_corriente' ? '🏦 CUENTA CORRIENTE (Descuenta KM)' : '💵 PAGO DIRECTO';
-                
-                // Determinar si hay KM suficientes
                 const kmInsuficientes = orden.forma_pago === 'cuenta_corriente' && kmDisponibles < (orden.km_descontados || 0);
                 
                 const reporteHtml = `
@@ -1444,8 +1456,11 @@
             document.getElementById('titulo-tabla').innerHTML = titulo;
             document.getElementById('searchInput').value = '';
             
-            const addBtn = document.querySelector('.add-btn');
-            if (addBtn) addBtn.style.display = puedeEditar ? 'flex' : 'none';
+            // Mostrar/ocultar botón de agregar según permisos
+            const addBtn = document.getElementById('addBtnGlobal');
+            if (addBtn) {
+                addBtn.style.display = puedeEditar ? 'flex' : 'none';
+            }
             
             toggleSidebar();
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
@@ -1581,24 +1596,24 @@
                                 <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                               </td>`;
+                                </td>`;
                 } else if (window.tablaActual === 'carpetas') {
                     html += `<td class="actions-cell">
                                 <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                               </td>`;
+                                </td>`;
                 } else if (puedeEditar) {
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                               </td>`;
+                                </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                               </td>`;
+                                </td>`;
                 }
-                html += '</tr>';
+                html += '<tr>';
             });
             
             html += '</tbody></table></div>';
@@ -1655,20 +1670,25 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                // Selector especial para forma_pago
                 if (col === 'forma_pago') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="forma_pago_select" onchange="toggleKmDescontados()">`;
+                    html += `<select name="${col}" id="forma_pago_select" onchange="actualizarKmDescontados()">`;
                     html += `<option value="pago_directo" ${valor === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>`;
                     html += `<option value="cuenta_corriente" ${valor === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente (descuenta KM)</option>`;
                     html += `</select></div>`;
                 } 
                 else if (col === 'km_descontados') {
-                    const hiddenStyle = registro?.forma_pago === 'cuenta_corriente' ? '' : 'style="display:none;"';
+                    const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
                     html += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>`;
                     html += `<label>${label} (KM a descontar)</label>`;
-                    html += `<input type="number" name="${col}" value="${valor || 0}" step="1" min="0">`;
+                    html += `<input type="number" name="${col}" id="field_km_descontados" value="${valor || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">`;
+                    html += `</div>`;
+                }
+                else if (col === 'kilometros') {
+                    html += `<div class="form-group">`;
+                    html += `<label>${label} (KM del viaje)</label>`;
+                    html += `<input type="number" name="${col}" id="field_kilometros" value="${valor || 0}" step="1" min="0" onchange="actualizarKmDescontados()">`;
                     html += `</div>`;
                 }
                 else if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
@@ -1686,7 +1706,13 @@
                             html += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
                         }
                     }
-                    html += `</select></div>`;
+                    html += `</select>`;
+                    
+                    // Si es subcontratante, agregar evento para mostrar KM disponibles
+                    if (col === 'subcontratante') {
+                        html += `<div id="km_disponible_info" style="margin-top: 8px; font-size:0.8rem; color:#666;"></div>`;
+                    }
+                    html += `</div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
                     html += `<div class="form-group">`;
@@ -1711,14 +1737,74 @@
             }
             
             container.innerHTML = html;
+            
+            // Registrar eventos después de cargar el formulario
+            setTimeout(() => {
+                const kmInput = document.getElementById('field_kilometros');
+                const formaPagoSelect = document.getElementById('forma_pago_select');
+                const subcontratanteSelect = document.getElementById('field_subcontratante');
+                
+                if (formaPagoSelect) {
+                    formaPagoSelect.addEventListener('change', actualizarKmDescontados);
+                }
+                if (kmInput) {
+                    kmInput.addEventListener('change', actualizarKmDescontados);
+                    kmInput.addEventListener('input', actualizarKmDescontados);
+                }
+                
+                // Mostrar KM disponibles al seleccionar subcontratante
+                if (subcontratanteSelect) {
+                    subcontratanteSelect.addEventListener('change', async (e) => {
+                        const subcontratanteId = e.target.value;
+                        const kmInfo = document.getElementById('km_disponible_info');
+                        if (subcontratanteId && kmInfo) {
+                            // Obtener el contratante asociado al subcontratante
+                            const { data: subcon } = await supabase
+                                .from('subcontratantes')
+                                .select('contratante')
+                                .eq('id', subcontratanteId)
+                                .single();
+                            if (subcon && subcon.contratante) {
+                                const kmDisp = await getKmDisponibles(subcon.contratante);
+                                kmInfo.innerHTML = `📊 KM disponibles en cuenta corriente: <strong>${kmDisp} km</strong>`;
+                                kmInfo.style.color = kmDisp > 0 ? '#10b981' : '#ef4444';
+                            } else {
+                                kmInfo.innerHTML = '';
+                            }
+                        } else if (kmInfo) {
+                            kmInfo.innerHTML = '';
+                        }
+                    });
+                    
+                    // Trigger inicial si hay valor
+                    if (subcontratanteSelect.value) {
+                        const event = new Event('change');
+                        subcontratanteSelect.dispatchEvent(event);
+                    }
+                }
+                
+                actualizarKmDescontados();
+            }, 100);
         }
 
-        // Función global para toggle KM descontados
-        window.toggleKmDescontados = () => {
-            const select = document.getElementById('forma_pago_select');
+        // Función global para actualizar KM descontados
+        window.actualizarKmDescontados = () => {
+            const kmInput = document.getElementById('field_kilometros');
+            const kmDescontadosInput = document.getElementById('field_km_descontados');
+            const formaPagoSelect = document.getElementById('forma_pago_select');
             const kmGroup = document.getElementById('km_descontados_group');
-            if (select && kmGroup) {
-                kmGroup.style.display = select.value === 'cuenta_corriente' ? 'block' : 'none';
+            
+            if (kmInput && kmDescontadosInput && formaPagoSelect && kmGroup) {
+                if (formaPagoSelect.value === 'cuenta_corriente') {
+                    kmGroup.style.display = 'block';
+                    const kmValue = parseInt(kmInput.value) || 0;
+                    kmDescontadosInput.value = kmValue;
+                    kmDescontadosInput.readOnly = true;
+                    kmDescontadosInput.style.backgroundColor = '#f0f0f0';
+                } else {
+                    kmGroup.style.display = 'none';
+                    kmDescontadosInput.value = 0;
+                }
             }
         };
 
@@ -1744,12 +1830,12 @@
                 if (value && value.toString().trim()) {
                     if (key === 'cotizacion' || key === 'monto') {
                         datos[key] = parseFloat(value);
-                    } else if (key === 'km_descontados') {
+                    } else if (key === 'km_descontados' || key === 'kilometros') {
                         datos[key] = parseInt(value) || 0;
                     } else {
                         datos[key] = value;
                     }
-                } else if (key === 'km_descontados') {
+                } else if (key === 'km_descontados' || key === 'kilometros') {
                     datos[key] = 0;
                 }
             }
