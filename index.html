@@ -809,7 +809,8 @@
             }).format(monto);
         }
 
-        async function getKmDisponibles(contratanteId) {
+        // Obtener KM disponibles para un contratante (por su ID)
+        async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
             
             const { data: compras, error: err1 } = await supabase
@@ -821,10 +822,21 @@
             
             const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados) || 0), 0) || 0;
             
+            const { data: subcontratantes, error: errSub } = await supabase
+                .from('subcontratantes')
+                .select('id')
+                .eq('contratante', contratanteId);
+            
+            if (errSub) return totalComprados;
+            
+            const subcontratantesIds = subcontratantes?.map(s => s.id) || [];
+            
+            if (subcontratantesIds.length === 0) return totalComprados;
+            
             const { data: ordenesCC, error: err2 } = await supabase
                 .from('ordenes')
                 .select('km_descontados')
-                .eq('subcontratante', contratanteId)
+                .in('subcontratante', subcontratantesIds)
                 .eq('forma_pago', 'cuenta_corriente');
             
             if (err2) return totalComprados;
@@ -832,6 +844,10 @@
             const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
             
             return totalComprados - totalDescontados;
+        }
+
+        async function getKmDisponibles(contratanteId) {
+            return getKmDisponiblesPorContratante(contratanteId);
         }
 
         function actualizarKmDescontados() {
@@ -1008,35 +1024,17 @@
                         
                         <div class="reporte-section">
                             <div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">Subcontratante:</span>
-                                <span class="reporte-value">${subcontratante?.subcontratante || '-'}</span>
-                            </div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">Contratante:</span>
-                                <span class="reporte-value">${contratante?.contratante || '-'}</span>
-                            </div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">CUIT:</span>
-                                <span class="reporte-value">${contratante?.cuit || '-'}</span>
-                            </div>
+                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${subcontratante?.subcontratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${contratante?.contratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${contratante?.cuit || '-'}</span></div>
                         </div>
                         
                         <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
                             <div class="reporte-section-title">💰 FORMA DE PAGO</div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">Forma de Pago:</span>
-                                <span class="reporte-value">${formaPagoTexto}</span>
-                            </div>
+                            <div class="reporte-row"><span class="reporte-label">Forma de Pago:</span><span class="reporte-value">${formaPagoTexto}</span></div>
                             ${orden.forma_pago === 'cuenta_corriente' ? `
-                            <div class="reporte-row">
-                                <span class="reporte-label">KM a descontar:</span>
-                                <span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span>
-                            </div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">KM disponibles:</span>
-                                <span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span>
-                            </div>
+                            <div class="reporte-row"><span class="reporte-label">KM a descontar:</span><span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span></div>
+                            <div class="reporte-row"><span class="reporte-label">KM disponibles:</span><span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span></div>
                             ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}
                             ` : ''}
                         </div>
@@ -1342,10 +1340,15 @@
             }
             
             let columnas;
+            let esContratantes = false;
+            
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
+            } else if (window.tablaActual === 'contratantes') {
+                columnas = ['id', 'contratante', 'telefono_cont', 'cuit'];
+                esContratantes = true;
             } else {
                 columnas = Object.keys(datosFiltrados[0]).filter(key => 
                     key !== 'created_at' && !key.includes('_nombre')
@@ -1368,72 +1371,88 @@
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
                 forma_pago: 'FORMA PAGO',
-                confecciono: 'CONFECCIONÓ'
+                confecciono: 'CONFECCIONÓ',
+                contratante: 'CONTRATANTE',
+                telefono_cont: 'TELÉFONO',
+                cuit: 'CUIT'
             };
             
             columnas.forEach(col => {
                 let nombreMostrar = nombresColumnas[col] || col.replace(/_/g, ' ').toUpperCase();
                 html += `<th>${nombreMostrar}</th>`;
             });
+            
+            if (esContratantes) {
+                html += `<th>📊 KM DISPONIBLES</th>`;
+            }
+            
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
-            datosFiltrados.forEach(item => {
-                html += '<tr>';
-                columnas.forEach(col => {
-                    let valor = item[col];
-                    
-                    if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
-                        if (item[`${col}_nombre`]) {
-                            valor = item[`${col}_nombre`];
+            (async () => {
+                for (let item of datosFiltrados) {
+                    html += '<tr>';
+                    for (let col of columnas) {
+                        let valor = item[col];
+                        
+                        if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                            if (item[`${col}_nombre`]) {
+                                valor = item[`${col}_nombre`];
+                            }
                         }
+                        
+                        if (col.includes('fecha') && valor) {
+                            valor = formatearFechaCorta(valor);
+                        }
+                        
+                        if (col === 'cotizacion' && valor) {
+                            valor = formatearMonto(valor);
+                        }
+                        
+                        if (col === 'forma_pago') {
+                            valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
+                        }
+                        
+                        if (typeof valor === 'string' && valor.length > 40) {
+                            valor = valor.substring(0, 40) + '...';
+                        }
+                        
+                        html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                     }
                     
-                    if (col.includes('fecha') && valor) {
-                        valor = formatearFechaCorta(valor);
+                    if (esContratantes) {
+                        const kmDisponibles = await getKmDisponiblesPorContratante(item.id);
+                        const kmColor = kmDisponibles > 0 ? '#10b981' : (kmDisponibles < 0 ? '#ef4444' : '#64748b');
+                        html += `<td style="font-weight:bold; color:${kmColor};">${kmDisponibles} km</td>`;
                     }
                     
-                    if (col === 'cotizacion' && valor) {
-                        valor = formatearMonto(valor);
+                    if (window.tablaActual === 'ordenes') {
+                        html += `<td class="actions-cell">
+                                    <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
+                                    ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                    ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                                    </td>`;
+                    } else if (window.tablaActual === 'carpetas') {
+                        html += `<td class="actions-cell">
+                                    <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
+                                    ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                    ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                                    </td>`;
+                    } else if (puedeEditar) {
+                        html += `<td class="actions-cell">
+                                    <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
+                                    <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
+                                    </td>`;
+                    } else {
+                        html += `<td class="actions-cell">
+                                    <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
+                                    </td>`;
                     }
-                    
-                    if (col === 'forma_pago') {
-                        valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
-                    }
-                    
-                    if (typeof valor === 'string' && valor.length > 40) {
-                        valor = valor.substring(0, 40) + '...';
-                    }
-                    
-                    html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
-                });
-                
-                if (window.tablaActual === 'ordenes') {
-                    html += `<td class="actions-cell">
-                                <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
-                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                </td>`;
-                } else if (window.tablaActual === 'carpetas') {
-                    html += `<td class="actions-cell">
-                                <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
-                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                </td>`;
-                } else if (puedeEditar) {
-                    html += `<td class="actions-cell">
-                                <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
-                                <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                                </td>`;
-                } else {
-                    html += `<td class="actions-cell">
-                                <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                                </td>`;
+                    html += '</tr>';
                 }
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table></div>';
-            document.getElementById('table-container').innerHTML = html;
+                
+                html += '</tbody></table></div>';
+                document.getElementById('table-container').innerHTML = html;
+            })();
         }
 
         window.mostrarModalAgregar = async () => {
@@ -1600,19 +1619,15 @@
 
         window.actualizarKmDescontados = actualizarKmDescontados;
 
-        // Configurar el botón Guardar
         const btnGuardar = document.getElementById('btnGuardar');
         if (btnGuardar) {
             btnGuardar.onclick = async () => {
-                console.log('Botón Guardar clickeado');
-                
                 if (!puedeEditarTabla(window.tablaActual)) {
                     mostrarToast('No tiene permiso para modificar', true);
                     cerrarModal();
                     return;
                 }
                 
-                // Obtener todos los inputs del formulario
                 const formFields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
                 const datos = {};
                 
@@ -1633,9 +1648,6 @@
                     }
                 }
                 
-                console.log('Datos a guardar:', datos);
-                
-                // Validación especial para carpetas
                 if (window.tablaActual === 'carpetas' && datos.orden_id) {
                     const validacion = await validarLimiteCarpetas(datos.orden_id, window.editandoId);
                     if (!validacion.valido) {
