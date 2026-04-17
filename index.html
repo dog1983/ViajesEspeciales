@@ -472,60 +472,61 @@
             font-size: 0.9rem;
         }
 
-        /* Estilos para la Hoja de Ruta */
+        /* Estilos para la Hoja de Ruta - optimizados para A4 */
         .hoja-ruta {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
             padding: 0;
             margin: 0 auto;
+            max-width: 100%;
         }
 
         .hoja-header {
             text-align: center;
             border-bottom: 2px solid #1e293b;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .hoja-header h2 {
             color: #1e293b;
-            font-size: 1.2rem;
-            margin-bottom: 4px;
+            font-size: 1rem;
+            margin-bottom: 2px;
         }
 
         .hoja-header .subtitle {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #64748b;
         }
 
         .hoja-section {
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin-bottom: 8px;
             background: white;
             page-break-inside: avoid;
         }
 
         .hoja-section-title {
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             color: #1e293b;
-            margin-bottom: 8px;
-            border-left: 3px solid #3b82f6;
-            padding-left: 8px;
+            margin-bottom: 4px;
+            border-left: 2px solid #3b82f6;
+            padding-left: 6px;
         }
 
         .hoja-row {
             display: flex;
-            margin-bottom: 6px;
-            font-size: 0.8rem;
-            line-height: 1.3;
+            margin-bottom: 4px;
+            font-size: 0.7rem;
+            line-height: 1.2;
         }
 
         .hoja-label {
             font-weight: 600;
-            width: 110px;
+            width: 95px;
             color: #475569;
             flex-shrink: 0;
         }
@@ -538,36 +539,36 @@
         .hoja-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .conductor-box {
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px;
+            border-radius: 4px;
+            padding: 6px;
             background: #f8fafc;
         }
 
         .conductor-box h5 {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #3b82f6;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .viaje-destacado {
             background: #eff6ff;
-            border: 2px solid #3b82f6;
-            margin-bottom: 10px;
-        }
-        
-        .viaje-destacado .hoja-row {
-            font-size: 0.85rem;
+            border: 1px solid #3b82f6;
             margin-bottom: 8px;
         }
         
+        .viaje-destacado .hoja-row {
+            font-size: 0.7rem;
+            margin-bottom: 4px;
+        }
+        
         .viaje-destacado .hoja-label {
-            width: 120px;
+            width: 100px;
             font-weight: 700;
             color: #1e40af;
         }
@@ -579,14 +580,14 @@
 
         .texto-fijo {
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 4px;
+            padding: 6px;
             background: white;
-            min-height: 80px;
+            min-height: 60px;
             white-space: pre-wrap;
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 0.8rem;
-            margin-top: 6px;
+            font-size: 0.7rem;
+            margin-top: 4px;
         }
         
         .texto-fijo.vacio {
@@ -596,16 +597,16 @@
 
         .hoja-actions {
             display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 12px;
             justify-content: flex-end;
         }
         
         .hoja-actions button {
-            padding: 10px 16px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 6px;
             border: none;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
         }
@@ -618,32 +619,6 @@
         .btn-pdf {
             background: #ef4444;
             color: white;
-        }
-
-        /* Ocultar botones en impresión */
-        @media print {
-            .hoja-actions {
-                display: none !important;
-            }
-            button {
-                display: none !important;
-            }
-            .modal {
-                display: none !important;
-            }
-            body {
-                background: white;
-                margin: 0;
-                padding: 0;
-            }
-            .hoja-ruta {
-                margin: 0;
-                padding: 0;
-            }
-            @page {
-                size: A4;
-                margin: 15mm;
-            }
         }
     </style>
 </head>
@@ -806,177 +781,280 @@
             }
         }
 
-        // Función para imprimir directamente
-        function imprimirHoja() {
-            window.print();
-        }
-
-        // Función para generar PDF (versión corregida)
-        async function generarPDF() {
-            const hojaElement = document.querySelector('.hoja-ruta');
-            if (!hojaElement) {
-                mostrarToast('No se encontró la hoja de ruta', true);
+        // Función para imprimir SOLO la hoja de ruta
+        function imprimirHojaRuta(htmlContent) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                mostrarToast('Por favor, permita las ventanas emergentes', true);
                 return;
             }
             
-            try {
-                mostrarToast('Generando PDF...');
-                
-                // Clonar el contenido para no afectar la vista actual
-                const cloneHoja = hojaElement.cloneNode(true);
-                
-                // Eliminar los botones del clon
-                const actionsDiv = cloneHoja.querySelector('.hoja-actions');
-                if (actionsDiv) {
-                    actionsDiv.remove();
-                }
-                
-                const htmlContent = `
-                    <!DOCTYPE html>
-                    <html>
-                        <head>
-                            <meta charset="UTF-8">
-                            <title>Hoja de Ruta</title>
-                            <style>
-                                * {
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Hoja de Ruta</title>
+                        <style>
+                            * {
+                                margin: 0;
+                                padding: 0;
+                                box-sizing: border-box;
+                            }
+                            body {
+                                font-family: Arial, Helvetica, sans-serif;
+                                background: white;
+                                padding: 8mm;
+                                margin: 0;
+                            }
+                            .hoja-ruta {
+                                max-width: 100%;
+                                margin: 0 auto;
+                                font-family: Arial, Helvetica, sans-serif;
+                                font-size: 10pt;
+                            }
+                            .hoja-header {
+                                text-align: center;
+                                border-bottom: 2px solid #000;
+                                padding-bottom: 6px;
+                                margin-bottom: 10px;
+                            }
+                            .hoja-header h2 {
+                                font-size: 1rem;
+                                margin-bottom: 2px;
+                            }
+                            .hoja-header .subtitle {
+                                font-size: 0.7rem;
+                                color: #666;
+                            }
+                            .hoja-section {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px 8px;
+                                margin-bottom: 8px;
+                                page-break-inside: avoid;
+                            }
+                            .hoja-section-title {
+                                font-weight: bold;
+                                font-size: 0.7rem;
+                                margin-bottom: 4px;
+                                border-left: 2px solid #3b82f6;
+                                padding-left: 6px;
+                            }
+                            .hoja-row {
+                                display: flex;
+                                margin-bottom: 4px;
+                                font-size: 0.7rem;
+                            }
+                            .hoja-label {
+                                font-weight: 600;
+                                width: 95px;
+                                color: #555;
+                                flex-shrink: 0;
+                            }
+                            .hoja-value {
+                                flex: 1;
+                                color: #333;
+                            }
+                            .viaje-destacado {
+                                background: #eff6ff;
+                                border: 1px solid #3b82f6;
+                            }
+                            .viaje-destacado .hoja-label {
+                                color: #1e40af;
+                            }
+                            .viaje-destacado .hoja-value {
+                                font-weight: 600;
+                                color: #1e3a8a;
+                            }
+                            .texto-fijo {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px;
+                                min-height: 50px;
+                                margin-top: 4px;
+                                font-size: 0.7rem;
+                                white-space: pre-wrap;
+                            }
+                            .hoja-grid-2 {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 8px;
+                                margin-bottom: 8px;
+                            }
+                            .conductor-box {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px;
+                                background: #f8fafc;
+                            }
+                            .conductor-box h5 {
+                                font-size: 0.65rem;
+                                color: #3b82f6;
+                                margin-bottom: 4px;
+                            }
+                            @page {
+                                size: A4;
+                                margin: 8mm;
+                            }
+                            @media print {
+                                body {
                                     margin: 0;
                                     padding: 0;
-                                    box-sizing: border-box;
                                 }
-                                body {
-                                    font-family: Arial, Helvetica, sans-serif;
-                                    background: white;
-                                    padding: 15mm;
-                                    margin: 0;
-                                }
-                                .hoja-ruta {
-                                    max-width: 100%;
-                                    margin: 0 auto;
-                                    font-family: Arial, Helvetica, sans-serif;
-                                    font-size: 11pt;
-                                }
-                                .hoja-header {
-                                    text-align: center;
-                                    border-bottom: 2px solid #000;
-                                    padding-bottom: 12px;
-                                    margin-bottom: 16px;
-                                }
-                                .hoja-header h2 {
-                                    font-size: 1.3rem;
-                                    margin-bottom: 4px;
-                                }
-                                .hoja-header .subtitle {
-                                    font-size: 0.8rem;
-                                    color: #666;
-                                }
-                                .hoja-section {
-                                    border: 1px solid #ccc;
-                                    border-radius: 6px;
-                                    padding: 10px;
-                                    margin-bottom: 10px;
-                                    page-break-inside: avoid;
-                                }
-                                .hoja-section-title {
-                                    font-weight: bold;
-                                    font-size: 0.85rem;
-                                    margin-bottom: 8px;
-                                    border-left: 3px solid #3b82f6;
-                                    padding-left: 8px;
-                                }
-                                .hoja-row {
-                                    display: flex;
-                                    margin-bottom: 6px;
-                                    font-size: 0.8rem;
-                                }
-                                .hoja-label {
-                                    font-weight: 600;
-                                    width: 110px;
-                                    color: #555;
-                                    flex-shrink: 0;
-                                }
-                                .hoja-value {
-                                    flex: 1;
-                                    color: #333;
-                                }
-                                .viaje-destacado {
-                                    background: #eff6ff;
-                                    border: 2px solid #3b82f6;
-                                }
-                                .viaje-destacado .hoja-label {
-                                    color: #1e40af;
-                                }
-                                .viaje-destacado .hoja-value {
-                                    font-weight: 600;
-                                    color: #1e3a8a;
-                                }
-                                .texto-fijo {
-                                    border: 1px solid #ccc;
-                                    border-radius: 6px;
-                                    padding: 10px;
-                                    min-height: 80px;
-                                    margin-top: 6px;
-                                    font-size: 0.8rem;
-                                    white-space: pre-wrap;
-                                }
-                                .texto-fijo.vacio {
-                                    color: #999;
-                                    font-style: italic;
-                                }
-                                .hoja-grid-2 {
-                                    display: grid;
-                                    grid-template-columns: 1fr 1fr;
-                                    gap: 10px;
-                                    margin-bottom: 10px;
-                                }
-                                .conductor-box {
-                                    border: 1px solid #ccc;
-                                    border-radius: 6px;
-                                    padding: 8px;
-                                    background: #f8fafc;
-                                }
-                                .conductor-box h5 {
-                                    font-size: 0.75rem;
-                                    color: #3b82f6;
-                                    margin-bottom: 6px;
-                                }
-                                @page {
-                                    size: A4;
-                                    margin: 15mm;
-                                }
-                                @media print {
-                                    body {
-                                        margin: 0;
-                                        padding: 0;
-                                    }
-                                    .no-print {
-                                        display: none;
-                                    }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            ${cloneHoja.outerHTML}
-                            <script>
-                                window.onload = () => {
-                                    window.print();
-                                };
-                            <\/script>
-                        </body>
-                    </html>
-                `;
-                
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) {
-                    mostrarToast('Por favor, permita las ventanas emergentes', true);
-                    return;
-                }
-                printWindow.document.write(htmlContent);
-                printWindow.document.close();
-                
-            } catch (error) {
-                console.error('Error PDF:', error);
-                mostrarToast('Error al generar PDF: ' + error.message, true);
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                        <script>
+                            window.onload = () => {
+                                window.print();
+                                window.close();
+                            };
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // Función para generar PDF (solo hoja de ruta)
+        async function generarPDF(htmlContent) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                mostrarToast('Por favor, permita las ventanas emergentes', true);
+                return;
             }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Hoja de Ruta</title>
+                        <style>
+                            * {
+                                margin: 0;
+                                padding: 0;
+                                box-sizing: border-box;
+                            }
+                            body {
+                                font-family: Arial, Helvetica, sans-serif;
+                                background: white;
+                                padding: 8mm;
+                                margin: 0;
+                            }
+                            .hoja-ruta {
+                                max-width: 100%;
+                                margin: 0 auto;
+                                font-family: Arial, Helvetica, sans-serif;
+                                font-size: 10pt;
+                            }
+                            .hoja-header {
+                                text-align: center;
+                                border-bottom: 2px solid #000;
+                                padding-bottom: 6px;
+                                margin-bottom: 10px;
+                            }
+                            .hoja-header h2 {
+                                font-size: 1rem;
+                                margin-bottom: 2px;
+                            }
+                            .hoja-header .subtitle {
+                                font-size: 0.7rem;
+                                color: #666;
+                            }
+                            .hoja-section {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px 8px;
+                                margin-bottom: 8px;
+                                page-break-inside: avoid;
+                            }
+                            .hoja-section-title {
+                                font-weight: bold;
+                                font-size: 0.7rem;
+                                margin-bottom: 4px;
+                                border-left: 2px solid #3b82f6;
+                                padding-left: 6px;
+                            }
+                            .hoja-row {
+                                display: flex;
+                                margin-bottom: 4px;
+                                font-size: 0.7rem;
+                            }
+                            .hoja-label {
+                                font-weight: 600;
+                                width: 95px;
+                                color: #555;
+                                flex-shrink: 0;
+                            }
+                            .hoja-value {
+                                flex: 1;
+                                color: #333;
+                            }
+                            .viaje-destacado {
+                                background: #eff6ff;
+                                border: 1px solid #3b82f6;
+                            }
+                            .viaje-destacado .hoja-label {
+                                color: #1e40af;
+                            }
+                            .viaje-destacado .hoja-value {
+                                font-weight: 600;
+                                color: #1e3a8a;
+                            }
+                            .texto-fijo {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px;
+                                min-height: 50px;
+                                margin-top: 4px;
+                                font-size: 0.7rem;
+                                white-space: pre-wrap;
+                            }
+                            .hoja-grid-2 {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 8px;
+                                margin-bottom: 8px;
+                            }
+                            .conductor-box {
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                padding: 6px;
+                                background: #f8fafc;
+                            }
+                            .conductor-box h5 {
+                                font-size: 0.65rem;
+                                color: #3b82f6;
+                                margin-bottom: 4px;
+                            }
+                            @page {
+                                size: A4;
+                                margin: 8mm;
+                            }
+                            @media print {
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                        <script>
+                            window.onload = () => {
+                                window.print();
+                                window.close();
+                            };
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
 
         // Ver detalle de carpeta
@@ -1058,13 +1136,9 @@
                 const paradasTexto = orden.paradas || '';
                 const movimientosTexto = orden.movimientos || '';
                 
+                // Generar HTML de la hoja de ruta (sin los botones para impresión/PDF)
                 const hojaHtml = `
-                    <div class="hoja-ruta" id="hojaRuta">
-                        <div class="hoja-actions">
-                            <button class="btn-print" onclick="window.imprimirHojaGlobal()">🖨️ Imprimir</button>
-                            <button class="btn-pdf" onclick="window.generarPDFGlobal()">📄 Compartir PDF</button>
-                        </div>
-                        
+                    <div class="hoja-ruta">
                         <div class="hoja-header">
                             <h2>${empresa?.nombre || 'EMPRESA'}</h2>
                             <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
@@ -1218,15 +1292,24 @@
                     </div>
                 `;
                 
+                // Mostrar en el modal con botones
+                const hojaConBotones = `
+                    <div class="hoja-actions">
+                        <button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button>
+                        <button class="btn-pdf" onclick="window.generarPDFActual()">📄 Compartir PDF</button>
+                    </div>
+                    ${hojaHtml}
+                `;
+                
                 window.modalModo = 'detalle';
                 document.getElementById('modal-titulo').textContent = `📋 HOJA DE RUTA - Viaje N° ${orden.id}`;
-                document.getElementById('modal-campos').innerHTML = hojaHtml;
+                document.getElementById('modal-campos').innerHTML = hojaConBotones;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
                 
-                // Exponer funciones globales para los botones
-                window.imprimirHojaGlobal = imprimirHoja;
-                window.generarPDFGlobal = generarPDF;
+                // Exponer funciones para los botones
+                window.imprimirHojaActual = () => imprimirHojaRuta(hojaHtml);
+                window.generarPDFActual = () => generarPDF(hojaHtml);
                 
             } catch (error) {
                 mostrarToast('Error al cargar el detalle: ' + error.message, true);
