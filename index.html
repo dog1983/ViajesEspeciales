@@ -477,60 +477,61 @@
             font-size: 0.9rem;
         }
 
-        /* Estilos para informes (A4) */
+        /* Estilos para informes - OCUPA TODA LA HOJA A4 */
         .reporte {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
             padding: 0;
             margin: 0 auto;
+            width: 100%;
         }
 
         .reporte-header {
             text-align: center;
             border-bottom: 2px solid #1e293b;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .reporte-header h2 {
             color: #1e293b;
-            font-size: 1rem;
-            margin-bottom: 2px;
+            font-size: 1.3rem;
+            margin-bottom: 4px;
         }
 
         .reporte-header .subtitle {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: #64748b;
         }
 
         .reporte-section {
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 6px 8px;
-            margin-bottom: 8px;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
             background: white;
             page-break-inside: avoid;
         }
 
         .reporte-section-title {
             font-weight: bold;
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: #1e293b;
-            margin-bottom: 4px;
-            border-left: 2px solid #3b82f6;
-            padding-left: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+            padding-left: 8px;
         }
 
         .reporte-row {
             display: flex;
-            margin-bottom: 4px;
-            font-size: 0.7rem;
-            line-height: 1.2;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            line-height: 1.3;
         }
 
         .reporte-label {
             font-weight: 600;
-            width: 110px;
+            width: 130px;
             color: #475569;
             flex-shrink: 0;
         }
@@ -543,19 +544,85 @@
         .reporte-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .conductor-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            background: #f8fafc;
+        }
+
+        .conductor-box h5 {
+            font-size: 0.8rem;
+            color: #3b82f6;
             margin-bottom: 8px;
+        }
+
+        .viaje-destacado {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            margin-bottom: 12px;
+        }
+        
+        .viaje-destacado .reporte-row {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .viaje-destacado .reporte-label {
+            width: 140px;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .viaje-destacado .reporte-value {
+            font-weight: 600;
+            color: #1e3a8a;
         }
 
         .texto-fijo-reporte {
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 6px;
+            border-radius: 6px;
+            padding: 10px;
             background: white;
-            min-height: 50px;
+            min-height: 80px;
             white-space: pre-wrap;
-            font-size: 0.7rem;
-            margin-top: 4px;
+            font-size: 0.85rem;
+            margin-top: 6px;
+        }
+        
+        .texto-fijo-reporte.vacio {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .reporte-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+        
+        .reporte-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-print {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-pdf {
+            background: #ef4444;
+            color: white;
         }
 
         .monto {
@@ -563,20 +630,14 @@
             color: #10b981;
         }
 
-        .reporte-actions {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            justify-content: flex-end;
+        .km-disponible {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
         }
         
-        .reporte-actions button {
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: none;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
+        .km-disponible .reporte-value {
+            font-weight: bold;
+            color: #d97706;
         }
     </style>
 </head>
@@ -748,6 +809,34 @@
             }).format(monto);
         }
 
+        // Obtener KM disponibles de un contratante
+        async function getKmDisponibles(contratanteId) {
+            if (!contratanteId) return 0;
+            
+            // Sumar todos los km comprados
+            const { data: compras, error: err1 } = await supabase
+                .from('cuentacorriente')
+                .select('kmcomprados')
+                .eq('contratante_id', contratanteId);
+            
+            if (err1) return 0;
+            
+            const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados) || 0), 0) || 0;
+            
+            // Sumar todos los km descontados de órdenes con forma_pago = 'cuenta_corriente'
+            const { data: ordenesCC, error: err2 } = await supabase
+                .from('ordenes')
+                .select('km_descontados')
+                .eq('subcontratante', contratanteId)
+                .eq('forma_pago', 'cuenta_corriente');
+            
+            if (err2) return totalComprados;
+            
+            const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
+            
+            return totalComprados - totalDescontados;
+        }
+
         // Función para imprimir reporte de orden
         function imprimirReporteOrden(htmlContent) {
             const printWindow = window.open('', '_blank');
@@ -767,60 +856,80 @@
                             body {
                                 font-family: Arial, Helvetica, sans-serif;
                                 background: white;
-                                padding: 8mm;
+                                padding: 10mm;
                                 margin: 0;
                             }
                             .reporte {
                                 max-width: 100%;
                                 margin: 0 auto;
                                 font-family: Arial, Helvetica, sans-serif;
-                                font-size: 10pt;
+                                font-size: 11pt;
                             }
                             .reporte-header {
                                 text-align: center;
                                 border-bottom: 2px solid #000;
-                                padding-bottom: 6px;
-                                margin-bottom: 10px;
+                                padding-bottom: 10px;
+                                margin-bottom: 15px;
                             }
-                            .reporte-header h2 { font-size: 1rem; margin-bottom: 2px; }
-                            .reporte-header .subtitle { font-size: 0.7rem; color: #666; }
+                            .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+                            .reporte-header .subtitle { font-size: 0.85rem; color: #666; }
                             .reporte-section {
                                 border: 1px solid #ccc;
-                                border-radius: 4px;
-                                padding: 6px 8px;
-                                margin-bottom: 8px;
+                                border-radius: 6px;
+                                padding: 10px 12px;
+                                margin-bottom: 12px;
                                 page-break-inside: avoid;
                             }
                             .reporte-section-title {
                                 font-weight: bold;
-                                font-size: 0.7rem;
-                                margin-bottom: 4px;
-                                border-left: 2px solid #3b82f6;
-                                padding-left: 6px;
+                                font-size: 0.85rem;
+                                margin-bottom: 8px;
+                                border-left: 3px solid #3b82f6;
+                                padding-left: 8px;
                             }
                             .reporte-row {
                                 display: flex;
-                                margin-bottom: 4px;
-                                font-size: 0.7rem;
+                                margin-bottom: 6px;
+                                font-size: 0.85rem;
                             }
                             .reporte-label {
                                 font-weight: 600;
-                                width: 110px;
+                                width: 130px;
                                 color: #555;
                                 flex-shrink: 0;
                             }
                             .reporte-value { flex: 1; color: #333; }
                             .texto-fijo-reporte {
                                 border: 1px solid #ccc;
-                                border-radius: 4px;
-                                padding: 6px;
-                                min-height: 50px;
-                                margin-top: 4px;
-                                font-size: 0.7rem;
+                                border-radius: 6px;
+                                padding: 10px;
+                                min-height: 80px;
+                                margin-top: 6px;
+                                font-size: 0.85rem;
                                 white-space: pre-wrap;
                             }
                             .monto { font-weight: bold; color: #10b981; }
-                            @page { size: A4; margin: 8mm; }
+                            .viaje-destacado {
+                                background: #eff6ff;
+                                border: 2px solid #3b82f6;
+                            }
+                            .viaje-destacado .reporte-label { color: #1e40af; }
+                            .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
+                            .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; }
+                            .reporte-grid-2 {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 12px;
+                                margin-bottom: 12px;
+                            }
+                            .conductor-box {
+                                border: 1px solid #ccc;
+                                border-radius: 6px;
+                                padding: 10px;
+                                background: #f8fafc;
+                            }
+                            .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; }
+                            @page { size: A4; margin: 10mm; }
                             @media print { body { margin: 0; padding: 0; } }
                         </style>
                     </head>
@@ -857,60 +966,80 @@
                             body {
                                 font-family: Arial, Helvetica, sans-serif;
                                 background: white;
-                                padding: 8mm;
+                                padding: 10mm;
                                 margin: 0;
                             }
                             .reporte {
                                 max-width: 100%;
                                 margin: 0 auto;
                                 font-family: Arial, Helvetica, sans-serif;
-                                font-size: 10pt;
+                                font-size: 11pt;
                             }
                             .reporte-header {
                                 text-align: center;
                                 border-bottom: 2px solid #000;
-                                padding-bottom: 6px;
-                                margin-bottom: 10px;
+                                padding-bottom: 10px;
+                                margin-bottom: 15px;
                             }
-                            .reporte-header h2 { font-size: 1rem; margin-bottom: 2px; }
-                            .reporte-header .subtitle { font-size: 0.7rem; color: #666; }
+                            .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+                            .reporte-header .subtitle { font-size: 0.85rem; color: #666; }
                             .reporte-section {
                                 border: 1px solid #ccc;
-                                border-radius: 4px;
-                                padding: 6px 8px;
-                                margin-bottom: 8px;
+                                border-radius: 6px;
+                                padding: 10px 12px;
+                                margin-bottom: 12px;
                                 page-break-inside: avoid;
                             }
                             .reporte-section-title {
                                 font-weight: bold;
-                                font-size: 0.7rem;
-                                margin-bottom: 4px;
-                                border-left: 2px solid #3b82f6;
-                                padding-left: 6px;
+                                font-size: 0.85rem;
+                                margin-bottom: 8px;
+                                border-left: 3px solid #3b82f6;
+                                padding-left: 8px;
                             }
                             .reporte-row {
                                 display: flex;
-                                margin-bottom: 4px;
-                                font-size: 0.7rem;
+                                margin-bottom: 6px;
+                                font-size: 0.85rem;
                             }
                             .reporte-label {
                                 font-weight: 600;
-                                width: 110px;
+                                width: 130px;
                                 color: #555;
                                 flex-shrink: 0;
                             }
                             .reporte-value { flex: 1; color: #333; }
                             .texto-fijo-reporte {
                                 border: 1px solid #ccc;
-                                border-radius: 4px;
-                                padding: 6px;
-                                min-height: 50px;
-                                margin-top: 4px;
-                                font-size: 0.7rem;
+                                border-radius: 6px;
+                                padding: 10px;
+                                min-height: 80px;
+                                margin-top: 6px;
+                                font-size: 0.85rem;
                                 white-space: pre-wrap;
                             }
                             .monto { font-weight: bold; color: #10b981; }
-                            @page { size: A4; margin: 8mm; }
+                            .viaje-destacado {
+                                background: #eff6ff;
+                                border: 2px solid #3b82f6;
+                            }
+                            .viaje-destacado .reporte-label { color: #1e40af; }
+                            .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
+                            .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; }
+                            .reporte-grid-2 {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 12px;
+                                margin-bottom: 12px;
+                            }
+                            .conductor-box {
+                                border: 1px solid #ccc;
+                                border-radius: 6px;
+                                padding: 10px;
+                                background: #f8fafc;
+                            }
+                            .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; }
+                            @page { size: A4; margin: 10mm; }
                             @media print { body { margin: 0; padding: 0; } }
                         </style>
                     </head>
@@ -928,7 +1057,7 @@
             printWindow.document.close();
         }
 
-        // Ver informe de orden (similar a hoja de ruta)
+        // Ver informe de orden
         window.verInformeOrden = async (ordenId) => {
             try {
                 mostrarToast('Cargando informe de orden...');
@@ -951,9 +1080,22 @@
                 // Subcontratante
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
-                    .select('subcontratante')
+                    .select('subcontratante, contratante')
                     .eq('id', orden.subcontratante)
                     .single();
+                
+                // Contratante (para KM disponibles)
+                let contratante = null;
+                let kmDisponibles = 0;
+                if (subcontratante && subcontratante.contratante) {
+                    const { data: c } = await supabase
+                        .from('contratantes')
+                        .select('contratante, cuit')
+                        .eq('id', subcontratante.contratante)
+                        .single();
+                    contratante = c;
+                    kmDisponibles = await getKmDisponibles(subcontratante.contratante);
+                }
                 
                 // Usuario que confeccionó
                 const { data: usuario } = await supabase
@@ -968,6 +1110,11 @@
                 const obsCotizacionTexto = orden.obs_cotizacion || '';
                 const obsGastosTexto = orden.obs_gastos || '';
                 
+                const formaPagoTexto = orden.forma_pago === 'cuenta_corriente' ? '🏦 CUENTA CORRIENTE (Descuenta KM)' : '💵 PAGO DIRECTO';
+                
+                // Determinar si hay KM suficientes
+                const kmInsuficientes = orden.forma_pago === 'cuenta_corriente' && kmDisponibles < (orden.km_descontados || 0);
+                
                 const reporteHtml = `
                     <div class="reporte">
                         <div class="reporte-header">
@@ -981,16 +1128,43 @@
                                 <span class="reporte-label">Subcontratante:</span>
                                 <span class="reporte-value">${subcontratante?.subcontratante || '-'}</span>
                             </div>
+                            <div class="reporte-row">
+                                <span class="reporte-label">Contratante:</span>
+                                <span class="reporte-value">${contratante?.contratante || '-'}</span>
+                            </div>
+                            <div class="reporte-row">
+                                <span class="reporte-label">CUIT:</span>
+                                <span class="reporte-value">${contratante?.cuit || '-'}</span>
+                            </div>
                         </div>
                         
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">🚌 DATOS DEL VIAJE</div>
+                        <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
+                            <div class="reporte-section-title">💰 FORMA DE PAGO</div>
                             <div class="reporte-row">
-                                <span class="reporte-label">📅 Fecha Ida:</span>
+                                <span class="reporte-label">Forma de Pago:</span>
+                                <span class="reporte-value">${formaPagoTexto}</span>
+                            </div>
+                            ${orden.forma_pago === 'cuenta_corriente' ? `
+                            <div class="reporte-row">
+                                <span class="reporte-label">KM a descontar:</span>
+                                <span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span>
+                            </div>
+                            <div class="reporte-row">
+                                <span class="reporte-label">KM disponibles:</span>
+                                <span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span>
+                            </div>
+                            ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}
+                            ` : ''}
+                        </div>
+                        
+                        <div class="reporte-section viaje-destacado">
+                            <div class="reporte-section-title">🚌 DATOS DEL VIAJE - IDA</div>
+                            <div class="reporte-row">
+                                <span class="reporte-label">📅 Fecha:</span>
                                 <span class="reporte-value">${formatearFecha(orden.fecha_ida)}</span>
                             </div>
                             <div class="reporte-row">
-                                <span class="reporte-label">⏰ Hora Ida:</span>
+                                <span class="reporte-label">⏰ Hora:</span>
                                 <span class="reporte-value">${orden.hora_ida || '-'}</span>
                             </div>
                             <div class="reporte-row">
@@ -1009,25 +1183,31 @@
                                 <span class="reporte-label">🏁 Destino:</span>
                                 <span class="reporte-value">${orden.destino || '-'}</span>
                             </div>
+                        </div>
+                        
+                        <div class="reporte-section viaje-destacado">
+                            <div class="reporte-section-title">🔄 DATOS DEL VIAJE - REGRESO</div>
                             <div class="reporte-row">
-                                <span class="reporte-label">📅 Fecha Regreso:</span>
+                                <span class="reporte-label">📅 Fecha:</span>
                                 <span class="reporte-value">${formatearFecha(orden.fecha_regreso)}</span>
                             </div>
                             <div class="reporte-row">
-                                <span class="reporte-label">⏰ Hora Regreso:</span>
+                                <span class="reporte-label">⏰ Hora:</span>
                                 <span class="reporte-value">${orden.hora_regreso || '-'}</span>
                             </div>
                         </div>
                         
                         <div class="reporte-section">
-                            <div class="reporte-section-title">📍 PARADAS Y MOVIMIENTOS</div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">Paradas:</span>
-                                <span class="reporte-value">${paradasTexto || 'No especificadas'}</span>
+                            <div class="reporte-section-title">📍 PARADAS</div>
+                            <div class="texto-fijo-reporte ${!paradasTexto ? 'vacio' : ''}">
+                                ${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
                             </div>
-                            <div class="reporte-row">
-                                <span class="reporte-label">Movimientos:</span>
-                                <span class="reporte-value">${movimientosTexto || 'No especificados'}</span>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">🔄 MOVIMIENTOS</div>
+                            <div class="texto-fijo-reporte ${!movimientosTexto ? 'vacio' : ''}">
+                                ${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
                             </div>
                         </div>
                         
@@ -1081,20 +1261,9 @@
                                 <span class="reporte-label">Confeccionó:</span>
                                 <span class="reporte-value">${usuario?.nombre || '-'}</span>
                             </div>
-                        </div>
-                        
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">✍️ FIRMA DEL CONTRATANTE</div>
-                            <div class="texto-fijo-reporte" style="min-height: 40px; margin-top: 8px;">
-                                __________________________________________________
-                            </div>
-                            <div class="reporte-row" style="margin-top: 4px;">
-                                <span class="reporte-label">Aclaración:</span>
-                                <span class="reporte-value">_________________</span>
-                            </div>
                             <div class="reporte-row">
-                                <span class="reporte-label">Fecha:</span>
-                                <span class="reporte-value">_________________</span>
+                                <span class="reporte-label">Fecha de emisión:</span>
+                                <span class="reporte-value">${new Date().toLocaleDateString('es-AR')}</span>
                             </div>
                         </div>
                     </div>
@@ -1122,11 +1291,10 @@
             }
         };
 
-        // Verificar límite de carpetas antes de crear/editar
+        // Verificar límite de carpetas
         async function validarLimiteCarpetas(ordenId, carpetaIdActual = null) {
             if (!ordenId) return { valido: true };
             
-            // Obtener cantidad de buses de la orden
             const { data: orden, error } = await supabase
                 .from('ordenes')
                 .select('cantidad_buses')
@@ -1140,16 +1308,14 @@
             const cantidadBuses = parseInt(orden.cantidad_buses) || 0;
             
             if (cantidadBuses === 0) {
-                return { valido: true }; // Sin límite
+                return { valido: true };
             }
             
-            // Contar carpetas existentes para esta orden
             let query = supabase
                 .from('carpetas')
                 .select('id', { count: 'exact', head: true })
                 .eq('orden_id', ordenId);
             
-            // Si estamos editando, excluir la carpeta actual del conteo
             if (carpetaIdActual) {
                 query = query.neq('id', carpetaIdActual);
             }
@@ -1348,7 +1514,7 @@
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
-                columnas = ['id', 'empresas_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'confecciono'];
+                columnas = ['id', 'empresas_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
             } else {
                 columnas = Object.keys(datosFiltrados[0]).filter(key => 
                     key !== 'created_at' && !key.includes('_nombre')
@@ -1370,6 +1536,7 @@
                 fecha_ida: 'FECHA IDA',
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
+                forma_pago: 'FORMA PAGO',
                 confecciono: 'CONFECCIONÓ'
             };
             
@@ -1396,6 +1563,10 @@
                     
                     if (col === 'cotizacion' && valor) {
                         valor = formatearMonto(valor);
+                    }
+                    
+                    if (col === 'forma_pago') {
+                        valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
                     }
                     
                     if (typeof valor === 'string' && valor.length > 40) {
@@ -1438,12 +1609,6 @@
             if (!puedeEditarTabla(window.tablaActual)) {
                 mostrarToast('No tiene permiso para agregar registros', true);
                 return;
-            }
-            
-            // Validación especial para carpetas
-            if (window.tablaActual === 'carpetas') {
-                // Necesitamos saber el orden_id seleccionado
-                // Por ahora mostramos el formulario normal, la validación se hará al guardar
             }
             
             window.modalModo = 'form';
@@ -1490,7 +1655,23 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                // Selector especial para forma_pago
+                if (col === 'forma_pago') {
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="forma_pago_select" onchange="toggleKmDescontados()">`;
+                    html += `<option value="pago_directo" ${valor === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>`;
+                    html += `<option value="cuenta_corriente" ${valor === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente (descuenta KM)</option>`;
+                    html += `</select></div>`;
+                } 
+                else if (col === 'km_descontados') {
+                    const hiddenStyle = registro?.forma_pago === 'cuenta_corriente' ? '' : 'style="display:none;"';
+                    html += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>`;
+                    html += `<label>${label} (KM a descontar)</label>`;
+                    html += `<input type="number" name="${col}" value="${valor || 0}" step="1" min="0">`;
+                    html += `</div>`;
+                }
+                else if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
@@ -1499,11 +1680,11 @@
                     html += `<select name="${col}" id="field_${col}">`;
                     html += `<option value="">Seleccionar...</option>`;
                     if (opciones) {
-                        opciones.forEach(op => {
+                        for (let op of opciones) {
                             const selected = valor == op.id ? 'selected' : '';
                             const displayValue = op[relacion.campo] || op.nombre || op.contratante || op.id;
                             html += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
-                        });
+                        }
                     }
                     html += `</select></div>`;
                 } else if (col.includes('fecha')) {
@@ -1532,6 +1713,15 @@
             container.innerHTML = html;
         }
 
+        // Función global para toggle KM descontados
+        window.toggleKmDescontados = () => {
+            const select = document.getElementById('forma_pago_select');
+            const kmGroup = document.getElementById('km_descontados_group');
+            if (select && kmGroup) {
+                kmGroup.style.display = select.value === 'cuenta_corriente' ? 'block' : 'none';
+            }
+        };
+
         const modalForm = document.createElement('form');
         modalForm.id = 'modal-form';
         const modalContent = document.querySelector('#modal .modal-content');
@@ -1554,13 +1744,17 @@
                 if (value && value.toString().trim()) {
                     if (key === 'cotizacion' || key === 'monto') {
                         datos[key] = parseFloat(value);
+                    } else if (key === 'km_descontados') {
+                        datos[key] = parseInt(value) || 0;
                     } else {
                         datos[key] = value;
                     }
+                } else if (key === 'km_descontados') {
+                    datos[key] = 0;
                 }
             }
             
-            // Validación especial para carpetas (límite de buses)
+            // Validación especial para carpetas
             if (window.tablaActual === 'carpetas' && datos.orden_id) {
                 const validacion = await validarLimiteCarpetas(datos.orden_id, window.editandoId);
                 if (!validacion.valido) {
@@ -1623,7 +1817,7 @@
             document.getElementById('modal-footer').style.display = 'flex';
         };
 
-        // Función verDetalleCarpeta (hoja de ruta) - se mantiene igual
+        // Función verDetalleCarpeta
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -1652,7 +1846,7 @@
                 
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
-                    .select('subcontratante')
+                    .select('subcontratante, telefono, contratante')
                     .eq('id', orden.subcontratante)
                     .single();
                 
@@ -1735,7 +1929,7 @@
                             <div class="reporte-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
                         </div>
                         
-                        <div class="reporte-section viaje-destacado" style="background:#eff6ff; border:1px solid #3b82f6;">
+                        <div class="reporte-section viaje-destacado">
                             <div class="reporte-section-title">🚌 IDA</div>
                             <div class="reporte-row">
                                 <span class="reporte-label">📅 Fecha:</span>
@@ -1763,7 +1957,7 @@
                             </div>
                         </div>
                         
-                        <div class="reporte-section viaje-destacado" style="background:#eff6ff; border:1px solid #3b82f6;">
+                        <div class="reporte-section viaje-destacado">
                             <div class="reporte-section-title">🔄 REGRESO</div>
                             <div class="reporte-row">
                                 <span class="reporte-label">📅 Fecha:</span>
@@ -1817,16 +2011,16 @@
                             </div>
                         </div>
                         
-                        <div class="reporte-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-                            <div class="conductor-box" style="border:1px solid #ccc; border-radius:4px; padding:6px; background:#f8fafc;">
-                                <h5 style="font-size:0.65rem; color:#3b82f6; margin-bottom:4px;">🚌 CONDUCTOR 1</h5>
+                        <div class="reporte-grid-2">
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 1</h5>
                                 <div class="reporte-row"><span class="reporte-label">Nombre:</span><span>${conductor1.nombre}</span></div>
                                 <div class="reporte-row"><span class="reporte-label">Legajo:</span><span>${conductor1.legajo}</span></div>
                                 <div class="reporte-row"><span class="reporte-label">DNI:</span><span>${conductor1.dni}</span></div>
                                 <div class="reporte-row"><span class="reporte-label">Vto Reg:</span><span>${vtoReg1}</span></div>
                             </div>
-                            <div class="conductor-box" style="border:1px solid #ccc; border-radius:4px; padding:6px; background:#f8fafc;">
-                                <h5 style="font-size:0.65rem; color:#3b82f6; margin-bottom:4px;">🚌 CONDUCTOR 2</h5>
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 2</h5>
                                 <div class="reporte-row"><span class="reporte-label">Nombre:</span><span>${conductor2.nombre}</span></div>
                                 <div class="reporte-row"><span class="reporte-label">Legajo:</span><span>${conductor2.legajo}</span></div>
                                 <div class="reporte-row"><span class="reporte-label">DNI:</span><span>${conductor2.dni}</span></div>
