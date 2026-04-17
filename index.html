@@ -472,7 +472,7 @@
             font-size: 0.9rem;
         }
 
-        /* Estilos para la Hoja de Ruta - Tamaño A4 */
+        /* Estilos para la Hoja de Ruta */
         .hoja-ruta {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
@@ -555,7 +555,6 @@
             margin-bottom: 6px;
         }
 
-        /* Estilos para destacar origen/destino */
         .viaje-destacado {
             background: #eff6ff;
             border: 2px solid #3b82f6;
@@ -578,7 +577,6 @@
             color: #1e3a8a;
         }
 
-        /* Cuadro de texto fijo */
         .texto-fijo {
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -596,7 +594,6 @@
             font-style: italic;
         }
 
-        /* Botones de acción */
         .hoja-actions {
             display: flex;
             gap: 10px;
@@ -623,38 +620,29 @@
             color: white;
         }
 
-        /* Estilos para impresión - Tamaño A4 */
+        /* Ocultar botones en impresión */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            .hoja-ruta, .hoja-ruta * {
-                visibility: visible;
-            }
-            .hoja-ruta {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                max-width: 210mm;
-                margin: 0 auto;
-                padding: 10mm;
-                background: white;
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 11pt;
-            }
             .hoja-actions {
-                display: none;
+                display: none !important;
+            }
+            button {
+                display: none !important;
             }
             .modal {
                 display: none !important;
             }
-            button {
-                display: none;
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .hoja-ruta {
+                margin: 0;
+                padding: 0;
             }
             @page {
                 size: A4;
-                margin: 10mm;
+                margin: 15mm;
             }
         }
     </style>
@@ -818,23 +806,36 @@
             }
         }
 
-        // Función para imprimir
+        // Función para imprimir directamente
         function imprimirHoja() {
             window.print();
         }
 
-        // Función para compartir como PDF
-        async function compartirPDF() {
+        // Función para generar PDF (versión corregida)
+        async function generarPDF() {
             const hojaElement = document.querySelector('.hoja-ruta');
-            if (!hojaElement) return;
+            if (!hojaElement) {
+                mostrarToast('No se encontró la hoja de ruta', true);
+                return;
+            }
             
             try {
                 mostrarToast('Generando PDF...');
-                const htmlContent = hojaElement.outerHTML;
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
+                
+                // Clonar el contenido para no afectar la vista actual
+                const cloneHoja = hojaElement.cloneNode(true);
+                
+                // Eliminar los botones del clon
+                const actionsDiv = cloneHoja.querySelector('.hoja-actions');
+                if (actionsDiv) {
+                    actionsDiv.remove();
+                }
+                
+                const htmlContent = `
+                    <!DOCTYPE html>
                     <html>
                         <head>
+                            <meta charset="UTF-8">
                             <title>Hoja de Ruta</title>
                             <style>
                                 * {
@@ -845,11 +846,11 @@
                                 body {
                                     font-family: Arial, Helvetica, sans-serif;
                                     background: white;
-                                    padding: 10mm;
-                                    margin: 0 auto;
+                                    padding: 15mm;
+                                    margin: 0;
                                 }
                                 .hoja-ruta {
-                                    max-width: 190mm;
+                                    max-width: 100%;
                                     margin: 0 auto;
                                     font-family: Arial, Helvetica, sans-serif;
                                     font-size: 11pt;
@@ -891,9 +892,11 @@
                                     font-weight: 600;
                                     width: 110px;
                                     color: #555;
+                                    flex-shrink: 0;
                                 }
                                 .hoja-value {
                                     flex: 1;
+                                    color: #333;
                                 }
                                 .viaje-destacado {
                                     background: #eff6ff;
@@ -913,6 +916,11 @@
                                     min-height: 80px;
                                     margin-top: 6px;
                                     font-size: 0.8rem;
+                                    white-space: pre-wrap;
+                                }
+                                .texto-fijo.vacio {
+                                    color: #999;
+                                    font-style: italic;
                                 }
                                 .hoja-grid-2 {
                                     display: grid;
@@ -933,36 +941,45 @@
                                 }
                                 @page {
                                     size: A4;
-                                    margin: 10mm;
+                                    margin: 15mm;
                                 }
                                 @media print {
                                     body {
                                         margin: 0;
                                         padding: 0;
                                     }
+                                    .no-print {
+                                        display: none;
+                                    }
                                 }
                             </style>
                         </head>
                         <body>
-                            ${htmlContent}
+                            ${cloneHoja.outerHTML}
                             <script>
                                 window.onload = () => {
-                                    setTimeout(() => {
-                                        window.print();
-                                        window.close();
-                                    }, 500);
+                                    window.print();
                                 };
                             <\/script>
                         </body>
                     </html>
-                `);
+                `;
+                
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    mostrarToast('Por favor, permita las ventanas emergentes', true);
+                    return;
+                }
+                printWindow.document.write(htmlContent);
                 printWindow.document.close();
+                
             } catch (error) {
+                console.error('Error PDF:', error);
                 mostrarToast('Error al generar PDF: ' + error.message, true);
             }
         }
 
-        // Ver detalle de carpeta - HOJA DE RUTA MEJORADA
+        // Ver detalle de carpeta
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -983,21 +1000,18 @@
                 
                 if (errOrden) throw errOrden;
                 
-                // Empresa
                 const { data: empresa } = await supabase
                     .from('empresas')
                     .select('*')
                     .eq('id', orden.empresas_id)
                     .single();
                 
-                // Subcontratante
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
                     .select('*')
                     .eq('id', orden.subcontratante)
                     .single();
                 
-                // Contratante
                 let contratante = null;
                 if (subcontratante && subcontratante.contratante) {
                     const { data: c } = await supabase
@@ -1008,7 +1022,6 @@
                     contratante = c;
                 }
                 
-                // Conductor 1
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
                     const { data: c1 } = await supabase
@@ -1019,7 +1032,6 @@
                     if (c1) conductor1 = c1;
                 }
                 
-                // Conductor 2
                 let conductor2 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor2_id) {
                     const { data: c2 } = await supabase
@@ -1030,7 +1042,6 @@
                     if (c2) conductor2 = c2;
                 }
                 
-                // Bus
                 let bus = { Dominio: '-', Capacidad: '-', Interno: '-' };
                 if (carpeta.interno_id) {
                     const { data: b } = await supabase
@@ -1048,10 +1059,10 @@
                 const movimientosTexto = orden.movimientos || '';
                 
                 const hojaHtml = `
-                    <div class="hoja-ruta">
+                    <div class="hoja-ruta" id="hojaRuta">
                         <div class="hoja-actions">
-                            <button class="btn-print" onclick="imprimirHoja()">🖨️ Imprimir</button>
-                            <button class="btn-pdf" onclick="compartirPDF()">📄 Compartir PDF</button>
+                            <button class="btn-print" onclick="window.imprimirHojaGlobal()">🖨️ Imprimir</button>
+                            <button class="btn-pdf" onclick="window.generarPDFGlobal()">📄 Compartir PDF</button>
                         </div>
                         
                         <div class="hoja-header">
@@ -1085,7 +1096,6 @@
                             <div class="hoja-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
                         </div>
                         
-                        <!-- SECCIÓN DESTACADA DE VIAJE (IDA) -->
                         <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🚌 IDA</div>
                             <div class="hoja-row">
@@ -1126,7 +1136,6 @@
                             </div>
                         </div>
                         
-                        <!-- PARADAS -->
                         <div class="hoja-section">
                             <div class="hoja-section-title">📍 PARADAS</div>
                             <div class="texto-fijo ${!paradasTexto ? 'vacio' : ''}">
@@ -1134,7 +1143,6 @@
                             </div>
                         </div>
                         
-                        <!-- MOVIMIENTOS -->
                         <div class="hoja-section">
                             <div class="hoja-section-title">🔄 MOVIMIENTOS</div>
                             <div class="texto-fijo ${!movimientosTexto ? 'vacio' : ''}">
@@ -1216,15 +1224,15 @@
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
                 
-                window.imprimirHoja = imprimirHoja;
-                window.compartirPDF = compartirPDF;
+                // Exponer funciones globales para los botones
+                window.imprimirHojaGlobal = imprimirHoja;
+                window.generarPDFGlobal = generarPDF;
                 
             } catch (error) {
                 mostrarToast('Error al cargar el detalle: ' + error.message, true);
             }
         };
 
-        // Filtrar órdenes y carpetas para contratante
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
             
@@ -1301,7 +1309,6 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         };
 
-        // Función para enriquecer carpetas con datos de la orden
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
@@ -1343,7 +1350,6 @@
                 
                 data = await filtrarPorContratante(data, tabla);
                 
-                // Para carpetas, enriquecer con origen/destino de la orden
                 if (tabla === 'carpetas') {
                     data = await enriquecerCarpetasConOrden(data);
                 }
