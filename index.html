@@ -928,23 +928,32 @@
                 return;
             }
             
-            // Actualizar campos de contratante y subcontratante
-            const contratanteField = document.getElementById('field_contratante_id');
-            const subcontratanteField = document.getElementById('field_subcontratante_id');
-            
-            if (contratanteField && orden.contratante_id) {
-                contratanteField.value = orden.contratante_id;
-                // Disparar evento para cargar subcontratantes
-                if (typeof window.onContratanteChange === 'function') {
-                    await window.onContratanteChange();
+            // Cargar el nombre del contratante
+            if (orden.contratante_id) {
+                const { data: contratante } = await supabase
+                    .from('contratantes')
+                    .select('contratante')
+                    .eq('id', orden.contratante_id)
+                    .single();
+                
+                const contratanteField = document.getElementById('field_contratante_id');
+                if (contratanteField && contratante) {
+                    contratanteField.value = contratante.contratante;
                 }
             }
             
-            if (subcontratanteField && orden.subcontratante) {
-                // Esperar un poco a que se carguen los subcontratantes
-                setTimeout(() => {
-                    subcontratanteField.value = orden.subcontratante;
-                }, 300);
+            // Cargar el nombre del subcontratante
+            if (orden.subcontratante) {
+                const { data: subcontratante } = await supabase
+                    .from('subcontratantes')
+                    .select('subcontratante')
+                    .eq('id', orden.subcontratante)
+                    .single();
+                
+                const subcontratanteField = document.getElementById('field_subcontratante_id');
+                if (subcontratanteField && subcontratante) {
+                    subcontratanteField.value = subcontratante.subcontratante;
+                }
             }
         }
 
@@ -1450,7 +1459,7 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead></tr>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
             const nombresColumnas = {
                 id: 'ID',
@@ -1523,7 +1532,7 @@
                     if (esContratantes) {
                         const kmDisponibles = await getKmDisponiblesPorContratante(item.id);
                         const kmColor = kmDisponibles > 0 ? '#10b981' : (kmDisponibles < 0 ? '#ef4444' : '#64748b');
-                        html += `<td style="font-weight:bold; color:${kmColor};">${kmDisponibles} km</td>`;
+                        html += `<td style="font-weight:bold; color:${kmColor};">${kmDisponibles} km<\/td>`;
                     }
                     
                     if (esOrdenes) {
@@ -1531,7 +1540,7 @@
                         const saldoFormateado = formatearMonto(Math.abs(saldo));
                         const saldoClase = saldo > 0 ? 'saldo-rojo' : (saldo < 0 ? 'saldo-verde' : '');
                         const saldoTexto = saldo > 0 ? `- ${saldoFormateado}` : (saldo < 0 ? `✓ ${saldoFormateado}` : '✓ SALDADO');
-                        html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}</td>`;
+                        html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}<\/td>`;
                     }
                     
                     if (window.tablaActual === 'ordenes') {
@@ -1539,22 +1548,22 @@
                                     <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
                                     ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                     ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                  </td>`;
+                                  <\/td>`;
                     } else if (window.tablaActual === 'carpetas') {
                         html += `<td class="actions-cell">
                                     <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                     ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                     ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                  </td>`;
+                                  <\/td>`;
                     } else if (puedeEditar) {
                         html += `<td class="actions-cell">
                                     <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                     <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                                  </td>`;
+                                  <\/td>`;
                     } else {
                         html += `<td class="actions-cell">
                                     <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                                  </td>`;
+                                  <\/td>`;
                     }
                     html += '</tr>';
                 }
@@ -1609,7 +1618,6 @@
             
             const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
             
-            // Para órdenes, orden personalizado
             let camposOrdenados = estructura;
             if (window.tablaActual === 'ordenes') {
                 const ordenPersonalizado = [
@@ -1650,7 +1658,6 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                // Para carpetas, al seleccionar orden cargar datos automáticamente
                 if (window.tablaActual === 'carpetas' && col === 'orden_id') {
                     const { data: ordenes } = await supabase
                         .from('ordenes')
@@ -1669,11 +1676,16 @@
                     }
                     html += `</select></div>`;
                 }
-                else if (window.tablaActual === 'carpetas' && (col === 'contratante_id' || col === 'subcontratante_id')) {
-                    // Estos campos se llenan automáticamente, se muestran como solo lectura
+                else if (window.tablaActual === 'carpetas' && col === 'contratante_id') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<input type="text" id="field_${col}" value="${valor || ''}" readonly style="background-color:#f0f0f0;">`;
+                    html += `<input type="text" id="field_contratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
+                    html += `</div>`;
+                }
+                else if (window.tablaActual === 'carpetas' && col === 'subcontratante_id') {
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<input type="text" id="field_subcontratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
                     html += `</div>`;
                 }
                 else if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
@@ -1803,11 +1815,9 @@
                 }
                 
                 if (window.tablaActual === 'carpetas' && registro) {
-                    // Si estamos editando una carpeta, cargar los datos de la orden
                     const ordenId = registro.orden_id;
                     if (ordenId) {
                         await cargarDatosOrden(ordenId);
-                        // Rellenar campos de solo lectura
                         const { data: orden } = await supabase
                             .from('ordenes')
                             .select('contratante_id, subcontratante')
@@ -1827,8 +1837,8 @@
                             
                             const contratanteField = document.getElementById('field_contratante_id');
                             const subcontratanteField = document.getElementById('field_subcontratante_id');
-                            if (contratanteField) contratanteField.value = contratante?.contratante || '';
-                            if (subcontratanteField) subcontratanteField.value = subcontratante?.subcontratante || '';
+                            if (contratanteField && contratante) contratanteField.value = contratante.contratante;
+                            if (subcontratanteField && subcontratante) subcontratanteField.value = subcontratante.subcontratante;
                         }
                     }
                 }
