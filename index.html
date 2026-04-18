@@ -753,6 +753,7 @@
         window.relaciones = {
             ordenes: {
                 empresas_id: { tabla: 'empresas', campo: 'nombre' },
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
                 subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
                 confecciono: { tabla: 'usuarios', campo: 'nombre' }
             },
@@ -859,7 +860,6 @@
             return getKmDisponiblesPorContratante(contratanteId);
         }
 
-        // Obtener saldo pendiente de una orden
         async function getSaldoOrden(ordenId, cotizacion) {
             if (!ordenId) return 0;
             
@@ -874,6 +874,39 @@
             const saldo = (parseFloat(cotizacion) || 0) - totalPagado;
             
             return saldo;
+        }
+
+        // Función para cargar subcontratantes según contratante seleccionado
+        async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) {
+            const subcontratanteSelect = document.getElementById('field_subcontratante');
+            if (!subcontratanteSelect) return;
+            
+            // Limpiar opciones actuales
+            subcontratanteSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            if (!contratanteId) {
+                return;
+            }
+            
+            // Cargar subcontratantes del contratante seleccionado
+            const { data: subcontratantes, error } = await supabase
+                .from('subcontratantes')
+                .select('id, subcontratante')
+                .eq('contratante', contratanteId);
+            
+            if (error) {
+                console.error('Error cargando subcontratantes:', error);
+                return;
+            }
+            
+            if (subcontratantes && subcontratantes.length > 0) {
+                for (let sub of subcontratantes) {
+                    const selected = (valorSeleccionado == sub.id) ? 'selected' : '';
+                    subcontratanteSelect.innerHTML += `<option value="${sub.id}" ${selected}>${sub.subcontratante}</option>`;
+                }
+            } else {
+                subcontratanteSelect.innerHTML += '<option value="">No hay subcontratantes disponibles</option>';
+            }
         }
 
         function actualizarKmDescontados() {
@@ -1008,23 +1041,17 @@
                     .eq('id', orden.empresas_id)
                     .single();
                 
-                const { data: subcontratante } = await supabase
-                    .from('subcontratantes')
-                    .select('subcontratante, contratante')
-                    .eq('id', orden.subcontratante)
+                const { data: contratante } = await supabase
+                    .from('contratantes')
+                    .select('contratante, cuit')
+                    .eq('id', orden.contratante_id)
                     .single();
                 
-                let contratante = null;
-                let kmDisponibles = 0;
-                if (subcontratante && subcontratante.contratante) {
-                    const { data: c } = await supabase
-                        .from('contratantes')
-                        .select('contratante, cuit')
-                        .eq('id', subcontratante.contratante)
-                        .single();
-                    contratante = c;
-                    kmDisponibles = await getKmDisponibles(subcontratante.contratante);
-                }
+                const { data: subcontratante } = await supabase
+                    .from('subcontratantes')
+                    .select('subcontratante')
+                    .eq('id', orden.subcontratante)
+                    .single();
                 
                 const { data: usuario } = await supabase
                     .from('usuarios')
@@ -1039,6 +1066,7 @@
                 const obsGastosTexto = orden.obs_gastos || '';
                 
                 const formaPagoTexto = orden.forma_pago === 'cuenta_corriente' ? '🏦 CUENTA CORRIENTE (Descuenta KM)' : '💵 PAGO DIRECTO';
+                const kmDisponibles = await getKmDisponibles(orden.contratante_id);
                 const kmInsuficientes = orden.forma_pago === 'cuenta_corriente' && kmDisponibles < (orden.km_descontados || 0);
                 
                 const reporteHtml = `
@@ -1050,9 +1078,9 @@
                         
                         <div class="reporte-section">
                             <div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
-                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${subcontratante?.subcontratante || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${contratante?.contratante || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${contratante?.cuit || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${subcontratante?.subcontratante || '-'}</span></div>
                         </div>
                         
                         <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
@@ -1372,7 +1400,7 @@
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
-                columnas = ['id', 'empresas_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
+                columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
             } else if (window.tablaActual === 'contratantes') {
                 columnas = ['id', 'contratante', 'telefono_cont', 'cuit'];
@@ -1394,6 +1422,7 @@
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
+                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 cantidad_buses: 'CANT. BUSES',
@@ -1470,22 +1499,22 @@
                                     <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
                                     ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                     ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                    </td>`;
+                                 </td>`;
                     } else if (window.tablaActual === 'carpetas') {
                         html += `<td class="actions-cell">
                                     <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                     ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                     ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                    </td>`;
+                                 </td>`;
                     } else if (puedeEditar) {
                         html += `<td class="actions-cell">
                                     <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                     <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                                    </td>`;
+                                 </td>`;
                     } else {
                         html += `<td class="actions-cell">
                                     <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                                    </td>`;
+                                 </td>`;
                     }
                     html += '</tr>';
                 }
@@ -1545,7 +1574,34 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                if (col === 'forma_pago') {
+                // Para órdenes, agregar campos especiales con cascada
+                if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
+                    // Obtener lista de contratantes
+                    const { data: contratantes } = await supabase
+                        .from('contratantes')
+                        .select('id, contratante')
+                        .order('contratante');
+                    
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="field_contratante_id" onchange="onContratanteChange()">`;
+                    html += `<option value="">Seleccionar contratante...</option>`;
+                    if (contratantes) {
+                        for (let c of contratantes) {
+                            const selected = (valor == c.id) ? 'selected' : '';
+                            html += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
+                        }
+                    }
+                    html += `</select></div>`;
+                }
+                else if (window.tablaActual === 'ordenes' && col === 'subcontratante') {
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="field_subcontratante">`;
+                    html += `<option value="">Primero seleccione un contratante</option>`;
+                    html += `</select></div>`;
+                }
+                else if (col === 'forma_pago') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
                     html += `<select name="${col}" id="forma_pago_select" onchange="actualizarKmDescontados()">`;
@@ -1582,10 +1638,6 @@
                         }
                     }
                     html += `</select>`;
-                    
-                    if (col === 'subcontratante') {
-                        html += `<div id="km_disponible_info" style="margin-top: 8px; font-size:0.8rem; color:#666;"></div>`;
-                    }
                     html += `</div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
@@ -1612,10 +1664,9 @@
             
             container.innerHTML = html;
             
-            setTimeout(() => {
+            setTimeout(async () => {
                 const kmInput = document.getElementById('field_kilometros');
                 const formaPagoSelect = document.getElementById('forma_pago_select');
-                const subcontratanteSelect = document.getElementById('field_subcontratante');
                 
                 if (formaPagoSelect) {
                     formaPagoSelect.addEventListener('change', actualizarKmDescontados);
@@ -1625,37 +1676,25 @@
                     kmInput.addEventListener('input', actualizarKmDescontados);
                 }
                 
-                if (subcontratanteSelect) {
-                    subcontratanteSelect.addEventListener('change', async (e) => {
-                        const subcontratanteId = e.target.value;
-                        const kmInfo = document.getElementById('km_disponible_info');
-                        if (subcontratanteId && kmInfo) {
-                            const { data: subcon } = await supabase
-                                .from('subcontratantes')
-                                .select('contratante')
-                                .eq('id', subcontratanteId)
-                                .single();
-                            if (subcon && subcon.contratante) {
-                                const kmDisp = await getKmDisponibles(subcon.contratante);
-                                kmInfo.innerHTML = `📊 KM disponibles en cuenta corriente: <strong>${kmDisp} km</strong>`;
-                                kmInfo.style.color = kmDisp > 0 ? '#10b981' : '#ef4444';
-                            } else {
-                                kmInfo.innerHTML = '';
-                            }
-                        } else if (kmInfo) {
-                            kmInfo.innerHTML = '';
-                        }
-                    });
-                    
-                    if (subcontratanteSelect.value) {
-                        const event = new Event('change');
-                        subcontratanteSelect.dispatchEvent(event);
+                // Si estamos editando y hay contratante seleccionado, cargar sus subcontratantes
+                if (window.tablaActual === 'ordenes' && registro) {
+                    const contratanteId = registro.contratante_id;
+                    const subcontratanteId = registro.subcontratante;
+                    if (contratanteId) {
+                        await cargarSubcontratantesPorContratante(contratanteId, subcontratanteId);
                     }
                 }
                 
                 actualizarKmDescontados();
             }, 100);
         }
+
+        // Función global para cuando cambia el contratante
+        window.onContratanteChange = async () => {
+            const contratanteSelect = document.getElementById('field_contratante_id');
+            const contratanteId = contratanteSelect ? contratanteSelect.value : null;
+            await cargarSubcontratantesPorContratante(contratanteId);
+        };
 
         window.actualizarKmDescontados = actualizarKmDescontados;
 
@@ -1686,6 +1725,11 @@
                     } else if (name === 'km_descontados' || name === 'kilometros') {
                         datos[name] = 0;
                     }
+                }
+                
+                // Para órdenes, agregar el usuario que confecciona
+                if (window.tablaActual === 'ordenes') {
+                    datos.confecciono = window.usuarioActual.id;
                 }
                 
                 if (window.tablaActual === 'carpetas' && datos.orden_id) {
@@ -1778,21 +1822,17 @@
                     .eq('id', orden.empresas_id)
                     .single();
                 
-                const { data: subcontratante } = await supabase
-                    .from('subcontratantes')
-                    .select('subcontratante, telefono, contratante')
-                    .eq('id', orden.subcontratante)
+                const { data: contratante } = await supabase
+                    .from('contratantes')
+                    .select('contratante, cuit')
+                    .eq('id', orden.contratante_id)
                     .single();
                 
-                let contratante = null;
-                if (subcontratante && subcontratante.contratante) {
-                    const { data: c } = await supabase
-                        .from('contratantes')
-                        .select('contratante, cuit')
-                        .eq('id', subcontratante.contratante)
-                        .single();
-                    contratante = c;
-                }
+                const { data: subcontratante } = await supabase
+                    .from('subcontratantes')
+                    .select('subcontratante, telefono')
+                    .eq('id', orden.subcontratante)
+                    .single();
                 
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
