@@ -638,6 +638,16 @@
             font-weight: bold;
             color: #d97706;
         }
+        
+        .saldo-rojo {
+            color: #ef4444 !important;
+            font-weight: bold;
+        }
+        
+        .saldo-verde {
+            color: #10b981 !important;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -809,7 +819,6 @@
             }).format(monto);
         }
 
-        // Obtener KM disponibles para un contratante (por su ID)
         async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
             
@@ -848,6 +857,23 @@
 
         async function getKmDisponibles(contratanteId) {
             return getKmDisponiblesPorContratante(contratanteId);
+        }
+
+        // Obtener saldo pendiente de una orden
+        async function getSaldoOrden(ordenId, cotizacion) {
+            if (!ordenId) return 0;
+            
+            const { data: pagos, error } = await supabase
+                .from('pagos')
+                .select('monto')
+                .eq('orden_id', ordenId);
+            
+            if (error) return cotizacion || 0;
+            
+            const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0) || 0;
+            const saldo = (parseFloat(cotizacion) || 0) - totalPagado;
+            
+            return saldo;
         }
 
         function actualizarKmDescontados() {
@@ -1341,11 +1367,13 @@
             
             let columnas;
             let esContratantes = false;
+            let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
+                esOrdenes = true;
             } else if (window.tablaActual === 'contratantes') {
                 columnas = ['id', 'contratante', 'telefono_cont', 'cuit'];
                 esContratantes = true;
@@ -1386,6 +1414,10 @@
                 html += `<th>📊 KM DISPONIBLES</th>`;
             }
             
+            if (esOrdenes) {
+                html += `<th>💰 SALDO</th>`;
+            }
+            
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
             (async () => {
@@ -1423,6 +1455,14 @@
                         const kmDisponibles = await getKmDisponiblesPorContratante(item.id);
                         const kmColor = kmDisponibles > 0 ? '#10b981' : (kmDisponibles < 0 ? '#ef4444' : '#64748b');
                         html += `<td style="font-weight:bold; color:${kmColor};">${kmDisponibles} km</td>`;
+                    }
+                    
+                    if (esOrdenes) {
+                        const saldo = await getSaldoOrden(item.id, item.cotizacion);
+                        const saldoFormateado = formatearMonto(Math.abs(saldo));
+                        const saldoClase = saldo > 0 ? 'saldo-rojo' : (saldo < 0 ? 'saldo-verde' : '');
+                        const saldoTexto = saldo > 0 ? `- ${saldoFormateado}` : (saldo < 0 ? `✓ ${saldoFormateado}` : '✓ SALDADO');
+                        html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}</td>`;
                     }
                     
                     if (window.tablaActual === 'ordenes') {
