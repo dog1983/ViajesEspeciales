@@ -1797,7 +1797,48 @@
             
             container.innerHTML = html;
             
-            setTimeout(async () => {
+            // Cargar datos después de crear los campos HTML
+            if (window.tablaActual === 'carpetas' && registro) {
+                const ordenId = registro.orden_id;
+                if (ordenId) {
+                    // Obtener datos de la orden
+                    const { data: orden } = await supabase
+                        .from('ordenes')
+                        .select('contratante_id, subcontratante')
+                        .eq('id', ordenId)
+                        .single();
+                    
+                    if (orden) {
+                        // Obtener nombre del contratante
+                        const { data: contratante } = await supabase
+                            .from('contratantes')
+                            .select('contratante')
+                            .eq('id', orden.contratante_id)
+                            .single();
+                        
+                        // Obtener nombre del subcontratante
+                        const { data: subcontratante } = await supabase
+                            .from('subcontratantes')
+                            .select('subcontratante')
+                            .eq('id', orden.subcontratante)
+                            .single();
+                        
+                        // Actualizar los campos en el DOM
+                        const contratanteField = document.getElementById('field_contratante_id');
+                        const subcontratanteField = document.getElementById('field_subcontratante_id');
+                        
+                        if (contratanteField && contratante) {
+                            contratanteField.value = contratante.contratante;
+                        }
+                        if (subcontratanteField && subcontratante) {
+                            subcontratanteField.value = subcontratante.subcontratante;
+                        }
+                    }
+                }
+            }
+            
+            // Configurar eventos
+            setTimeout(() => {
                 const kmInput = document.getElementById('field_kilometros');
                 const formaPagoSelect = document.getElementById('forma_pago_select');
                 
@@ -1813,41 +1854,12 @@
                     const contratanteId = registro.contratante_id;
                     const subcontratanteId = registro.subcontratante;
                     if (contratanteId) {
-                        await cargarSubcontratantesPorContratante(contratanteId, subcontratanteId);
-                    }
-                }
-                
-                // CORRECCIÓN: Al editar carpeta, cargar contratante y subcontratante
-                if (window.tablaActual === 'carpetas' && registro) {
-                    const ordenId = registro.orden_id;
-                    if (ordenId) {
-                        const { data: orden } = await supabase
-                            .from('ordenes')
-                            .select('contratante_id, subcontratante')
-                            .eq('id', ordenId)
-                            .single();
-                        if (orden) {
-                            const { data: contratante } = await supabase
-                                .from('contratantes')
-                                .select('contratante')
-                                .eq('id', orden.contratante_id)
-                                .single();
-                            const { data: subcontratante } = await supabase
-                                .from('subcontratantes')
-                                .select('subcontratante')
-                                .eq('id', orden.subcontratante)
-                                .single();
-                            
-                            const contratanteField = document.getElementById('field_contratante_id');
-                            const subcontratanteField = document.getElementById('field_subcontratante_id');
-                            if (contratanteField && contratante) contratanteField.value = contratante.contratante;
-                            if (subcontratanteField && subcontratante) subcontratanteField.value = subcontratante.subcontratante;
-                        }
+                        cargarSubcontratantesPorContratante(contratanteId, subcontratanteId);
                     }
                 }
                 
                 actualizarKmDescontados();
-            }, 100);
+            }, 50);
         }
 
         window.onContratanteChange = async () => {
