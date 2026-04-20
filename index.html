@@ -766,6 +766,7 @@
             },
             carpetas: {
                 orden_id: { tabla: 'ordenes', campo: 'id' },
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
                 subcontratante_id: { tabla: 'subcontratantes', campo: 'subcontratante' },
                 conductor1_id: { tabla: 'conductores', campo: 'nombre' },
                 conductor2_id: { tabla: 'conductores', campo: 'nombre' },
@@ -1346,12 +1347,14 @@
                 if (item.orden_id) {
                     const { data: orden } = await supabase
                         .from('ordenes')
-                        .select('origen, destino')
+                        .select('origen, destino, contratante_id, subcontratante')
                         .eq('id', item.orden_id)
                         .single();
                     if (orden) {
                         item.origen = orden.origen;
                         item.destino = orden.destino;
+                        item.contratante_id = orden.contratante_id;
+                        item.subcontratante_id = orden.subcontratante;
                     }
                 }
             }
@@ -1446,7 +1449,7 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
+                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1464,13 +1467,13 @@
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
+                contratante_id: 'CONTRATANTE',
                 subcontratante_id: 'SUBCONTRATANTE',
                 obs_antes_iniciar: 'OBS ANTES DE INICIAR',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
-                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 cantidad_buses: 'CANT. BUSES',
@@ -1496,7 +1499,7 @@
                 html += `<th>💰 SALDO</th>`;
             }
             
-            html += `<th>ACCIONES</th></tr></thead><tbody>`;
+            html += `<th>ACCIONES</th><tr></thead><tbody>`;
             
             (async () => {
                 for (let item of datosFiltrados) {
