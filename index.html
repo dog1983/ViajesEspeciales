@@ -914,8 +914,8 @@
             }
         }
 
-        // Cargar datos de orden al seleccionar en carpetas
-        async function cargarDatosOrden(ordenId) {
+        // Función para cargar datos completos de la orden en la carpeta
+        window.cargarDatosOrdenCompleta = async (ordenId, esEdicion = false) => {
             if (!ordenId) return;
             
             const { data: orden, error } = await supabase
@@ -956,7 +956,7 @@
                     subcontratanteField.value = subcontratante.subcontratante;
                 }
             }
-        }
+        };
 
         function actualizarKmDescontados() {
             const kmInput = document.getElementById('field_kilometros');
@@ -1656,11 +1656,17 @@
                 }
             }
             
+            // Para carpetas, orden específico
+            if (window.tablaActual === 'carpetas') {
+                camposOrdenados = ['orden_id', 'contratante_id', 'subcontratante_id', 'micro_num', 'contacto', 'obs_antes_iniciar', 'conductor1_id', 'conductor2_id', 'interno_id'];
+            }
+            
             let html = '';
             for (let col of camposOrdenados) {
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
+                // ORDEN ID - Selector para elegir la orden
                 if (window.tablaActual === 'carpetas' && col === 'orden_id') {
                     const { data: ordenes } = await supabase
                         .from('ordenes')
@@ -1669,7 +1675,7 @@
                     
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_orden_id" onchange="cargarDatosOrden(this.value)">`;
+                    html += `<select name="${col}" id="field_orden_id" onchange="cargarDatosOrdenCompleta(this.value, ${!!registro})">`;
                     html += `<option value="">Seleccionar orden...</option>`;
                     if (ordenes) {
                         for (let ord of ordenes) {
@@ -1679,17 +1685,76 @@
                     }
                     html += `</select></div>`;
                 }
+                // CONTRATANTE - Solo lectura, se carga desde la orden
                 else if (window.tablaActual === 'carpetas' && col === 'contratante_id') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
                     html += `<input type="text" id="field_contratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
                     html += `</div>`;
                 }
+                // SUBCONTRATANTE - Solo lectura, se carga desde la orden
                 else if (window.tablaActual === 'carpetas' && col === 'subcontratante_id') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
                     html += `<input type="text" id="field_subcontratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
                     html += `</div>`;
+                }
+                // CONDUCTOR 1 - Selector de conductores
+                else if (window.tablaActual === 'carpetas' && col === 'conductor1_id') {
+                    const { data: conductores } = await supabase
+                        .from('conductores')
+                        .select('id, nombre')
+                        .order('nombre');
+                    
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="field_conductor1_id">`;
+                    html += `<option value="">Seleccionar conductor...</option>`;
+                    if (conductores) {
+                        for (let c of conductores) {
+                            const selected = (valor == c.id) ? 'selected' : '';
+                            html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                        }
+                    }
+                    html += `</select></div>`;
+                }
+                // CONDUCTOR 2 - Selector de conductores
+                else if (window.tablaActual === 'carpetas' && col === 'conductor2_id') {
+                    const { data: conductores } = await supabase
+                        .from('conductores')
+                        .select('id, nombre')
+                        .order('nombre');
+                    
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="field_conductor2_id">`;
+                    html += `<option value="">Seleccionar conductor...</option>`;
+                    if (conductores) {
+                        for (let c of conductores) {
+                            const selected = (valor == c.id) ? 'selected' : '';
+                            html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                        }
+                    }
+                    html += `</select></div>`;
+                }
+                // INTERNO ID - Selector de buses
+                else if (window.tablaActual === 'carpetas' && col === 'interno_id') {
+                    const { data: buses } = await supabase
+                        .from('buses')
+                        .select('id, Interno, Dominio')
+                        .order('Interno');
+                    
+                    html += `<div class="form-group">`;
+                    html += `<label>${label}</label>`;
+                    html += `<select name="${col}" id="field_interno_id">`;
+                    html += `<option value="">Seleccionar interno...</option>`;
+                    if (buses) {
+                        for (let b of buses) {
+                            const selected = (valor == b.id) ? 'selected' : '';
+                            html += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
+                        }
+                    }
+                    html += `</select></div>`;
                 }
                 else if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
                     const { data: contratantes } = await supabase
@@ -1797,44 +1862,9 @@
             
             container.innerHTML = html;
             
-            // Cargar datos después de crear los campos HTML
-            if (window.tablaActual === 'carpetas' && registro) {
-                const ordenId = registro.orden_id;
-                if (ordenId) {
-                    // Obtener datos de la orden
-                    const { data: orden } = await supabase
-                        .from('ordenes')
-                        .select('contratante_id, subcontratante')
-                        .eq('id', ordenId)
-                        .single();
-                    
-                    if (orden) {
-                        // Obtener nombre del contratante
-                        const { data: contratante } = await supabase
-                            .from('contratantes')
-                            .select('contratante')
-                            .eq('id', orden.contratante_id)
-                            .single();
-                        
-                        // Obtener nombre del subcontratante
-                        const { data: subcontratante } = await supabase
-                            .from('subcontratantes')
-                            .select('subcontratante')
-                            .eq('id', orden.subcontratante)
-                            .single();
-                        
-                        // Actualizar los campos en el DOM
-                        const contratanteField = document.getElementById('field_contratante_id');
-                        const subcontratanteField = document.getElementById('field_subcontratante_id');
-                        
-                        if (contratanteField && contratante) {
-                            contratanteField.value = contratante.contratante;
-                        }
-                        if (subcontratanteField && subcontratante) {
-                            subcontratanteField.value = subcontratante.subcontratante;
-                        }
-                    }
-                }
+            // Si estamos editando una carpeta, cargar los datos de la orden seleccionada
+            if (window.tablaActual === 'carpetas' && registro && registro.orden_id) {
+                await window.cargarDatosOrdenCompleta(registro.orden_id, true);
             }
             
             // Configurar eventos
@@ -1868,7 +1898,6 @@
             await cargarSubcontratantesPorContratante(contratanteId);
         };
 
-        window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
         const btnGuardar = document.getElementById('btnGuardar');
