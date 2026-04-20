@@ -1499,7 +1499,7 @@
                 html += `<th>💰 SALDO</th>`;
             }
             
-            html += `<th>ACCIONES</th><tr></thead><tbody>`;
+            html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
             (async () => {
                 for (let item of datosFiltrados) {
@@ -1817,10 +1817,10 @@
                     }
                 }
                 
+                // CORRECCIÓN: Al editar carpeta, cargar contratante y subcontratante
                 if (window.tablaActual === 'carpetas' && registro) {
                     const ordenId = registro.orden_id;
                     if (ordenId) {
-                        await cargarDatosOrden(ordenId);
                         const { data: orden } = await supabase
                             .from('ordenes')
                             .select('contratante_id, subcontratante')
