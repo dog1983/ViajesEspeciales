@@ -718,6 +718,9 @@
         window.editandoId = null;
         window.modalModo = 'form';
 
+        // Forzar recarga del esquema
+        await supabase.from('carpetas').select('id').limit(1).catch(e => console.log('Tabla carpetas no encontrada, recargando...'));
+
         const configPermisos = {
             master: {
                 puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
@@ -914,7 +917,6 @@
             }
         }
 
-        // Función para cargar datos completos de la orden en la carpeta
         window.cargarDatosOrdenCompleta = async (ordenId, esEdicion = false) => {
             if (!ordenId) return;
             
@@ -929,7 +931,6 @@
                 return;
             }
             
-            // Cargar el nombre del contratante
             if (orden.contratante_id) {
                 const { data: contratante } = await supabase
                     .from('contratantes')
@@ -943,7 +944,6 @@
                 }
             }
             
-            // Cargar el nombre del subcontratante
             if (orden.subcontratante) {
                 const { data: subcontratante } = await supabase
                     .from('subcontratantes')
@@ -1614,8 +1614,14 @@
                 .select('*')
                 .limit(1);
             
-            if (error || !columnas || columnas.length === 0) {
-                container.innerHTML = '<p>Error cargando formulario</p>';
+            if (error) {
+                console.error('Error al obtener columnas:', error);
+                container.innerHTML = '<p>Error cargando formulario. Recargue la página.</p>';
+                return;
+            }
+            
+            if (!columnas || columnas.length === 0) {
+                container.innerHTML = '<p>No se encontraron columnas para la tabla. Verifique que la tabla exista.</p>';
                 return;
             }
             
@@ -1656,7 +1662,6 @@
                 }
             }
             
-            // Para carpetas, orden específico
             if (window.tablaActual === 'carpetas') {
                 camposOrdenados = ['orden_id', 'contratante_id', 'subcontratante_id', 'micro_num', 'contacto', 'obs_antes_iniciar', 'conductor1_id', 'conductor2_id', 'interno_id'];
             }
@@ -1666,7 +1671,6 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                // ORDEN ID - Selector para elegir la orden
                 if (window.tablaActual === 'carpetas' && col === 'orden_id') {
                     const { data: ordenes } = await supabase
                         .from('ordenes')
@@ -1685,21 +1689,18 @@
                     }
                     html += `</select></div>`;
                 }
-                // CONTRATANTE - Solo lectura, se carga desde la orden
                 else if (window.tablaActual === 'carpetas' && col === 'contratante_id') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
                     html += `<input type="text" id="field_contratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
                     html += `</div>`;
                 }
-                // SUBCONTRATANTE - Solo lectura, se carga desde la orden
                 else if (window.tablaActual === 'carpetas' && col === 'subcontratante_id') {
                     html += `<div class="form-group">`;
                     html += `<label>${label}</label>`;
                     html += `<input type="text" id="field_subcontratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
                     html += `</div>`;
                 }
-                // CONDUCTOR 1 - Selector de conductores
                 else if (window.tablaActual === 'carpetas' && col === 'conductor1_id') {
                     const { data: conductores } = await supabase
                         .from('conductores')
@@ -1718,7 +1719,6 @@
                     }
                     html += `</select></div>`;
                 }
-                // CONDUCTOR 2 - Selector de conductores
                 else if (window.tablaActual === 'carpetas' && col === 'conductor2_id') {
                     const { data: conductores } = await supabase
                         .from('conductores')
@@ -1737,7 +1737,6 @@
                     }
                     html += `</select></div>`;
                 }
-                // INTERNO ID - Selector de buses
                 else if (window.tablaActual === 'carpetas' && col === 'interno_id') {
                     const { data: buses } = await supabase
                         .from('buses')
@@ -1862,12 +1861,10 @@
             
             container.innerHTML = html;
             
-            // Si estamos editando una carpeta, cargar los datos de la orden seleccionada
             if (window.tablaActual === 'carpetas' && registro && registro.orden_id) {
                 await window.cargarDatosOrdenCompleta(registro.orden_id, true);
             }
             
-            // Configurar eventos
             setTimeout(() => {
                 const kmInput = document.getElementById('field_kilometros');
                 const formaPagoSelect = document.getElementById('forma_pago_select');
