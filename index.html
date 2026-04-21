@@ -424,6 +424,44 @@
             font-family: inherit;
         }
 
+        .info-label {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #166534;
+            margin-bottom: 16px;
+        }
+
+        .info-label span {
+            font-weight: 600;
+            color: #14532d;
+        }
+
+        .readonly-field {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .readonly-field label {
+            font-weight: 600;
+            color: #475569;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+        }
+
+        .readonly-field .value {
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
         .modal-footer {
             padding: 20px;
             border-top: 1px solid #e2e8f0;
@@ -914,12 +952,13 @@
             }
         }
 
-        window.cargarDatosOrdenCompleta = async (ordenId, esEdicion = false) => {
+        // Función para cargar datos de la orden y mostrarlos como etiquetas
+        async function cargarDatosOrdenEnFormulario(ordenId) {
             if (!ordenId) return;
             
             const { data: orden, error } = await supabase
                 .from('ordenes')
-                .select('contratante_id, subcontratante')
+                .select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)')
                 .eq('id', ordenId)
                 .single();
             
@@ -928,32 +967,23 @@
                 return;
             }
             
-            if (orden.contratante_id) {
-                const { data: contratante } = await supabase
-                    .from('contratantes')
-                    .select('contratante')
-                    .eq('id', orden.contratante_id)
-                    .single();
-                
-                const contratanteField = document.getElementById('field_contratante_id');
-                if (contratanteField && contratante) {
-                    contratanteField.value = contratante.contratante;
-                }
-            }
+            // Actualizar campos de solo lectura
+            const empresaField = document.getElementById('info_empresa');
+            const contratanteField = document.getElementById('info_contratante');
+            const subcontratanteField = document.getElementById('info_subcontratante');
+            const fechaIdaField = document.getElementById('info_fecha_ida');
+            const origenField = document.getElementById('info_origen');
+            const destinoField = document.getElementById('info_destino');
+            const fechaRegresoField = document.getElementById('info_fecha_regreso');
             
-            if (orden.subcontratante) {
-                const { data: subcontratante } = await supabase
-                    .from('subcontratantes')
-                    .select('subcontratante')
-                    .eq('id', orden.subcontratante)
-                    .single();
-                
-                const subcontratanteField = document.getElementById('field_subcontratante_id');
-                if (subcontratanteField && subcontratante) {
-                    subcontratanteField.value = subcontratante.subcontratante;
-                }
-            }
-        };
+            if (empresaField) empresaField.textContent = orden.empresas?.nombre || '-';
+            if (contratanteField) contratanteField.textContent = orden.contratantes?.contratante || '-';
+            if (subcontratanteField) subcontratanteField.textContent = orden.subcontratantes?.subcontratante || '-';
+            if (fechaIdaField) fechaIdaField.textContent = formatearFecha(orden.fecha_ida);
+            if (origenField) origenField.textContent = `${orden.direccion_origen || ''} - ${orden.origen || ''}`;
+            if (destinoField) destinoField.textContent = `${orden.direccion_destino || ''} - ${orden.destino || ''}`;
+            if (fechaRegresoField) fechaRegresoField.textContent = formatearFecha(orden.fecha_regreso);
+        }
 
         function actualizarKmDescontados() {
             const kmInput = document.getElementById('field_kilometros');
@@ -1075,29 +1105,11 @@
                 
                 const { data: orden, error } = await supabase
                     .from('ordenes')
-                    .select('*')
+                    .select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)')
                     .eq('id', ordenId)
                     .single();
                 
                 if (error) throw error;
-                
-                const { data: empresa } = await supabase
-                    .from('empresas')
-                    .select('nombre')
-                    .eq('id', orden.empresas_id)
-                    .single();
-                
-                const { data: contratante } = await supabase
-                    .from('contratantes')
-                    .select('contratante, cuit')
-                    .eq('id', orden.contratante_id)
-                    .single();
-                
-                const { data: subcontratante } = await supabase
-                    .from('subcontratantes')
-                    .select('subcontratante')
-                    .eq('id', orden.subcontratante)
-                    .single();
                 
                 const { data: usuario } = await supabase
                     .from('usuarios')
@@ -1118,15 +1130,15 @@
                 const reporteHtml = `
                     <div class="reporte">
                         <div class="reporte-header">
-                            <h2>${empresa?.nombre || 'EMPRESA'}</h2>
+                            <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
                             <div class="subtitle">ORDEN DE VIAJE N° ${orden.id}</div>
                         </div>
                         
                         <div class="reporte-section">
                             <div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
-                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${contratante?.contratante || '-'}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${contratante?.cuit || '-'}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${subcontratante?.subcontratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${orden.contratantes?.contratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${orden.contratantes?.cuit || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${orden.subcontratantes?.subcontratante || '-'}</span></div>
                         </div>
                         
                         <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
@@ -1344,14 +1356,12 @@
                 if (item.orden_id) {
                     const { data: orden } = await supabase
                         .from('ordenes')
-                        .select('origen, destino, contratante_id, subcontratante')
+                        .select('origen, destino')
                         .eq('id', item.orden_id)
                         .single();
                     if (orden) {
                         item.origen = orden.origen;
                         item.destino = orden.destino;
-                        item.contratante_id = orden.contratante_id;
-                        item.subcontratante_id = orden.subcontratante;
                     }
                 }
             }
@@ -1446,7 +1456,7 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
+                columnas = ['id', 'orden_id', 'micro_num', 'contacto', 'obs_antes_iniciar', 'conductor1_id', 'conductor2_id', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1464,13 +1474,14 @@
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
-                contratante_id: 'CONTRATANTE',
-                subcontratante_id: 'SUBCONTRATANTE',
+                micro_num: 'MICRO NUM',
+                contacto: 'CONTACTO',
                 obs_antes_iniciar: 'OBS ANTES DE INICIAR',
-                origen: 'ORIGEN',
-                destino: 'DESTINO',
+                conductor1_id: 'CONDUCTOR 1',
+                conductor2_id: 'CONDUCTOR 2',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
+                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 cantidad_buses: 'CANT. BUSES',
@@ -1659,123 +1670,143 @@
                 }
             }
             
+            // Para carpetas: selector de orden + datos de la orden como etiquetas + campos editables
             if (window.tablaActual === 'carpetas') {
-                camposOrdenados = ['orden_id', 'contratante_id', 'subcontratante_id', 'micro_num', 'contacto', 'obs_antes_iniciar', 'conductor1_id', 'conductor2_id', 'interno_id'];
+                let ordenIdSeleccionado = registro ? registro.orden_id : '';
+                
+                // Selector de orden
+                const { data: ordenes } = await supabase
+                    .from('ordenes')
+                    .select('id')
+                    .order('id', { ascending: false });
+                
+                html = `<div class="form-group">
+                            <label>ORDEN DE VIAJE</label>
+                            <select id="field_orden_id" onchange="cargarDatosOrdenEnFormulario(this.value)">
+                                <option value="">Seleccionar orden...</option>`;
+                if (ordenes) {
+                    for (let ord of ordenes) {
+                        const selected = (ordenIdSeleccionado == ord.id) ? 'selected' : '';
+                        html += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
+                    }
+                }
+                html += `</select>
+                        </div>`;
+                
+                // Datos de la orden (solo lectura)
+                html += `<div style="background:#f0fdf4; border-radius:12px; padding:12px; margin-bottom:16px;">
+                            <h4 style="color:#166534; margin-bottom:8px;">📋 DATOS DE LA ORDEN</h4>
+                            <div class="readonly-field"><label>EMPRESA</label><div class="value" id="info_empresa">-</div></div>
+                            <div class="readonly-field"><label>CONTRATANTE</label><div class="value" id="info_contratante">-</div></div>
+                            <div class="readonly-field"><label>SUBCONTRATANTE</label><div class="value" id="info_subcontratante">-</div></div>
+                            <div class="readonly-field"><label>FECHA IDA</label><div class="value" id="info_fecha_ida">-</div></div>
+                            <div class="readonly-field"><label>ORIGEN</label><div class="value" id="info_origen">-</div></div>
+                            <div class="readonly-field"><label>DESTINO</label><div class="value" id="info_destino">-</div></div>
+                            <div class="readonly-field"><label>FECHA REGRESO</label><div class="value" id="info_fecha_regreso">-</div></div>
+                        </div>`;
+                
+                // Campos editables de la carpeta
+                html += `<h4 style="margin:16px 0 8px; color:#1e293b;">📁 DATOS DE LA CARPETA</h4>`;
+                
+                // MICRO NUM
+                html += `<div class="form-group">
+                            <label>MICRO NUM</label>
+                            <input type="text" name="micro_num" value="${registro?.micro_num || ''}" placeholder="Número de micro">
+                        </div>`;
+                
+                // CONTACTO
+                html += `<div class="form-group">
+                            <label>CONTACTO</label>
+                            <input type="text" name="contacto" value="${registro?.contacto || ''}" placeholder="Contacto">
+                        </div>`;
+                
+                // OBSERVACIONES
+                html += `<div class="form-group">
+                            <label>OBSERVACIONES ANTES DE INICIAR</label>
+                            <textarea name="obs_antes_iniciar" rows="3" placeholder="Observaciones antes de iniciar el viaje">${registro?.obs_antes_iniciar || ''}</textarea>
+                        </div>`;
+                
+                // CONDUCTOR 1
+                const { data: conductores } = await supabase.from('conductores').select('id, nombre').order('nombre');
+                html += `<div class="form-group">
+                            <label>CONDUCTOR 1</label>
+                            <select name="conductor1_id">`;
+                html += `<option value="">Seleccionar conductor...</option>`;
+                if (conductores) {
+                    for (let c of conductores) {
+                        const selected = (registro?.conductor1_id == c.id) ? 'selected' : '';
+                        html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                    }
+                }
+                html += `</select></div>`;
+                
+                // CONDUCTOR 2
+                html += `<div class="form-group">
+                            <label>CONDUCTOR 2</label>
+                            <select name="conductor2_id">`;
+                html += `<option value="">Seleccionar conductor...</option>`;
+                if (conductores) {
+                    for (let c of conductores) {
+                        const selected = (registro?.conductor2_id == c.id) ? 'selected' : '';
+                        html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                    }
+                }
+                html += `</select></div>`;
+                
+                // INTERNO ID
+                const { data: buses } = await supabase.from('buses').select('id, Interno, Dominio').order('Interno');
+                html += `<div class="form-group">
+                            <label>INTERNO / BUS</label>
+                            <select name="interno_id">`;
+                html += `<option value="">Seleccionar interno...</option>`;
+                if (buses) {
+                    for (let b of buses) {
+                        const selected = (registro?.interno_id == b.id) ? 'selected' : '';
+                        html += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
+                    }
+                }
+                html += `</select></div>`;
+                
+                container.innerHTML = html;
+                
+                // Si estamos editando, cargar los datos de la orden seleccionada
+                if (registro && registro.orden_id) {
+                    await cargarDatosOrdenEnFormulario(registro.orden_id);
+                }
+                
+                return;
             }
             
-            let html = '';
+            // Para las demás tablas, mantener el código original
+            let htmlForm = '';
             for (let col of camposOrdenados) {
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                if (window.tablaActual === 'carpetas' && col === 'orden_id') {
-                    const { data: ordenes } = await supabase
-                        .from('ordenes')
-                        .select('id')
-                        .order('id', { ascending: false });
-                    
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_orden_id" onchange="cargarDatosOrdenCompleta(this.value, ${!!registro})">`;
-                    html += `<option value="">Seleccionar orden...</option>`;
-                    if (ordenes) {
-                        for (let ord of ordenes) {
-                            const selected = (valor == ord.id) ? 'selected' : '';
-                            html += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
-                        }
-                    }
-                    html += `</select></div>`;
-                }
-                else if (window.tablaActual === 'carpetas' && col === 'contratante_id') {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<input type="text" id="field_contratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
-                    html += `</div>`;
-                }
-                else if (window.tablaActual === 'carpetas' && col === 'subcontratante_id') {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<input type="text" id="field_subcontratante_id" value="" readonly style="background-color:#f0f0f0; width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:12px;">`;
-                    html += `</div>`;
-                }
-                else if (window.tablaActual === 'carpetas' && col === 'conductor1_id') {
-                    const { data: conductores } = await supabase
-                        .from('conductores')
-                        .select('id, nombre')
-                        .order('nombre');
-                    
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_conductor1_id">`;
-                    html += `<option value="">Seleccionar conductor...</option>`;
-                    if (conductores) {
-                        for (let c of conductores) {
-                            const selected = (valor == c.id) ? 'selected' : '';
-                            html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
-                        }
-                    }
-                    html += `</select></div>`;
-                }
-                else if (window.tablaActual === 'carpetas' && col === 'conductor2_id') {
-                    const { data: conductores } = await supabase
-                        .from('conductores')
-                        .select('id, nombre')
-                        .order('nombre');
-                    
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_conductor2_id">`;
-                    html += `<option value="">Seleccionar conductor...</option>`;
-                    if (conductores) {
-                        for (let c of conductores) {
-                            const selected = (valor == c.id) ? 'selected' : '';
-                            html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
-                        }
-                    }
-                    html += `</select></div>`;
-                }
-                else if (window.tablaActual === 'carpetas' && col === 'interno_id') {
-                    const { data: buses } = await supabase
-                        .from('buses')
-                        .select('id, Interno, Dominio')
-                        .order('Interno');
-                    
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_interno_id">`;
-                    html += `<option value="">Seleccionar interno...</option>`;
-                    if (buses) {
-                        for (let b of buses) {
-                            const selected = (valor == b.id) ? 'selected' : '';
-                            html += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
-                        }
-                    }
-                    html += `</select></div>`;
-                }
-                else if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
+                if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
                     const { data: contratantes } = await supabase
                         .from('contratantes')
                         .select('id, contratante')
                         .order('contratante');
                     
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_contratante_id" onchange="onContratanteChange()">`;
-                    html += `<option value="">Seleccionar contratante...</option>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}" id="field_contratante_id" onchange="onContratanteChange()">`;
+                    htmlForm += `<option value="">Seleccionar contratante...</option>`;
                     if (contratantes) {
                         for (let c of contratantes) {
                             const selected = (valor == c.id) ? 'selected' : '';
-                            html += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
+                            htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
                         }
                     }
-                    html += `</select></div>`;
+                    htmlForm += `</select></div>`;
                 }
                 else if (window.tablaActual === 'ordenes' && col === 'subcontratante') {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_subcontratante">`;
-                    html += `<option value="">Primero seleccione un contratante</option>`;
-                    html += `</select></div>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}" id="field_subcontratante">`;
+                    htmlForm += `<option value="">Primero seleccione un contratante</option>`;
+                    htmlForm += `</select></div>`;
                 }
                 else if (window.tablaActual === 'contratantes' && col === 'usuario_id') {
                     const { data: usuarios } = await supabase
@@ -1783,84 +1814,80 @@
                         .select('id, nombre, usuario')
                         .order('nombre');
                     
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_usuario_id">`;
-                    html += `<option value="">Seleccionar usuario...</option>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}" id="field_usuario_id">`;
+                    htmlForm += `<option value="">Seleccionar usuario...</option>`;
                     if (usuarios) {
                         for (let u of usuarios) {
                             const selected = (valor == u.id) ? 'selected' : '';
-                            html += `<option value="${u.id}" ${selected}>${u.nombre} (${u.usuario})</option>`;
+                            htmlForm += `<option value="${u.id}" ${selected}>${u.nombre} (${u.usuario})</option>`;
                         }
                     }
-                    html += `</select></div>`;
+                    htmlForm += `</select></div>`;
                 }
                 else if (col === 'forma_pago') {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="forma_pago_select" onchange="actualizarKmDescontados()">`;
-                    html += `<option value="pago_directo" ${valor === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>`;
-                    html += `<option value="cuenta_corriente" ${valor === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente (descuenta KM)</option>`;
-                    html += `</select></div>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}" id="forma_pago_select" onchange="actualizarKmDescontados()">`;
+                    htmlForm += `<option value="pago_directo" ${valor === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>`;
+                    htmlForm += `<option value="cuenta_corriente" ${valor === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente (descuenta KM)</option>`;
+                    htmlForm += `</select></div>`;
                 } 
                 else if (col === 'km_descontados') {
                     const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
-                    html += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>`;
-                    html += `<label>${label} (KM a descontar)</label>`;
-                    html += `<input type="number" name="${col}" id="field_km_descontados" value="${valor || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">`;
-                    html += `</div>`;
+                    htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>`;
+                    htmlForm += `<label>${label} (KM a descontar)</label>`;
+                    htmlForm += `<input type="number" name="${col}" id="field_km_descontados" value="${valor || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">`;
+                    htmlForm += `</div>`;
                 }
                 else if (col === 'kilometros') {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label} (KM del viaje)</label>`;
-                    html += `<input type="number" name="${col}" id="field_kilometros" value="${valor || 0}" step="1" min="0" onchange="actualizarKmDescontados()">`;
-                    html += `</div>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label} (KM del viaje)</label>`;
+                    htmlForm += `<input type="number" name="${col}" id="field_kilometros" value="${valor || 0}" step="1" min="0" onchange="actualizarKmDescontados()">`;
+                    htmlForm += `</div>`;
                 }
                 else if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<select name="${col}" id="field_${col}">`;
-                    html += `<option value="">Seleccionar...</option>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}" id="field_${col}">`;
+                    htmlForm += `<option value="">Seleccionar...</option>`;
                     if (opciones) {
                         for (let op of opciones) {
                             const selected = valor == op.id ? 'selected' : '';
                             const displayValue = op[relacion.campo] || op.nombre || op.contratante || op.id;
-                            html += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
+                            htmlForm += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
                         }
                     }
-                    html += `</select>`;
-                    html += `</div>`;
+                    htmlForm += `</select>`;
+                    htmlForm += `</div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<input type="date" name="${col}" value="${fechaValor}">`;
-                    html += `</div>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<input type="date" name="${col}" value="${fechaValor}">`;
+                    htmlForm += `</div>`;
                 } else if (col.includes('hora')) {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
-                    html += `<input type="time" name="${col}" value="${valor || ''}">`;
-                    html += `</div>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<input type="time" name="${col}" value="${valor || ''}">`;
+                    htmlForm += `</div>`;
                 } else {
-                    html += `<div class="form-group">`;
-                    html += `<label>${label}</label>`;
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
                     if (col.includes('obs')) {
-                        html += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
+                        htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
                     } else {
-                        html += `<input type="${col === 'cotizacion' || col === 'monto' ? 'number' : 'text'}" name="${col}" value="${valor || ''}" step="${col === 'cotizacion' ? '0.01' : 'any'}">`;
+                        htmlForm += `<input type="${col === 'cotizacion' || col === 'monto' ? 'number' : 'text'}" name="${col}" value="${valor || ''}" step="${col === 'cotizacion' ? '0.01' : 'any'}">`;
                     }
-                    html += `</div>`;
+                    htmlForm += `</div>`;
                 }
             }
             
-            container.innerHTML = html;
-            
-            if (window.tablaActual === 'carpetas' && registro && registro.orden_id) {
-                await window.cargarDatosOrdenCompleta(registro.orden_id, true);
-            }
+            container.innerHTML = htmlForm;
             
             setTimeout(() => {
                 const kmInput = document.getElementById('field_kilometros');
@@ -1886,6 +1913,7 @@
             }, 50);
         }
 
+        window.cargarDatosOrdenEnFormulario = cargarDatosOrdenEnFormulario;
         window.onContratanteChange = async () => {
             const contratanteSelect = document.getElementById('field_contratante_id');
             const contratanteId = contratanteSelect ? contratanteSelect.value : null;
@@ -1920,6 +1948,17 @@
                         }
                     } else if (name === 'km_descontados' || name === 'kilometros') {
                         datos[name] = 0;
+                    }
+                }
+                
+                // Para carpetas, agregar el orden_id seleccionado
+                if (window.tablaActual === 'carpetas') {
+                    const ordenSelect = document.getElementById('field_orden_id');
+                    if (ordenSelect && ordenSelect.value) {
+                        datos.orden_id = parseInt(ordenSelect.value);
+                    } else {
+                        mostrarToast('Debe seleccionar una orden de viaje', true);
+                        return;
                     }
                 }
                 
@@ -2005,29 +2044,11 @@
                 
                 const { data: orden, error: errOrden } = await supabase
                     .from('ordenes')
-                    .select('*')
+                    .select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)')
                     .eq('id', carpeta.orden_id)
                     .single();
                 
                 if (errOrden) throw errOrden;
-                
-                const { data: empresa } = await supabase
-                    .from('empresas')
-                    .select('nombre')
-                    .eq('id', orden.empresas_id)
-                    .single();
-                
-                const { data: contratante } = await supabase
-                    .from('contratantes')
-                    .select('contratante, cuit')
-                    .eq('id', orden.contratante_id)
-                    .single();
-                
-                const { data: subcontratante } = await supabase
-                    .from('subcontratantes')
-                    .select('subcontratante, telefono')
-                    .eq('id', orden.subcontratante)
-                    .single();
                 
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
@@ -2068,17 +2089,17 @@
                 const hojaHtml = `
                     <div class="reporte">
                         <div class="reporte-header">
-                            <h2>${empresa?.nombre || 'EMPRESA'}</h2>
+                            <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
                             <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
                             <div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div>
                         </div>
                         
                         <div class="reporte-section">
                             <div class="reporte-section-title">📋 CONTRATANTE</div>
-                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${contratante?.contratante || '-'}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${contratante?.cuit || '-'}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${subcontratante?.subcontratante || '-'}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">Contacto:</span><span class="reporte-value">${carpeta.contacto || subcontratante?.telefono || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${orden.contratantes?.contratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${orden.contratantes?.cuit || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${orden.subcontratantes?.subcontratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Contacto:</span><span class="reporte-value">${carpeta.contacto || orden.subcontratantes?.telefono || '-'}</span></div>
                         </div>
                         
                         <div class="reporte-section">
