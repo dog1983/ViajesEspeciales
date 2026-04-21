@@ -424,41 +424,34 @@
             font-family: inherit;
         }
 
-        .info-label {
-            background-color: #f0fdf4;
+        .info-card {
+            background: #f0fdf4;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
             border: 1px solid #bbf7d0;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 0.9rem;
+        }
+
+        .info-card h4 {
             color: #166534;
-            margin-bottom: 16px;
-        }
-
-        .info-label span {
-            font-weight: 600;
-            color: #14532d;
-        }
-
-        .readonly-field {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
+            margin-bottom: 12px;
             font-size: 0.9rem;
-            color: #1e293b;
-            margin-bottom: 16px;
         }
 
-        .readonly-field label {
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
             font-weight: 600;
+            width: 110px;
             color: #475569;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.75rem;
         }
 
-        .readonly-field .value {
-            font-size: 0.9rem;
+        .info-value {
+            flex: 1;
             color: #1e293b;
         }
 
@@ -513,178 +506,6 @@
             text-align: center;
             z-index: 400;
             font-size: 0.9rem;
-        }
-
-        .reporte {
-            font-family: Arial, Helvetica, sans-serif;
-            background: white;
-            padding: 0;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .reporte-header {
-            text-align: center;
-            border-bottom: 2px solid #1e293b;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .reporte-header h2 {
-            color: #1e293b;
-            font-size: 1.3rem;
-            margin-bottom: 4px;
-        }
-
-        .reporte-header .subtitle {
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        .reporte-section {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            background: white;
-            page-break-inside: avoid;
-        }
-
-        .reporte-section-title {
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: #1e293b;
-            margin-bottom: 8px;
-            border-left: 3px solid #3b82f6;
-            padding-left: 8px;
-        }
-
-        .reporte-row {
-            display: flex;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            line-height: 1.3;
-        }
-
-        .reporte-label {
-            font-weight: 600;
-            width: 130px;
-            color: #475569;
-            flex-shrink: 0;
-        }
-
-        .reporte-value {
-            flex: 1;
-            color: #1e293b;
-        }
-
-        .reporte-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .conductor-box {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px;
-            background: #f8fafc;
-        }
-
-        .conductor-box h5 {
-            font-size: 0.8rem;
-            color: #3b82f6;
-            margin-bottom: 8px;
-        }
-
-        .viaje-destacado {
-            background: #eff6ff;
-            border: 2px solid #3b82f6;
-            margin-bottom: 12px;
-        }
-        
-        .viaje-destacado .reporte-row {
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-        
-        .viaje-destacado .reporte-label {
-            width: 140px;
-            font-weight: 700;
-            color: #1e40af;
-        }
-        
-        .viaje-destacado .reporte-value {
-            font-weight: 600;
-            color: #1e3a8a;
-        }
-
-        .texto-fijo-reporte {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 10px;
-            background: white;
-            min-height: 80px;
-            white-space: pre-wrap;
-            font-size: 0.85rem;
-            margin-top: 6px;
-        }
-        
-        .texto-fijo-reporte.vacio {
-            color: #94a3b8;
-            font-style: italic;
-        }
-
-        .reporte-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            justify-content: flex-end;
-        }
-        
-        .reporte-actions button {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .btn-print {
-            background: #64748b;
-            color: white;
-        }
-        
-        .btn-pdf {
-            background: #ef4444;
-            color: white;
-        }
-
-        .monto {
-            font-weight: bold;
-            color: #10b981;
-        }
-
-        .km-disponible {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-        }
-        
-        .km-disponible .reporte-value {
-            font-weight: bold;
-            color: #d97706;
-        }
-        
-        .saldo-rojo {
-            color: #ef4444 !important;
-            font-weight: bold;
-        }
-        
-        .saldo-verde {
-            color: #10b981 !important;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -804,8 +625,6 @@
             },
             carpetas: {
                 orden_id: { tabla: 'ordenes', campo: 'id' },
-                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
-                subcontratante_id: { tabla: 'subcontratantes', campo: 'subcontratante' },
                 conductor1_id: { tabla: 'conductores', campo: 'nombre' },
                 conductor2_id: { tabla: 'conductores', campo: 'nombre' },
                 interno_id: { tabla: 'buses', campo: 'Interno' }
@@ -952,8 +771,7 @@
             }
         }
 
-        // Función para cargar datos de la orden y mostrarlos como etiquetas
-        async function cargarDatosOrdenEnFormulario(ordenId) {
+        async function cargarDatosOrden(ordenId) {
             if (!ordenId) return;
             
             const { data: orden, error } = await supabase
@@ -967,22 +785,21 @@
                 return;
             }
             
-            // Actualizar campos de solo lectura
-            const empresaField = document.getElementById('info_empresa');
-            const contratanteField = document.getElementById('info_contratante');
-            const subcontratanteField = document.getElementById('info_subcontratante');
-            const fechaIdaField = document.getElementById('info_fecha_ida');
-            const origenField = document.getElementById('info_origen');
-            const destinoField = document.getElementById('info_destino');
-            const fechaRegresoField = document.getElementById('info_fecha_regreso');
+            const empresaSpan = document.getElementById('info_empresa');
+            const contratanteSpan = document.getElementById('info_contratante');
+            const subcontratanteSpan = document.getElementById('info_subcontratante');
+            const fechaIdaSpan = document.getElementById('info_fecha_ida');
+            const origenSpan = document.getElementById('info_origen');
+            const destinoSpan = document.getElementById('info_destino');
+            const fechaRegresoSpan = document.getElementById('info_fecha_regreso');
             
-            if (empresaField) empresaField.textContent = orden.empresas?.nombre || '-';
-            if (contratanteField) contratanteField.textContent = orden.contratantes?.contratante || '-';
-            if (subcontratanteField) subcontratanteField.textContent = orden.subcontratantes?.subcontratante || '-';
-            if (fechaIdaField) fechaIdaField.textContent = formatearFecha(orden.fecha_ida);
-            if (origenField) origenField.textContent = `${orden.direccion_origen || ''} - ${orden.origen || ''}`;
-            if (destinoField) destinoField.textContent = `${orden.direccion_destino || ''} - ${orden.destino || ''}`;
-            if (fechaRegresoField) fechaRegresoField.textContent = formatearFecha(orden.fecha_regreso);
+            if (empresaSpan) empresaSpan.textContent = orden.empresas?.nombre || '-';
+            if (contratanteSpan) contratanteSpan.textContent = orden.contratantes?.contratante || '-';
+            if (subcontratanteSpan) subcontratanteSpan.textContent = orden.subcontratantes?.subcontratante || '-';
+            if (fechaIdaSpan) fechaIdaSpan.textContent = formatearFecha(orden.fecha_ida);
+            if (origenSpan) origenSpan.textContent = `${orden.direccion_origen || ''} - ${orden.origen || ''}`;
+            if (destinoSpan) destinoSpan.textContent = `${orden.direccion_destino || ''} - ${orden.destino || ''}`;
+            if (fechaRegresoSpan) fechaRegresoSpan.textContent = formatearFecha(orden.fecha_regreso);
         }
 
         function actualizarKmDescontados() {
@@ -1476,7 +1293,7 @@
                 orden_id: 'ORDEN ID',
                 micro_num: 'MICRO NUM',
                 contacto: 'CONTACTO',
-                obs_antes_iniciar: 'OBS ANTES DE INICIAR',
+                obs_antes_iniciar: 'OBS ANTES INICIAR',
                 conductor1_id: 'CONDUCTOR 1',
                 conductor2_id: 'CONDUCTOR 2',
                 interno_id: 'INTERNO ID',
@@ -1579,7 +1396,7 @@
                     html += '</tr>';
                 }
                 
-                html += '</tbody></table></div>';
+                html += '</tbody><tr></div>';
                 document.getElementById('table-container').innerHTML = html;
             })();
         }
@@ -1617,243 +1434,145 @@
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             
-            const { data: columnas, error } = await supabase
-                .from(window.tablaActual)
-                .select('*')
-                .limit(1);
-            
-            if (error) {
-                console.error('Error al obtener columnas:', error);
-                container.innerHTML = '<p>Error cargando formulario. Recargue la página.</p>';
-                return;
-            }
-            
-            if (!columnas || columnas.length === 0) {
-                container.innerHTML = '<p>No se encontraron columnas para la tabla. Verifique que la tabla exista.</p>';
-                return;
-            }
-            
-            const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
-            
-            let camposOrdenados = estructura;
-            if (window.tablaActual === 'ordenes') {
-                const ordenPersonalizado = [
-                    'contratante_id',
-                    'subcontratante',
-                    'empresas_id',
-                    'fecha_ida',
-                    'hora_ida',
-                    'direccion_origen',
-                    'origen',
-                    'direccion_destino',
-                    'destino',
-                    'fecha_regreso',
-                    'hora_regreso',
-                    'paradas',
-                    'movimientos',
-                    'cantidad_buses',
-                    'obs_buses',
-                    'cotizacion',
-                    'kilometros',
-                    'obs_cotizacion',
-                    'comidas',
-                    'alojamiento',
-                    'obs_gastos',
-                    'forma_pago',
-                    'km_descontados'
-                ];
-                camposOrdenados = ordenPersonalizado.filter(campo => estructura.includes(campo));
-                for (let campo of estructura) {
-                    if (!camposOrdenados.includes(campo)) {
-                        camposOrdenados.push(campo);
-                    }
-                }
-            }
-            
-            // Para carpetas: selector de orden + datos de la orden como etiquetas + campos editables
+            // Para carpetas: formulario específico
             if (window.tablaActual === 'carpetas') {
-                let ordenIdSeleccionado = registro ? registro.orden_id : '';
-                
-                // Selector de orden
+                // Obtener lista de órdenes
                 const { data: ordenes } = await supabase
                     .from('ordenes')
                     .select('id')
                     .order('id', { ascending: false });
                 
-                html = `<div class="form-group">
-                            <label>ORDEN DE VIAJE</label>
-                            <select id="field_orden_id" onchange="cargarDatosOrdenEnFormulario(this.value)">
-                                <option value="">Seleccionar orden...</option>`;
+                // Obtener lista de conductores
+                const { data: conductores } = await supabase
+                    .from('conductores')
+                    .select('id, nombre')
+                    .order('nombre');
+                
+                // Obtener lista de buses
+                const { data: buses } = await supabase
+                    .from('buses')
+                    .select('id, Interno, Dominio')
+                    .order('Interno');
+                
+                let htmlForm = `
+                    <div class="form-group">
+                        <label>ORDEN DE VIAJE</label>
+                        <select name="orden_id" id="select_orden" onchange="cargarDatosOrden(this.value)" required>
+                            <option value="">Seleccionar orden...</option>`;
+                
                 if (ordenes) {
                     for (let ord of ordenes) {
-                        const selected = (ordenIdSeleccionado == ord.id) ? 'selected' : '';
-                        html += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
+                        const selected = (registro?.orden_id == ord.id) ? 'selected' : '';
+                        htmlForm += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
                     }
                 }
-                html += `</select>
-                        </div>`;
+                htmlForm += `</select>
+                    </div>`;
                 
-                // Datos de la orden (solo lectura)
-                html += `<div style="background:#f0fdf4; border-radius:12px; padding:12px; margin-bottom:16px;">
-                            <h4 style="color:#166534; margin-bottom:8px;">📋 DATOS DE LA ORDEN</h4>
-                            <div class="readonly-field"><label>EMPRESA</label><div class="value" id="info_empresa">-</div></div>
-                            <div class="readonly-field"><label>CONTRATANTE</label><div class="value" id="info_contratante">-</div></div>
-                            <div class="readonly-field"><label>SUBCONTRATANTE</label><div class="value" id="info_subcontratante">-</div></div>
-                            <div class="readonly-field"><label>FECHA IDA</label><div class="value" id="info_fecha_ida">-</div></div>
-                            <div class="readonly-field"><label>ORIGEN</label><div class="value" id="info_origen">-</div></div>
-                            <div class="readonly-field"><label>DESTINO</label><div class="value" id="info_destino">-</div></div>
-                            <div class="readonly-field"><label>FECHA REGRESO</label><div class="value" id="info_fecha_regreso">-</div></div>
-                        </div>`;
+                // Tarjeta con datos de la orden (solo lectura)
+                htmlForm += `
+                    <div class="info-card">
+                        <h4>📋 DATOS DE LA ORDEN SELECCIONADA</h4>
+                        <div class="info-row"><span class="info-label">Empresa:</span><span class="info-value" id="info_empresa">-</span></div>
+                        <div class="info-row"><span class="info-label">Contratante:</span><span class="info-value" id="info_contratante">-</span></div>
+                        <div class="info-row"><span class="info-label">Subcontratante:</span><span class="info-value" id="info_subcontratante">-</span></div>
+                        <div class="info-row"><span class="info-label">Fecha Ida:</span><span class="info-value" id="info_fecha_ida">-</span></div>
+                        <div class="info-row"><span class="info-label">Origen:</span><span class="info-value" id="info_origen">-</span></div>
+                        <div class="info-row"><span class="info-label">Destino:</span><span class="info-value" id="info_destino">-</span></div>
+                        <div class="info-row"><span class="info-label">Fecha Regreso:</span><span class="info-value" id="info_fecha_regreso">-</span></div>
+                    </div>`;
                 
-                // Campos editables de la carpeta
-                html += `<h4 style="margin:16px 0 8px; color:#1e293b;">📁 DATOS DE LA CARPETA</h4>`;
+                // Campos de la carpeta
+                htmlForm += `<h4 style="margin: 16px 0 8px; color: #1e293b;">📁 DATOS DE LA CARPETA</h4>`;
                 
-                // MICRO NUM
-                html += `<div class="form-group">
-                            <label>MICRO NUM</label>
-                            <input type="text" name="micro_num" value="${registro?.micro_num || ''}" placeholder="Número de micro">
-                        </div>`;
+                htmlForm += `<div class="form-group">
+                                <label>MICRO NUM</label>
+                                <input type="text" name="micro_num" value="${registro?.micro_num || ''}" placeholder="Número de micro">
+                            </div>`;
                 
-                // CONTACTO
-                html += `<div class="form-group">
-                            <label>CONTACTO</label>
-                            <input type="text" name="contacto" value="${registro?.contacto || ''}" placeholder="Contacto">
-                        </div>`;
+                htmlForm += `<div class="form-group">
+                                <label>CONTACTO</label>
+                                <input type="text" name="contacto" value="${registro?.contacto || ''}" placeholder="Contacto">
+                            </div>`;
                 
-                // OBSERVACIONES
-                html += `<div class="form-group">
-                            <label>OBSERVACIONES ANTES DE INICIAR</label>
-                            <textarea name="obs_antes_iniciar" rows="3" placeholder="Observaciones antes de iniciar el viaje">${registro?.obs_antes_iniciar || ''}</textarea>
-                        </div>`;
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIONES ANTES DE INICIAR</label>
+                                <textarea name="obs_antes_iniciar" rows="3" placeholder="Observaciones antes de iniciar el viaje">${registro?.obs_antes_iniciar || ''}</textarea>
+                            </div>`;
                 
-                // CONDUCTOR 1
-                const { data: conductores } = await supabase.from('conductores').select('id, nombre').order('nombre');
-                html += `<div class="form-group">
-                            <label>CONDUCTOR 1</label>
-                            <select name="conductor1_id">`;
-                html += `<option value="">Seleccionar conductor...</option>`;
+                htmlForm += `<div class="form-group">
+                                <label>CONDUCTOR 1</label>
+                                <select name="conductor1_id">
+                                    <option value="">Seleccionar conductor...</option>`;
                 if (conductores) {
                     for (let c of conductores) {
                         const selected = (registro?.conductor1_id == c.id) ? 'selected' : '';
-                        html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
                     }
                 }
-                html += `</select></div>`;
+                htmlForm += `</select></div>`;
                 
-                // CONDUCTOR 2
-                html += `<div class="form-group">
-                            <label>CONDUCTOR 2</label>
-                            <select name="conductor2_id">`;
-                html += `<option value="">Seleccionar conductor...</option>`;
+                htmlForm += `<div class="form-group">
+                                <label>CONDUCTOR 2</label>
+                                <select name="conductor2_id">
+                                    <option value="">Seleccionar conductor...</option>`;
                 if (conductores) {
                     for (let c of conductores) {
                         const selected = (registro?.conductor2_id == c.id) ? 'selected' : '';
-                        html += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
                     }
                 }
-                html += `</select></div>`;
+                htmlForm += `</select></div>`;
                 
-                // INTERNO ID
-                const { data: buses } = await supabase.from('buses').select('id, Interno, Dominio').order('Interno');
-                html += `<div class="form-group">
-                            <label>INTERNO / BUS</label>
-                            <select name="interno_id">`;
-                html += `<option value="">Seleccionar interno...</option>`;
+                htmlForm += `<div class="form-group">
+                                <label>INTERNO / BUS</label>
+                                <select name="interno_id">
+                                    <option value="">Seleccionar interno...</option>`;
                 if (buses) {
                     for (let b of buses) {
                         const selected = (registro?.interno_id == b.id) ? 'selected' : '';
-                        html += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
+                        htmlForm += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
                     }
                 }
-                html += `</select></div>`;
+                htmlForm += `</select></div>`;
                 
-                container.innerHTML = html;
+                container.innerHTML = htmlForm;
                 
-                // Si estamos editando, cargar los datos de la orden seleccionada
+                // Si estamos editando, cargar los datos de la orden
                 if (registro && registro.orden_id) {
-                    await cargarDatosOrdenEnFormulario(registro.orden_id);
+                    await cargarDatosOrden(registro.orden_id);
+                    const selectOrden = document.getElementById('select_orden');
+                    if (selectOrden) selectOrden.value = registro.orden_id;
                 }
                 
                 return;
             }
             
-            // Para las demás tablas, mantener el código original
+            // Para las demás tablas, mantener el código original simplificado
+            const { data: columnas, error } = await supabase
+                .from(window.tablaActual)
+                .select('*')
+                .limit(1);
+            
+            if (error || !columnas || columnas.length === 0) {
+                container.innerHTML = '<p>Error cargando formulario</p>';
+                return;
+            }
+            
+            const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
+            
             let htmlForm = '';
-            for (let col of camposOrdenados) {
+            for (let col of estructura) {
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                if (window.tablaActual === 'ordenes' && col === 'contratante_id') {
-                    const { data: contratantes } = await supabase
-                        .from('contratantes')
-                        .select('id, contratante')
-                        .order('contratante');
-                    
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}" id="field_contratante_id" onchange="onContratanteChange()">`;
-                    htmlForm += `<option value="">Seleccionar contratante...</option>`;
-                    if (contratantes) {
-                        for (let c of contratantes) {
-                            const selected = (valor == c.id) ? 'selected' : '';
-                            htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
-                        }
-                    }
-                    htmlForm += `</select></div>`;
-                }
-                else if (window.tablaActual === 'ordenes' && col === 'subcontratante') {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}" id="field_subcontratante">`;
-                    htmlForm += `<option value="">Primero seleccione un contratante</option>`;
-                    htmlForm += `</select></div>`;
-                }
-                else if (window.tablaActual === 'contratantes' && col === 'usuario_id') {
-                    const { data: usuarios } = await supabase
-                        .from('usuarios')
-                        .select('id, nombre, usuario')
-                        .order('nombre');
-                    
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}" id="field_usuario_id">`;
-                    htmlForm += `<option value="">Seleccionar usuario...</option>`;
-                    if (usuarios) {
-                        for (let u of usuarios) {
-                            const selected = (valor == u.id) ? 'selected' : '';
-                            htmlForm += `<option value="${u.id}" ${selected}>${u.nombre} (${u.usuario})</option>`;
-                        }
-                    }
-                    htmlForm += `</select></div>`;
-                }
-                else if (col === 'forma_pago') {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}" id="forma_pago_select" onchange="actualizarKmDescontados()">`;
-                    htmlForm += `<option value="pago_directo" ${valor === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>`;
-                    htmlForm += `<option value="cuenta_corriente" ${valor === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente (descuenta KM)</option>`;
-                    htmlForm += `</select></div>`;
-                } 
-                else if (col === 'km_descontados') {
-                    const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
-                    htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>`;
-                    htmlForm += `<label>${label} (KM a descontar)</label>`;
-                    htmlForm += `<input type="number" name="${col}" id="field_km_descontados" value="${valor || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">`;
-                    htmlForm += `</div>`;
-                }
-                else if (col === 'kilometros') {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label} (KM del viaje)</label>`;
-                    htmlForm += `<input type="number" name="${col}" id="field_kilometros" value="${valor || 0}" step="1" min="0" onchange="actualizarKmDescontados()">`;
-                    htmlForm += `</div>`;
-                }
-                else if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
                     htmlForm += `<div class="form-group">`;
                     htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}" id="field_${col}">`;
+                    htmlForm += `<select name="${col}">`;
                     htmlForm += `<option value="">Seleccionar...</option>`;
                     if (opciones) {
                         for (let op of opciones) {
@@ -1862,65 +1581,30 @@
                             htmlForm += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
                         }
                     }
-                    htmlForm += `</select>`;
-                    htmlForm += `</div>`;
+                    htmlForm += `</select></div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
                     htmlForm += `<div class="form-group">`;
                     htmlForm += `<label>${label}</label>`;
                     htmlForm += `<input type="date" name="${col}" value="${fechaValor}">`;
                     htmlForm += `</div>`;
-                } else if (col.includes('hora')) {
+                } else if (col.includes('obs')) {
                     htmlForm += `<div class="form-group">`;
                     htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<input type="time" name="${col}" value="${valor || ''}">`;
+                    htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
                     htmlForm += `</div>`;
                 } else {
                     htmlForm += `<div class="form-group">`;
                     htmlForm += `<label>${label}</label>`;
-                    if (col.includes('obs')) {
-                        htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
-                    } else {
-                        htmlForm += `<input type="${col === 'cotizacion' || col === 'monto' ? 'number' : 'text'}" name="${col}" value="${valor || ''}" step="${col === 'cotizacion' ? '0.01' : 'any'}">`;
-                    }
+                    htmlForm += `<input type="text" name="${col}" value="${valor || ''}">`;
                     htmlForm += `</div>`;
                 }
             }
             
             container.innerHTML = htmlForm;
-            
-            setTimeout(() => {
-                const kmInput = document.getElementById('field_kilometros');
-                const formaPagoSelect = document.getElementById('forma_pago_select');
-                
-                if (formaPagoSelect) {
-                    formaPagoSelect.addEventListener('change', actualizarKmDescontados);
-                }
-                if (kmInput) {
-                    kmInput.addEventListener('change', actualizarKmDescontados);
-                    kmInput.addEventListener('input', actualizarKmDescontados);
-                }
-                
-                if (window.tablaActual === 'ordenes' && registro) {
-                    const contratanteId = registro.contratante_id;
-                    const subcontratanteId = registro.subcontratante;
-                    if (contratanteId) {
-                        cargarSubcontratantesPorContratante(contratanteId, subcontratanteId);
-                    }
-                }
-                
-                actualizarKmDescontados();
-            }, 50);
         }
 
-        window.cargarDatosOrdenEnFormulario = cargarDatosOrdenEnFormulario;
-        window.onContratanteChange = async () => {
-            const contratanteSelect = document.getElementById('field_contratante_id');
-            const contratanteId = contratanteSelect ? contratanteSelect.value : null;
-            await cargarSubcontratantesPorContratante(contratanteId);
-        };
-
-        window.actualizarKmDescontados = actualizarKmDescontados;
+        window.cargarDatosOrden = cargarDatosOrden;
 
         const btnGuardar = document.getElementById('btnGuardar');
         if (btnGuardar) {
@@ -1946,14 +1630,12 @@
                         } else {
                             datos[name] = value;
                         }
-                    } else if (name === 'km_descontados' || name === 'kilometros') {
-                        datos[name] = 0;
                     }
                 }
                 
-                // Para carpetas, agregar el orden_id seleccionado
+                // Para carpetas, asegurar que orden_id está presente
                 if (window.tablaActual === 'carpetas') {
-                    const ordenSelect = document.getElementById('field_orden_id');
+                    const ordenSelect = document.getElementById('select_orden');
                     if (ordenSelect && ordenSelect.value) {
                         datos.orden_id = parseInt(ordenSelect.value);
                     } else {
