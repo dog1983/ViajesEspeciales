@@ -718,9 +718,6 @@
         window.editandoId = null;
         window.modalModo = 'form';
 
-        // Forzar recarga del esquema
-        await supabase.from('carpetas').select('id').limit(1).catch(e => console.log('Tabla carpetas no encontrada, recargando...'));
-
         const configPermisos = {
             master: {
                 puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
