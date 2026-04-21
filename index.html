@@ -788,6 +788,8 @@
             },
             carpetas: {
                 orden_id: { tabla: 'ordenes', campo: 'id' },
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
+                subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
                 conductor1_id: { tabla: 'conductores', campo: 'nombre' },
                 conductor2_id: { tabla: 'conductores', campo: 'nombre' },
                 interno_id: { tabla: 'buses', campo: 'Interno' }
@@ -1346,6 +1348,28 @@
                         item.empresas_id = orden.empresas_id;
                         item.contratante_id = orden.contratante_id;
                         item.subcontratante = orden.subcontratante;
+                        
+                        // Cargar nombres relacionados
+                        if (orden.contratante_id) {
+                            const { data: contratante } = await supabase
+                                .from('contratantes')
+                                .select('contratante')
+                                .eq('id', orden.contratante_id)
+                                .single();
+                            if (contratante) {
+                                item.contratante_nombre = contratante.contratante;
+                            }
+                        }
+                        if (orden.subcontratante) {
+                            const { data: subcontratante } = await supabase
+                                .from('subcontratantes')
+                                .select('subcontratante')
+                                .eq('id', orden.subcontratante)
+                                .single();
+                            if (subcontratante) {
+                                item.subcontratante_nombre = subcontratante.subcontratante;
+                            }
+                        }
                     }
                 }
             }
@@ -1440,7 +1464,7 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'interno_id'];
+                columnas = ['id', 'orden_id', 'contratante_nombre', 'subcontratante_nombre', 'fecha_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1453,18 +1477,20 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead></tr>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead></table>`;
             
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
-                contratante_id: 'CONTRATANTE',
-                subcontratante: 'SUBCONTRATANTE',
+                contratante_nombre: 'CONTRATANTE',
+                subcontratante_nombre: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
+                contratante_id: 'CONTRATANTE',
+                subcontratante: 'SUBCONTRATANTE',
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
                 forma_pago: 'FORMA PAGO',
@@ -1496,22 +1522,45 @@
                     for (let col of columnas) {
                         let valor = item[col];
                         
-                        if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
-                            if (item[`${col}_nombre`]) {
-                                valor = item[`${col}_nombre`];
+                        // Para carpetas, usar los nombres ya cargados
+                        if (window.tablaActual === 'carpetas') {
+                            if (col === 'contratante_nombre') {
+                                valor = item.contratante_nombre || '-';
+                            } else if (col === 'subcontratante_nombre') {
+                                valor = item.subcontratante_nombre || '-';
+                            } else if (col === 'fecha_ida') {
+                                valor = formatearFechaCorta(valor);
+                            } else if (col === 'interno_id') {
+                                // Mostrar el nombre del interno
+                                if (item.interno_id) {
+                                    const { data: bus } = await supabase
+                                        .from('buses')
+                                        .select('Interno')
+                                        .eq('id', item.interno_id)
+                                        .single();
+                                    valor = bus?.Interno || item.interno_id;
+                                } else {
+                                    valor = '-';
+                                }
                             }
-                        }
-                        
-                        if (col.includes('fecha') && valor) {
-                            valor = formatearFechaCorta(valor);
-                        }
-                        
-                        if (col === 'cotizacion' && valor) {
-                            valor = formatearMonto(valor);
-                        }
-                        
-                        if (col === 'forma_pago') {
-                            valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
+                        } else {
+                            if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                                if (item[`${col}_nombre`]) {
+                                    valor = item[`${col}_nombre`];
+                                }
+                            }
+                            
+                            if (col.includes('fecha') && valor) {
+                                valor = formatearFechaCorta(valor);
+                            }
+                            
+                            if (col === 'cotizacion' && valor) {
+                                valor = formatearMonto(valor);
+                            }
+                            
+                            if (col === 'forma_pago') {
+                                valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
+                            }
                         }
                         
                         if (typeof valor === 'string' && valor.length > 40) {
@@ -1712,6 +1761,177 @@
                 return;
             }
             
+            // Para la tabla ordenes - con forma de pago corregida
+            if (window.tablaActual === 'ordenes') {
+                // Obtener datos para selects
+                const { data: empresas } = await supabase.from('empresas').select('id, nombre');
+                const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
+                
+                let htmlForm = `
+                    <div class="form-group">
+                        <label>CONTRATANTE</label>
+                        <select name="contratante_id" id="field_contratante_id" onchange="onContratanteChange()" required>
+                            <option value="">Seleccionar contratante...</option>`;
+                if (contratantes) {
+                    for (let c of contratantes) {
+                        const selected = (registro?.contratante_id == c.id) ? 'selected' : '';
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
+                    }
+                }
+                htmlForm += `</select>
+                    </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>SUBCONTRATANTE</label>
+                                <select name="subcontratante" id="field_subcontratante" required>
+                                    <option value="">Primero seleccione un contratante</option>
+                                </select>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>EMPRESA</label>
+                                <select name="empresas_id" required>`;
+                htmlForm += `<option value="">Seleccionar empresa...</option>`;
+                if (empresas) {
+                    for (let e of empresas) {
+                        const selected = (registro?.empresas_id == e.id) ? 'selected' : '';
+                        htmlForm += `<option value="${e.id}" ${selected}>${e.nombre}</option>`;
+                    }
+                }
+                htmlForm += `</select></div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>FECHA IDA</label>
+                                <input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>HORA IDA</label>
+                                <input type="time" name="hora_ida" value="${registro?.hora_ida || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DIRECCIÓN ORIGEN</label>
+                                <input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>ORIGEN</label>
+                                <input type="text" name="origen" value="${registro?.origen || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DIRECCIÓN DESTINO</label>
+                                <input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DESTINO</label>
+                                <input type="text" name="destino" value="${registro?.destino || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>FECHA REGRESO</label>
+                                <input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>HORA REGRESO</label>
+                                <input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>PARADAS</label>
+                                <textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>MOVIMIENTOS</label>
+                                <textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>CANTIDAD DE BUSES</label>
+                                <input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN BUSES</label>
+                                <textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>COTIZACIÓN</label>
+                                <input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>KILÓMETROS</label>
+                                <input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN COTIZACIÓN</label>
+                                <textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>COMIDAS</label>
+                                <input type="text" name="comidas" value="${registro?.comidas || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>ALOJAMIENTO</label>
+                                <input type="text" name="alojamiento" value="${registro?.alojamiento || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN GASTOS</label>
+                                <textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea>
+                            </div>`;
+                
+                // Forma de pago - SOLO DOS OPCIONES
+                htmlForm += `<div class="form-group">
+                                <label>FORMA DE PAGO</label>
+                                <select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()">
+                                    <option value="pago_directo" ${registro?.forma_pago === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>
+                                    <option value="cuenta_corriente" ${registro?.forma_pago === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente</option>
+                                </select>
+                            </div>`;
+                
+                // Campo KM a descontar (solo visible si selecciona cuenta corriente)
+                const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
+                htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>
+                                <label>KM A DESCONTAR</label>
+                                <input type="number" name="km_descontados" id="field_km_descontados" value="${registro?.km_descontados || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">
+                            </div>`;
+                
+                container.innerHTML = htmlForm;
+                
+                // Si estamos editando, cargar los subcontratantes
+                if (registro && registro.contratante_id) {
+                    await cargarSubcontratantesPorContratante(registro.contratante_id, registro.subcontratante);
+                }
+                
+                // Configurar eventos
+                setTimeout(() => {
+                    const kmInput = document.getElementById('field_kilometros');
+                    const formaPagoSelect = document.getElementById('forma_pago_select');
+                    
+                    if (formaPagoSelect) {
+                        formaPagoSelect.addEventListener('change', actualizarKmDescontados);
+                    }
+                    if (kmInput) {
+                        kmInput.addEventListener('change', actualizarKmDescontados);
+                        kmInput.addEventListener('input', actualizarKmDescontados);
+                    }
+                    
+                    actualizarKmDescontados();
+                }, 50);
+                
+                return;
+            }
+            
             // Para las demás tablas
             const { data: columnas, error } = await supabase
                 .from(window.tablaActual)
@@ -1769,6 +1989,13 @@
         }
 
         window.cargarDatosOrden = cargarDatosOrden;
+        window.onContratanteChange = async () => {
+            const contratanteSelect = document.getElementById('field_contratante_id');
+            const contratanteId = contratanteSelect ? contratanteSelect.value : null;
+            await cargarSubcontratantesPorContratante(contratanteId);
+        };
+
+        window.actualizarKmDescontados = actualizarKmDescontados;
 
         const btnGuardar = document.getElementById('btnGuardar');
         if (btnGuardar) {
