@@ -788,8 +788,6 @@
             },
             carpetas: {
                 orden_id: { tabla: 'ordenes', campo: 'id' },
-                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
-                subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
                 conductor1_id: { tabla: 'conductores', campo: 'nombre' },
                 conductor2_id: { tabla: 'conductores', campo: 'nombre' },
                 interno_id: { tabla: 'buses', campo: 'Interno' }
@@ -1338,38 +1336,13 @@
                 if (item.orden_id) {
                     const { data: orden } = await supabase
                         .from('ordenes')
-                        .select('origen, destino, fecha_ida, empresas_id, contratante_id, subcontratante')
+                        .select('origen, destino, fecha_ida')
                         .eq('id', item.orden_id)
                         .single();
                     if (orden) {
                         item.origen = orden.origen;
                         item.destino = orden.destino;
                         item.fecha_ida = orden.fecha_ida;
-                        item.empresas_id = orden.empresas_id;
-                        item.contratante_id = orden.contratante_id;
-                        item.subcontratante = orden.subcontratante;
-                        
-                        // Cargar nombres relacionados
-                        if (orden.contratante_id) {
-                            const { data: contratante } = await supabase
-                                .from('contratantes')
-                                .select('contratante')
-                                .eq('id', orden.contratante_id)
-                                .single();
-                            if (contratante) {
-                                item.contratante_nombre = contratante.contratante;
-                            }
-                        }
-                        if (orden.subcontratante) {
-                            const { data: subcontratante } = await supabase
-                                .from('subcontratantes')
-                                .select('subcontratante')
-                                .eq('id', orden.subcontratante)
-                                .single();
-                            if (subcontratante) {
-                                item.subcontratante_nombre = subcontratante.subcontratante;
-                            }
-                        }
                     }
                 }
             }
@@ -1464,7 +1437,7 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_nombre', 'subcontratante_nombre', 'fecha_ida', 'origen', 'destino', 'interno_id'];
+                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'obs_antes_iniciar', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1477,20 +1450,20 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead></table>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
-                contratante_nombre: 'CONTRATANTE',
-                subcontratante_nombre: 'SUBCONTRATANTE',
-                fecha_ida: 'FECHA IDA',
+                contratante_id: 'CONTRATANTE',
+                subcontratante_id: 'SUBCONTRATANTE',
+                obs_antes_iniciar: 'OBS ANTES INICIAR',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
-                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
+                fecha_ida: 'FECHA IDA',
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
                 forma_pago: 'FORMA PAGO',
@@ -1522,26 +1495,35 @@
                     for (let col of columnas) {
                         let valor = item[col];
                         
-                        // Para carpetas, usar los nombres ya cargados
+                        // Para carpetas, obtener los nombres desde las tablas relacionadas
                         if (window.tablaActual === 'carpetas') {
-                            if (col === 'contratante_nombre') {
-                                valor = item.contratante_nombre || '-';
-                            } else if (col === 'subcontratante_nombre') {
-                                valor = item.subcontratante_nombre || '-';
-                            } else if (col === 'fecha_ida') {
+                            if (col === 'contratante_id' && valor) {
+                                const { data: contratante } = await supabase
+                                    .from('contratantes')
+                                    .select('contratante')
+                                    .eq('id', valor)
+                                    .single();
+                                valor = contratante?.contratante || valor;
+                            } else if (col === 'subcontratante_id' && valor) {
+                                const { data: subcontratante } = await supabase
+                                    .from('subcontratantes')
+                                    .select('subcontratante')
+                                    .eq('id', valor)
+                                    .single();
+                                valor = subcontratante?.subcontratante || valor;
+                            } else if (col === 'fecha_ida' && valor) {
                                 valor = formatearFechaCorta(valor);
-                            } else if (col === 'interno_id') {
-                                // Mostrar el nombre del interno
-                                if (item.interno_id) {
-                                    const { data: bus } = await supabase
-                                        .from('buses')
-                                        .select('Interno')
-                                        .eq('id', item.interno_id)
-                                        .single();
-                                    valor = bus?.Interno || item.interno_id;
-                                } else {
-                                    valor = '-';
-                                }
+                            } else if (col === 'origen' && !valor) {
+                                valor = '-';
+                            } else if (col === 'destino' && !valor) {
+                                valor = '-';
+                            } else if (col === 'interno_id' && valor) {
+                                const { data: bus } = await supabase
+                                    .from('buses')
+                                    .select('Interno')
+                                    .eq('id', valor)
+                                    .single();
+                                valor = bus?.Interno || valor;
                             }
                         } else {
                             if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
