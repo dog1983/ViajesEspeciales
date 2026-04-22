@@ -1453,7 +1453,7 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead></table>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead></tr>`;
             
             const nombresColumnas = {
                 id: 'ID',
@@ -1529,22 +1529,22 @@
                                 <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                               </td>`;
+                                </td>`;
                 } else if (window.tablaActual === 'carpetas') {
                     html += `<td class="actions-cell">
                                 <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                               </td>`;
+                                </td>`;
                 } else if (puedeEditar) {
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                               </td>`;
+                                </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                               </td>`;
+                                </td>`;
                 }
                 html += '</tr>';
             }
@@ -1955,59 +1955,64 @@
             }
         };
 
-        // Login corregido
-        document.getElementById('loginButton').onclick = async () => {
-            const usuario = document.getElementById('loginUsuario').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!usuario || !password) {
-                document.getElementById('loginError').textContent = 'Complete ambos campos';
-                return;
+        // LOGIN CORREGIDO - Usando evento DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginBtn = document.getElementById('loginButton');
+            if (loginBtn) {
+                loginBtn.onclick = async () => {
+                    const usuario = document.getElementById('loginUsuario').value.trim();
+                    const password = document.getElementById('loginPassword').value;
+                    
+                    if (!usuario || !password) {
+                        document.getElementById('loginError').textContent = 'Complete ambos campos';
+                        return;
+                    }
+                    
+                    document.getElementById('loginError').textContent = '';
+                    
+                    try {
+                        const { data, error } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('usuario', usuario)
+                            .eq('contraseña', password);
+                        
+                        if (error) throw error;
+                        
+                        if (!data || data.length === 0) {
+                            document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+                            return;
+                        }
+                        
+                        const user = data[0];
+                        const rol = user.nivel;
+                        
+                        if (!configPermisos[rol]) {
+                            document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
+                            return;
+                        }
+                        
+                        window.usuarioActual = user;
+                        window.permisos = configPermisos[rol];
+                        
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('app').style.display = 'block';
+                        document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                        
+                        generarSidebar();
+                        
+                        const tablasPermitidas = getTablasPermitidas();
+                        if (tablasPermitidas.length > 0) {
+                            window.cargarTabla(tablasPermitidas[0].id);
+                        }
+                        
+                    } catch (error) {
+                        document.getElementById('loginError').textContent = 'Error de conexión: ' + error.message;
+                        console.error(error);
+                    }
+                };
             }
-            
-            document.getElementById('loginError').textContent = '';
-            
-            try {
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('usuario', usuario)
-                    .eq('contraseña', password);
-                
-                if (error) throw error;
-                
-                if (!data || data.length === 0) {
-                    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
-                    return;
-                }
-                
-                const user = data[0];
-                const rol = user.nivel;
-                
-                if (!configPermisos[rol]) {
-                    document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
-                    return;
-                }
-                
-                window.usuarioActual = user;
-                window.permisos = configPermisos[rol];
-                
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
-                
-                generarSidebar();
-                
-                const tablasPermitidas = getTablasPermitidas();
-                if (tablasPermitidas.length > 0) {
-                    window.cargarTabla(tablasPermitidas[0].id);
-                }
-                
-            } catch (error) {
-                document.getElementById('loginError').textContent = 'Error de conexión';
-                console.error(error);
-            }
-        };
+        });
         
         window.cerrarSesion = () => {
             window.usuarioActual = null;
