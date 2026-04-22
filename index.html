@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#1e293b">
     <title>Transporte Gestión</title>
     <style>
-        /* (mantener todos los estilos iguales que antes) */
         * {
             margin: 0;
             padding: 0;
@@ -1335,15 +1334,19 @@
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
+                    // Obtener todos los datos de la orden incluyendo contratante y subcontratante
                     const { data: orden } = await supabase
                         .from('ordenes')
-                        .select('origen, destino, fecha_ida')
+                        .select('*, contratantes(contratante), subcontratantes(subcontratante)')
                         .eq('id', item.orden_id)
                         .single();
+                    
                     if (orden) {
                         item.origen = orden.origen;
                         item.destino = orden.destino;
                         item.fecha_ida = orden.fecha_ida;
+                        item.contratante = orden.contratantes?.contratante || '-';
+                        item.subcontratante = orden.subcontratantes?.subcontratante || '-';
                     }
                 }
             }
@@ -1438,7 +1441,8 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'origen', 'destino', 'interno_id'];
+                // Mostrar los campos enriquecidos
+                columnas = ['id', 'orden_id', 'contratante', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1456,19 +1460,19 @@
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
-                contratante_id: 'CONTRATANTE',
-                subcontratante_id: 'SUBCONTRATANTE',
+                contratante: 'CONTRATANTE',
+                subcontratante: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
+                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
                 forma_pago: 'FORMA PAGO',
                 confecciono: 'CONFECCIONÓ',
-                contratante: 'CONTRATANTE',
                 telefono_cont: 'TELÉFONO',
                 cuit: 'CUIT',
                 usuario_id: 'USUARIO ASIGNADO'
@@ -1489,106 +1493,66 @@
             
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
-            // Procesar cada fila de forma ASÍNCRONA
-            (async () => {
-                for (let item of datosFiltrados) {
-                    html += '<tr>';
-                    for (let col of columnas) {
-                        let valor = item[col];
-                        
-                        // Para carpetas, obtener los nombres en tiempo real
-                        if (window.tablaActual === 'carpetas') {
-                            if (col === 'contratante_id' && valor) {
-                                const { data: contratante } = await supabase
-                                    .from('contratantes')
-                                    .select('contratante')
-                                    .eq('id', valor)
-                                    .single();
-                                valor = contratante?.contratante || '-';
-                            } else if (col === 'subcontratante_id' && valor) {
-                                const { data: subcontratante } = await supabase
-                                    .from('subcontratantes')
-                                    .select('subcontratante')
-                                    .eq('id', valor)
-                                    .single();
-                                valor = subcontratante?.subcontratante || '-';
-                            } else if (col === 'fecha_ida' && valor) {
-                                valor = formatearFechaCorta(valor);
-                            } else if (col === 'origen' && !valor) {
-                                valor = '-';
-                            } else if (col === 'destino' && !valor) {
-                                valor = '-';
-                            } else if (col === 'interno_id' && valor) {
-                                const { data: bus } = await supabase
-                                    .from('buses')
-                                    .select('Interno')
-                                    .eq('id', valor)
-                                    .single();
-                                valor = bus?.Interno || valor;
-                            }
-                        } else {
-                            if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
-                                if (item[`${col}_nombre`]) {
-                                    valor = item[`${col}_nombre`];
-                                }
-                            }
-                            
-                            if (col.includes('fecha') && valor) {
-                                valor = formatearFechaCorta(valor);
-                            }
-                            
-                            if (col === 'cotizacion' && valor) {
-                                valor = formatearMonto(valor);
-                            }
-                            
-                            if (col === 'forma_pago') {
-                                valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
-                            }
-                        }
-                        
-                        if (typeof valor === 'string' && valor.length > 40) {
-                            valor = valor.substring(0, 40) + '...';
-                        }
-                        
-                        html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
+            for (let item of datosFiltrados) {
+                html += '<tr>';
+                for (let col of columnas) {
+                    let valor = item[col];
+                    
+                    if (col === 'interno_id' && valor && window.tablaActual === 'carpetas') {
+                        const { data: bus } = await supabase
+                            .from('buses')
+                            .select('Interno')
+                            .eq('id', valor)
+                            .single();
+                        valor = bus?.Interno || valor;
                     }
                     
-                    if (esContratantes) {
-                        html += `<td style="font-weight:bold;">-<\/td>`;
+                    if (col === 'fecha_ida' && valor) {
+                        valor = formatearFechaCorta(valor);
                     }
                     
-                    if (esOrdenes) {
-                        html += `<td style="font-weight:bold;">-<\/td>`;
+                    if (typeof valor === 'string' && valor.length > 40) {
+                        valor = valor.substring(0, 40) + '...';
                     }
                     
-                    if (window.tablaActual === 'ordenes') {
-                        html += `<td class="actions-cell">
-                                    <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
-                                    ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                    ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                  <\/td>`;
-                    } else if (window.tablaActual === 'carpetas') {
-                        html += `<td class="actions-cell">
-                                    <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
-                                    ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                    ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                                  <\/td>`;
-                    } else if (puedeEditar) {
-                        html += `<td class="actions-cell">
-                                    <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
-                                    <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                                  <\/td>`;
-                    } else {
-                        html += `<td class="actions-cell">
-                                    <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                                  <\/td>`;
-                    }
-                    html += '</tr>';
+                    html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                 }
                 
-                html += '</tbody></table></div>';
-                document.getElementById('table-container').innerHTML = html;
-            })();
+                if (esContratantes) {
+                    html += `<td style="font-weight:bold;">-</td>`;
+                }
+                
+                if (esOrdenes) {
+                    html += `<td style="font-weight:bold;">-</td>`;
+                }
+                
+                if (window.tablaActual === 'ordenes') {
+                    html += `<td class="actions-cell">
+                                <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
+                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                              </td>`;
+                } else if (window.tablaActual === 'carpetas') {
+                    html += `<td class="actions-cell">
+                                <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
+                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                              </td>`;
+                } else if (puedeEditar) {
+                    html += `<td class="actions-cell">
+                                <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
+                                <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
+                              </td>`;
+                } else {
+                    html += `<td class="actions-cell">
+                                <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
+                              </td>`;
+                }
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table></div>';
+            document.getElementById('table-container').innerHTML = html;
         }
 
         window.mostrarModalAgregar = async () => {
@@ -1626,19 +1590,16 @@
             
             // Para carpetas: formulario específico
             if (window.tablaActual === 'carpetas') {
-                // Obtener lista de órdenes
                 const { data: ordenes } = await supabase
                     .from('ordenes')
                     .select('id')
                     .order('id', { ascending: false });
                 
-                // Obtener lista de conductores
                 const { data: conductores } = await supabase
                     .from('conductores')
                     .select('id, nombre')
                     .order('nombre');
                 
-                // Obtener lista de buses
                 const { data: buses } = await supabase
                     .from('buses')
                     .select('id, Interno, Dominio')
@@ -1659,7 +1620,6 @@
                 htmlForm += `</select>
                     </div>`;
                 
-                // Tarjeta con datos de la orden (solo lectura)
                 htmlForm += `
                     <div class="info-card">
                         <h4>📋 DATOS DE LA ORDEN SELECCIONADA</h4>
@@ -1672,7 +1632,6 @@
                         <div class="info-row"><span class="info-label">Fecha Regreso:</span><span class="info-value" id="info_fecha_regreso">-</span></div>
                     </div>`;
                 
-                // Campos de la carpeta
                 htmlForm += `<h4 style="margin: 16px 0 8px; color: #1e293b;">📁 DATOS DE LA CARPETA</h4>`;
                 
                 htmlForm += `<div class="form-group">
@@ -1687,7 +1646,7 @@
                 
                 htmlForm += `<div class="form-group">
                                 <label>OBSERVACIONES ANTES DE INICIAR</label>
-                                <textarea name="obs_antes_iniciar" rows="3" placeholder="Observaciones antes de iniciar el viaje">${registro?.obs_antes_iniciar || ''}</textarea>
+                                <textarea name="obs_antes_iniciar" rows="3">${registro?.obs_antes_iniciar || ''}</textarea>
                             </div>`;
                 
                 htmlForm += `<div class="form-group">
@@ -1728,7 +1687,6 @@
                 
                 container.innerHTML = htmlForm;
                 
-                // Si estamos editando, cargar los datos de la orden
                 if (registro && registro.orden_id) {
                     await cargarDatosOrden(registro.orden_id);
                     const selectOrden = document.getElementById('select_orden');
@@ -1776,98 +1734,25 @@
                 }
                 htmlForm += `</select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>FECHA IDA</label>
-                                <input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>HORA IDA</label>
-                                <input type="time" name="hora_ida" value="${registro?.hora_ida || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DIRECCIÓN ORIGEN</label>
-                                <input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>ORIGEN</label>
-                                <input type="text" name="origen" value="${registro?.origen || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DIRECCIÓN DESTINO</label>
-                                <input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DESTINO</label>
-                                <input type="text" name="destino" value="${registro?.destino || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>FECHA REGRESO</label>
-                                <input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>HORA REGRESO</label>
-                                <input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>PARADAS</label>
-                                <textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>MOVIMIENTOS</label>
-                                <textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>CANTIDAD DE BUSES</label>
-                                <input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN BUSES</label>
-                                <textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>COTIZACIÓN</label>
-                                <input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>KILÓMETROS</label>
-                                <input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN COTIZACIÓN</label>
-                                <textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>COMIDAS</label>
-                                <input type="text" name="comidas" value="${registro?.comidas || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>ALOJAMIENTO</label>
-                                <input type="text" name="alojamiento" value="${registro?.alojamiento || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN GASTOS</label>
-                                <textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>FORMA DE PAGO</label>
+                htmlForm += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required></div>`;
+                htmlForm += `<div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value="${registro?.hora_ida || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>ORIGEN</label><input type="text" name="origen" value="${registro?.origen || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DIRECCIÓN DESTINO</label><input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DESTINO</label><input type="text" name="destino" value="${registro?.destino || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>HORA REGRESO</label><input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>PARADAS</label><textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>MOVIMIENTOS</label><textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>CANTIDAD DE BUSES</label><input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN BUSES</label><textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>COTIZACIÓN</label><input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>KILÓMETROS</label><input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN COTIZACIÓN</label><textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>COMIDAS</label><input type="text" name="comidas" value="${registro?.comidas || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>ALOJAMIENTO</label><input type="text" name="alojamiento" value="${registro?.alojamiento || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN GASTOS</label><textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>FORMA DE PAGO</label>
                                 <select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()">
                                     <option value="pago_directo" ${registro?.forma_pago === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>
                                     <option value="cuenta_corriente" ${registro?.forma_pago === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente</option>
@@ -1889,15 +1774,8 @@
                 setTimeout(() => {
                     const kmInput = document.getElementById('field_kilometros');
                     const formaPagoSelect = document.getElementById('forma_pago_select');
-                    
-                    if (formaPagoSelect) {
-                        formaPagoSelect.addEventListener('change', actualizarKmDescontados);
-                    }
-                    if (kmInput) {
-                        kmInput.addEventListener('change', actualizarKmDescontados);
-                        kmInput.addEventListener('input', actualizarKmDescontados);
-                    }
-                    
+                    if (formaPagoSelect) formaPagoSelect.addEventListener('change', actualizarKmDescontados);
+                    if (kmInput) kmInput.addEventListener('input', actualizarKmDescontados);
                     actualizarKmDescontados();
                 }, 50);
                 
@@ -1925,11 +1803,7 @@
                 if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
-                    
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}">`;
-                    htmlForm += `<option value="">Seleccionar...</option>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><select name="${col}"><option value="">Seleccionar...</option>`;
                     if (opciones) {
                         for (let op of opciones) {
                             const selected = valor == op.id ? 'selected' : '';
@@ -1940,23 +1814,13 @@
                     htmlForm += `</select></div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<input type="date" name="${col}" value="${fechaValor}">`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><input type="date" name="${col}" value="${fechaValor}"></div>`;
                 } else if (col.includes('obs')) {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><textarea name="${col}" rows="3">${valor || ''}</textarea></div>`;
                 } else {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<input type="text" name="${col}" value="${valor || ''}">`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><input type="text" name="${col}" value="${valor || ''}"></div>`;
                 }
             }
-            
             container.innerHTML = htmlForm;
         }
 
@@ -1966,7 +1830,6 @@
             const contratanteId = contratanteSelect ? contratanteSelect.value : null;
             await cargarSubcontratantesPorContratante(contratanteId);
         };
-
         window.actualizarKmDescontados = actualizarKmDescontados;
 
         const btnGuardar = document.getElementById('btnGuardar');
@@ -1980,19 +1843,13 @@
                 
                 const formFields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
                 const datos = {};
-                
                 for (let field of formFields) {
                     let value = field.value;
                     let name = field.name;
-                    
                     if (value && value.toString().trim()) {
-                        if (name === 'cotizacion' || name === 'monto') {
-                            datos[name] = parseFloat(value);
-                        } else if (name === 'km_descontados' || name === 'kilometros') {
-                            datos[name] = parseInt(value) || 0;
-                        } else {
-                            datos[name] = value;
-                        }
+                        if (name === 'cotizacion' || name === 'monto') datos[name] = parseFloat(value);
+                        else if (name === 'km_descontados' || name === 'kilometros') datos[name] = parseInt(value) || 0;
+                        else datos[name] = value;
                     }
                 }
                 
@@ -2006,10 +1863,7 @@
                     }
                 }
                 
-                if (window.tablaActual === 'ordenes') {
-                    datos.confecciono = window.usuarioActual.id;
-                }
-                
+                if (window.tablaActual === 'ordenes') datos.confecciono = window.usuarioActual.id;
                 if (window.tablaActual === 'carpetas' && datos.orden_id) {
                     const validacion = await validarLimiteCarpetas(datos.orden_id, window.editandoId);
                     if (!validacion.valido) {
@@ -2017,30 +1871,21 @@
                         return;
                     }
                 }
-                
-                if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') {
-                    datos.usuario_id = window.usuarioActual.id;
-                }
+                if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') datos.usuario_id = window.usuarioActual.id;
                 
                 try {
                     if (window.editandoId) {
-                        const { error } = await supabase
-                            .from(window.tablaActual)
-                            .update(datos)
-                            .eq('id', window.editandoId);
+                        const { error } = await supabase.from(window.tablaActual).update(datos).eq('id', window.editandoId);
                         if (error) throw error;
                         mostrarToast('✅ Registro actualizado');
                     } else {
-                        const { error } = await supabase
-                            .from(window.tablaActual)
-                            .insert([datos]);
+                        const { error } = await supabase.from(window.tablaActual).insert([datos]);
                         if (error) throw error;
                         mostrarToast('✅ Registro agregado');
                     }
                     cerrarModal();
                     window.cargarTabla(window.tablaActual);
                 } catch (error) {
-                    console.error('Error al guardar:', error);
                     mostrarToast('❌ Error: ' + error.message, true);
                 }
             };
@@ -2051,16 +1896,10 @@
                 mostrarToast('No tiene permiso para eliminar', true);
                 return;
             }
-            
             if (confirm('¿Eliminar este registro?')) {
-                const { error } = await supabase
-                    .from(window.tablaActual)
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) {
-                    mostrarToast('Error: ' + error.message, true);
-                } else {
+                const { error } = await supabase.from(window.tablaActual).delete().eq('id', id);
+                if (error) mostrarToast('Error: ' + error.message, true);
+                else {
                     mostrarToast('Registro eliminado');
                     window.cargarTabla(window.tablaActual);
                 }
@@ -2078,12 +1917,7 @@
             try {
                 mostrarToast('Cargando hoja de ruta...');
                 
-                const { data: carpeta, error } = await supabase
-                    .from('carpetas')
-                    .select('*')
-                    .eq('id', carpetaId)
-                    .single();
-                
+                const { data: carpeta, error } = await supabase.from('carpetas').select('*').eq('id', carpetaId).single();
                 if (error) throw error;
                 
                 const { data: orden, error: errOrden } = await supabase
@@ -2091,42 +1925,28 @@
                     .select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)')
                     .eq('id', carpeta.orden_id)
                     .single();
-                
                 if (errOrden) throw errOrden;
                 
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor1_id) {
-                    const { data: c1 } = await supabase
-                        .from('conductores')
-                        .select('legajo, dni, vto_reg, nombre')
-                        .eq('id', carpeta.conductor1_id)
-                        .single();
+                    const { data: c1 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor1_id).single();
                     if (c1) conductor1 = c1;
                 }
                 
                 let conductor2 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
                 if (carpeta.conductor2_id) {
-                    const { data: c2 } = await supabase
-                        .from('conductores')
-                        .select('legajo, dni, vto_reg, nombre')
-                        .eq('id', carpeta.conductor2_id)
-                        .single();
+                    const { data: c2 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor2_id).single();
                     if (c2) conductor2 = c2;
                 }
                 
                 let bus = { Dominio: '-', Capacidad: '-', Interno: '-' };
                 if (carpeta.interno_id) {
-                    const { data: b } = await supabase
-                        .from('buses')
-                        .select('Dominio, Capacidad, Interno')
-                        .eq('id', carpeta.interno_id)
-                        .single();
+                    const { data: b } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single();
                     if (b) bus = b;
                 }
                 
                 const vtoReg1 = conductor1.vto_reg ? formatearFechaCorta(conductor1.vto_reg) : '-';
                 const vtoReg2 = conductor2.vto_reg ? formatearFechaCorta(conductor2.vto_reg) : '-';
-                
                 const paradasTexto = orden.paradas || '';
                 const movimientosTexto = orden.movimientos || '';
                 
@@ -2136,157 +1956,43 @@
                             <button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button>
                             <button class="btn-pdf" onclick="window.generarPDFHojaActual()">📄 Compartir PDF</button>
                         </div>
-                        
                         <div class="hoja-header">
                             <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
                             <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
                             <div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div>
                         </div>
-                        
                         <div class="hoja-section">
                             <div class="hoja-section-title">📋 CONTRATANTE</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Contratante:</span>
-                                <span class="hoja-value">${orden.contratantes?.contratante || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">CUIT:</span>
-                                <span class="hoja-value">${orden.contratantes?.cuit || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Subcontratante:</span>
-                                <span class="hoja-value">${orden.subcontratantes?.subcontratante || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Contacto:</span>
-                                <span class="hoja-value">${carpeta.contacto || orden.subcontratantes?.telefono || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">Contratante:</span><span class="hoja-value">${orden.contratantes?.contratante || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">CUIT:</span><span class="hoja-value">${orden.contratantes?.cuit || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Subcontratante:</span><span class="hoja-value">${orden.subcontratantes?.subcontratante || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Contacto:</span><span class="hoja-value">${carpeta.contacto || orden.subcontratantes?.telefono || '-'}</span></div>
                         </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">⚠️ OBSERVACIONES ANTES DE INICIAR</div>
-                            <div class="hoja-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
-                        </div>
-                        
+                        <div class="hoja-section"><div class="hoja-section-title">⚠️ OBSERVACIONES ANTES DE INICIAR</div><div class="hoja-value">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div></div>
                         <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🚌 IDA</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📅 Fecha:</span>
-                                <span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">⏰ Hora:</span>
-                                <span class="hoja-value">${orden.hora_ida || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📍 Dirección Origen:</span>
-                                <span class="hoja-value">${orden.direccion_origen || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">🏁 Origen:</span>
-                                <span class="hoja-value">${orden.origen || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📍 Dirección Destino:</span>
-                                <span class="hoja-value">${orden.direccion_destino || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">🏁 Destino:</span>
-                                <span class="hoja-value">${orden.destino || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_ida || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">📍 Dirección Origen:</span><span class="hoja-value">${orden.direccion_origen || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">🏁 Origen:</span><span class="hoja-value">${orden.origen || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">📍 Dirección Destino:</span><span class="hoja-value">${orden.direccion_destino || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">🏁 Destino:</span><span class="hoja-value">${orden.destino || '-'}</span></div>
                         </div>
-                        
                         <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🔄 REGRESO</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📅 Fecha:</span>
-                                <span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">⏰ Hora:</span>
-                                <span class="hoja-value">${orden.hora_regreso || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_regreso || '-'}</span></div>
                         </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">📍 PARADAS</div>
-                            <div class="texto-fijo ${!paradasTexto ? 'vacio' : ''}">
-                                ${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
-                            </div>
-                        </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">🔄 MOVIMIENTOS</div>
-                            <div class="texto-fijo ${!movimientosTexto ? 'vacio' : ''}">
-                                ${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
-                            </div>
-                        </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Comidas:</span>
-                                <span class="hoja-value">${orden.comidas || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Alojamiento:</span>
-                                <span class="hoja-value">${orden.alojamiento || '-'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">🚎 INTERNO / BUS</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Interno:</span>
-                                <span class="hoja-value">${bus.Interno}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Dominio:</span>
-                                <span class="hoja-value">${bus.Dominio}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Capacidad:</span>
-                                <span class="hoja-value">${bus.Capacidad}</span>
-                            </div>
-                        </div>
-                        
+                        <div class="hoja-section"><div class="hoja-section-title">📍 PARADAS</div><div class="texto-fijo">${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div>
+                        <div class="hoja-section"><div class="hoja-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo">${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div>
+                        <div class="hoja-section"><div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div><div class="hoja-row"><span class="hoja-label">Comidas:</span><span class="hoja-value">${orden.comidas || '-'}</span></div><div class="hoja-row"><span class="hoja-label">Alojamiento:</span><span class="hoja-value">${orden.alojamiento || '-'}</span></div></div>
+                        <div class="hoja-section"><div class="hoja-section-title">🚎 INTERNO / BUS</div><div class="hoja-row"><span class="hoja-label">Interno:</span><span class="hoja-value">${bus.Interno}</span></div><div class="hoja-row"><span class="hoja-label">Dominio:</span><span class="hoja-value">${bus.Dominio}</span></div><div class="hoja-row"><span class="hoja-label">Capacidad:</span><span class="hoja-value">${bus.Capacidad}</span></div></div>
                         <div class="hoja-grid-2">
-                            <div class="conductor-box">
-                                <h5>🚌 CONDUCTOR 1</h5>
-                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor1.nombre}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor1.legajo}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor1.dni}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg1}</span></div>
-                            </div>
-                            <div class="conductor-box">
-                                <h5>🚌 CONDUCTOR 2</h5>
-                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor2.nombre}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor2.legajo}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor2.dni}</span></div>
-                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg2}</span></div>
-                            </div>
+                            <div class="conductor-box"><h5>🚌 CONDUCTOR 1</h5><div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor1.nombre}</span></div><div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor1.legajo}</span></div><div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor1.dni}</span></div><div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg1}</span></div></div>
+                            <div class="conductor-box"><h5>🚌 CONDUCTOR 2</h5><div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor2.nombre}</span></div><div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor2.legajo}</span></div><div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor2.dni}</span></div><div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg2}</span></div></div>
                         </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div>
-                            <div class="hoja-value" style="font-style:italic;">${orden.obs_gastos || 'Sin observaciones'}</div>
-                        </div>
-                        
-                        <div class="hoja-section">
-                            <div class="hoja-section-title">📏 KILOMETRAJE</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Km al iniciar:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Km al finalizar:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Total Km:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
-                        </div>
+                        <div class="hoja-section"><div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div><div class="hoja-value">${orden.obs_gastos || 'Sin observaciones'}</div></div>
+                        <div class="hoja-section"><div class="hoja-section-title">📏 KILOMETRAJE</div><div class="hoja-row"><span class="hoja-label">Km al iniciar:</span><span class="hoja-value">_______________</span></div><div class="hoja-row"><span class="hoja-label">Km al finalizar:</span><span class="hoja-value">_______________</span></div><div class="hoja-row"><span class="hoja-label">Total Km:</span><span class="hoja-value">_______________</span></div></div>
                     </div>
                 `;
                 
@@ -2307,50 +2013,32 @@
         window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
-            
             if (!usuario || !password) {
                 document.getElementById('loginError').textContent = 'Complete ambos campos';
                 return;
             }
-            
             document.getElementById('loginError').textContent = '';
-            
             try {
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('usuario', usuario)
-                    .eq('contraseña', password);
-                
+                const { data, error } = await supabase.from('usuarios').select('*').eq('usuario', usuario).eq('contraseña', password);
                 if (error) throw error;
-                
                 if (!data || data.length === 0) {
                     document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
                     return;
                 }
-                
                 const user = data[0];
                 const rol = user.nivel;
-                
                 if (!configPermisos[rol]) {
                     document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
                     return;
                 }
-                
                 window.usuarioActual = user;
                 window.permisos = configPermisos[rol];
-                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
-                
                 generarSidebar();
-                
                 const tablasPermitidas = getTablasPermitidas();
-                if (tablasPermitidas.length > 0) {
-                    window.cargarTabla(tablasPermitidas[0].id);
-                }
-                
+                if (tablasPermitidas.length > 0) window.cargarTabla(tablasPermitidas[0].id);
             } catch (error) {
                 document.getElementById('loginError').textContent = 'Error de conexión';
                 console.error(error);
