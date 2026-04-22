@@ -679,7 +679,7 @@
             <p>Ingrese sus credenciales</p>
             <input type="text" id="loginUsuario" class="login-input" placeholder="Usuario" autocomplete="off">
             <input type="password" id="loginPassword" class="login-input" placeholder="Contraseña">
-            <button class="login-btn" onclick="iniciarSesion()">Ingresar</button>
+            <button class="login-btn" id="loginButton">Ingresar</button>
             <div id="loginError" class="login-error"></div>
         </div>
     </div>
@@ -1334,7 +1334,6 @@
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
-                    // Obtener todos los datos de la orden incluyendo contratante y subcontratante
                     const { data: orden } = await supabase
                         .from('ordenes')
                         .select('*, contratantes(contratante), subcontratantes(subcontratante)')
@@ -1441,7 +1440,6 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                // Mostrar los campos enriquecidos
                 columnas = ['id', 'orden_id', 'contratante', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
@@ -1455,7 +1453,7 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead></table>`;
             
             const nombresColumnas = {
                 id: 'ID',
@@ -1531,22 +1529,22 @@
                                 <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                              </td>`;
+                               </td>`;
                 } else if (window.tablaActual === 'carpetas') {
                     html += `<td class="actions-cell">
                                 <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                              </td>`;
+                               </td>`;
                 } else if (puedeEditar) {
                     html += `<td class="actions-cell">
                                 <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
                                 <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                              </td>`;
+                               </td>`;
                 } else {
                     html += `<td class="actions-cell">
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                              </td>`;
+                               </td>`;
                 }
                 html += '</tr>';
             }
@@ -1588,37 +1586,23 @@
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             
-            // Para carpetas: formulario específico
             if (window.tablaActual === 'carpetas') {
-                const { data: ordenes } = await supabase
-                    .from('ordenes')
-                    .select('id')
-                    .order('id', { ascending: false });
-                
-                const { data: conductores } = await supabase
-                    .from('conductores')
-                    .select('id, nombre')
-                    .order('nombre');
-                
-                const { data: buses } = await supabase
-                    .from('buses')
-                    .select('id, Interno, Dominio')
-                    .order('Interno');
+                const { data: ordenes } = await supabase.from('ordenes').select('id').order('id', { ascending: false });
+                const { data: conductores } = await supabase.from('conductores').select('id, nombre').order('nombre');
+                const { data: buses } = await supabase.from('buses').select('id, Interno, Dominio').order('Interno');
                 
                 let htmlForm = `
                     <div class="form-group">
                         <label>ORDEN DE VIAJE</label>
                         <select name="orden_id" id="select_orden" onchange="cargarDatosOrden(this.value)" required>
                             <option value="">Seleccionar orden...</option>`;
-                
                 if (ordenes) {
                     for (let ord of ordenes) {
                         const selected = (registro?.orden_id == ord.id) ? 'selected' : '';
                         htmlForm += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
                     }
                 }
-                htmlForm += `</select>
-                    </div>`;
+                htmlForm += `</select></div>`;
                 
                 htmlForm += `
                     <div class="info-card">
@@ -1633,26 +1617,11 @@
                     </div>`;
                 
                 htmlForm += `<h4 style="margin: 16px 0 8px; color: #1e293b;">📁 DATOS DE LA CARPETA</h4>`;
+                htmlForm += `<div class="form-group"><label>MICRO NUM</label><input type="text" name="micro_num" value="${registro?.micro_num || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>CONTACTO</label><input type="text" name="contacto" value="${registro?.contacto || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIONES ANTES DE INICIAR</label><textarea name="obs_antes_iniciar" rows="3">${registro?.obs_antes_iniciar || ''}</textarea></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>MICRO NUM</label>
-                                <input type="text" name="micro_num" value="${registro?.micro_num || ''}" placeholder="Número de micro">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>CONTACTO</label>
-                                <input type="text" name="contacto" value="${registro?.contacto || ''}" placeholder="Contacto">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIONES ANTES DE INICIAR</label>
-                                <textarea name="obs_antes_iniciar" rows="3">${registro?.obs_antes_iniciar || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>CONDUCTOR 1</label>
-                                <select name="conductor1_id">
-                                    <option value="">Seleccionar conductor...</option>`;
+                htmlForm += `<div class="form-group"><label>CONDUCTOR 1</label><select name="conductor1_id"><option value="">Seleccionar conductor...</option>`;
                 if (conductores) {
                     for (let c of conductores) {
                         const selected = (registro?.conductor1_id == c.id) ? 'selected' : '';
@@ -1661,10 +1630,7 @@
                 }
                 htmlForm += `</select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>CONDUCTOR 2</label>
-                                <select name="conductor2_id">
-                                    <option value="">Seleccionar conductor...</option>`;
+                htmlForm += `<div class="form-group"><label>CONDUCTOR 2</label><select name="conductor2_id"><option value="">Seleccionar conductor...</option>`;
                 if (conductores) {
                     for (let c of conductores) {
                         const selected = (registro?.conductor2_id == c.id) ? 'selected' : '';
@@ -1673,10 +1639,7 @@
                 }
                 htmlForm += `</select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>INTERNO / BUS</label>
-                                <select name="interno_id">
-                                    <option value="">Seleccionar interno...</option>`;
+                htmlForm += `<div class="form-group"><label>INTERNO / BUS</label><select name="interno_id"><option value="">Seleccionar interno...</option>`;
                 if (buses) {
                     for (let b of buses) {
                         const selected = (registro?.interno_id == b.id) ? 'selected' : '';
@@ -1692,40 +1655,29 @@
                     const selectOrden = document.getElementById('select_orden');
                     if (selectOrden) selectOrden.value = registro.orden_id;
                 }
-                
                 return;
             }
             
-            // Para la tabla ordenes
             if (window.tablaActual === 'ordenes') {
                 const { data: empresas } = await supabase.from('empresas').select('id, nombre');
                 const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
                 
                 let htmlForm = `
-                    <div class="form-group">
-                        <label>CONTRATANTE</label>
-                        <select name="contratante_id" id="field_contratante_id" onchange="onContratanteChange()" required>
-                            <option value="">Seleccionar contratante...</option>`;
+                    <div class="form-group"><label>CONTRATANTE</label><select name="contratante_id" id="field_contratante_id" onchange="onContratanteChange()" required>
+                        <option value="">Seleccionar contratante...</option>`;
                 if (contratantes) {
                     for (let c of contratantes) {
                         const selected = (registro?.contratante_id == c.id) ? 'selected' : '';
                         htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
                     }
                 }
-                htmlForm += `</select>
-                    </div>`;
+                htmlForm += `</select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>SUBCONTRATANTE</label>
-                                <select name="subcontratante" id="field_subcontratante" required>
-                                    <option value="">Primero seleccione un contratante</option>
-                                </select>
-                            </div>`;
+                htmlForm += `<div class="form-group"><label>SUBCONTRATANTE</label><select name="subcontratante" id="field_subcontratante" required>
+                                <option value="">Primero seleccione un contratante</option>
+                            </select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>EMPRESA</label>
-                                <select name="empresas_id" required>`;
-                htmlForm += `<option value="">Seleccionar empresa...</option>`;
+                htmlForm += `<div class="form-group"><label>EMPRESA</label><select name="empresas_id" required><option value="">Seleccionar empresa...</option>`;
                 if (empresas) {
                     for (let e of empresas) {
                         const selected = (registro?.empresas_id == e.id) ? 'selected' : '';
@@ -1778,23 +1730,16 @@
                     if (kmInput) kmInput.addEventListener('input', actualizarKmDescontados);
                     actualizarKmDescontados();
                 }, 50);
-                
                 return;
             }
             
-            // Para las demás tablas
-            const { data: columnas, error } = await supabase
-                .from(window.tablaActual)
-                .select('*')
-                .limit(1);
-            
+            const { data: columnas, error } = await supabase.from(window.tablaActual).select('*').limit(1);
             if (error || !columnas || columnas.length === 0) {
                 container.innerHTML = '<p>Error cargando formulario</p>';
                 return;
             }
             
             const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
-            
             let htmlForm = '';
             for (let col of estructura) {
                 let valor = registro ? registro[col] : '';
@@ -2010,35 +1955,54 @@
             }
         };
 
-        window.iniciarSesion = async () => {
+        // Login corregido
+        document.getElementById('loginButton').onclick = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
+            
             if (!usuario || !password) {
                 document.getElementById('loginError').textContent = 'Complete ambos campos';
                 return;
             }
+            
             document.getElementById('loginError').textContent = '';
+            
             try {
-                const { data, error } = await supabase.from('usuarios').select('*').eq('usuario', usuario).eq('contraseña', password);
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('usuario', usuario)
+                    .eq('contraseña', password);
+                
                 if (error) throw error;
+                
                 if (!data || data.length === 0) {
                     document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
                     return;
                 }
+                
                 const user = data[0];
                 const rol = user.nivel;
+                
                 if (!configPermisos[rol]) {
                     document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
                     return;
                 }
+                
                 window.usuarioActual = user;
                 window.permisos = configPermisos[rol];
+                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                
                 generarSidebar();
+                
                 const tablasPermitidas = getTablasPermitidas();
-                if (tablasPermitidas.length > 0) window.cargarTabla(tablasPermitidas[0].id);
+                if (tablasPermitidas.length > 0) {
+                    window.cargarTabla(tablasPermitidas[0].id);
+                }
+                
             } catch (error) {
                 document.getElementById('loginError').textContent = 'Error de conexión';
                 console.error(error);
