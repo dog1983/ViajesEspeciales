@@ -1462,7 +1462,7 @@
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_nombre', 'subcontratante_nombre', 'fecha_ida', 'origen', 'destino', 'interno_nombre'];
+                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1480,14 +1480,13 @@
             const nombresColumnas = {
                 id: 'ID',
                 orden_id: 'ORDEN ID',
-                contratante_nombre: 'CONTRATANTE',
-                subcontratante_nombre: 'SUBCONTRATANTE',
+                contratante_id: 'CONTRATANTE',
+                subcontratante_id: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
-                interno_nombre: 'INTERNO ID',
+                interno_id: 'INTERNO ID',
                 empresas_id: 'EMPRESA',
-                contratante_id: 'CONTRATANTE',
                 subcontratante: 'SUBCONTRATANTE',
                 cantidad_buses: 'CANT. BUSES',
                 cotizacion: 'COTIZACIÓN',
@@ -1514,30 +1513,26 @@
             
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
-            // Procesar cada fila de forma síncrona (sin async dentro del loop)
+            // Procesar cada fila
             for (let item of datosFiltrados) {
                 html += '<tr>';
                 for (let col of columnas) {
                     let valor = item[col];
                     
-                    // Para carpetas, usar los nombres ya precargados
+                    // Para carpetas, convertir IDs a nombres usando la caché
                     if (window.tablaActual === 'carpetas') {
-                        if (col === 'contratante_nombre') {
-                            // Buscar el nombre del contratante
-                            const contratanteId = item.contratante_id;
-                            valor = window.cacheContratantes[contratanteId] || '-';
-                        } else if (col === 'subcontratante_nombre') {
-                            const subcontratanteId = item.subcontratante_id;
-                            valor = window.cacheSubcontratantes[subcontratanteId] || '-';
+                        if (col === 'contratante_id') {
+                            valor = window.cacheContratantes[valor] || '-';
+                        } else if (col === 'subcontratante_id') {
+                            valor = window.cacheSubcontratantes[valor] || '-';
                         } else if (col === 'fecha_ida' && valor) {
                             valor = formatearFechaCorta(valor);
                         } else if (col === 'origen' && !valor) {
                             valor = '-';
                         } else if (col === 'destino' && !valor) {
                             valor = '-';
-                        } else if (col === 'interno_nombre') {
-                            const internoId = item.interno_id;
-                            valor = window.cacheBuses[internoId] || internoId || '-';
+                        } else if (col === 'interno_id' && valor) {
+                            valor = window.cacheBuses[valor] || valor;
                         }
                     } else {
                         if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
@@ -1567,11 +1562,11 @@
                 }
                 
                 if (esContratantes) {
-                    html += `<td style="font-weight:bold;">-</td>`;
+                    html += `<td style="font-weight:bold;">-<\/td>`;
                 }
                 
                 if (esOrdenes) {
-                    html += `<td style="font-weight:bold;">-</td>`;
+                    html += `<td style="font-weight:bold;">-<\/td>`;
                 }
                 
                 if (window.tablaActual === 'ordenes') {
