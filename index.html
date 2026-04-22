@@ -6,96 +6,670 @@
     <meta name="theme-color" content="#1e293b">
     <title>Transporte Gestión</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f1f5f9; overflow-x: hidden; }
-        .mobile-header { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .menu-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; padding: 8px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-        .menu-btn:active { background: rgba(255,255,255,0.1); }
-        .header-title { font-size: 1rem; font-weight: 600; flex: 1; text-align: center; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
-        .add-btn { background: #3b82f6; border: none; color: white; width: 44px; height: 44px; border-radius: 12px; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .add-btn:active { background: #2563eb; transform: scale(0.95); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; backdrop-filter: blur(4px); }
-        .sidebar-mobile { position: fixed; top: 0; left: -280px; bottom: 0; width: 280px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: 201; transition: left 0.3s ease; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
-        .sidebar-mobile.open { left: 0; }
-        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid #334155; }
-        .sidebar-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
-        .sidebar-header p { font-size: 0.7rem; color: #94a3b8; }
-        .close-sidebar { position: absolute; top: 16px; right: 16px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; width: 44px; height: 44px; }
-        .nav-list { flex: 1; padding: 20px 12px; overflow-y: auto; }
-        .nav-item { background: transparent; border: none; color: #cbd5e1; padding: 14px 16px; text-align: left; font-size: 1rem; border-radius: 12px; cursor: pointer; font-weight: 500; width: 100%; margin-bottom: 4px; }
-        .nav-item:active { background: #334155; }
-        .nav-item.active { background: #3b82f6; color: white; }
-        .login-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-box { background: white; border-radius: 24px; padding: 32px 24px; width: 90%; max-width: 320px; text-align: center; }
-        .login-box h2 { color: #1e293b; margin-bottom: 8px; }
-        .login-box p { color: #64748b; font-size: 0.8rem; margin-bottom: 24px; }
-        .login-input { width: 100%; padding: 14px; margin-bottom: 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; }
-        .login-input:focus { outline: none; border-color: #3b82f6; }
-        .login-btn { width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-        .login-error { color: #ef4444; font-size: 0.8rem; margin-top: 12px; }
-        .main-content { margin-top: 76px; padding: 12px; padding-bottom: 80px; }
-        .search-container { margin-bottom: 12px; position: sticky; top: 76px; background: #f1f5f9; z-index: 10; padding: 8px 0; }
-        .search-box { background: white; border-radius: 50px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
-        .search-box span { font-size: 18px; color: #94a3b8; }
-        .search-box input { flex: 1; border: none; outline: none; font-size: 0.9rem; background: transparent; }
-        .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 700px; }
-        .data-table th { background: #f8fafc; padding: 12px 10px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; background: #f8fafc; white-space: nowrap; }
-        .data-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; }
-        .actions-cell { display: flex; gap: 8px; white-space: nowrap; }
-        .btn-edit, .btn-delete, .btn-view, .btn-report { padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; border: none; font-weight: 500; }
-        .btn-edit { background: #eab308; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
-        .btn-view { background: #3b82f6; color: white; }
-        .btn-report { background: #10b981; color: white; }
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; }
-        .modal.show { display: flex; }
-        .modal-content { background: white; border-radius: 24px 24px 0 0; width: 100%; max-height: 85vh; overflow-y: auto; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10; }
-        .modal-header h3 { color: #1e293b; font-size: 1.2rem; }
-        .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; width: 44px; height: 44px; color: #64748b; }
-        .modal-body { padding: 20px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.85rem; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-family: inherit; }
-        .info-card { background: #f0fdf4; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #bbf7d0; }
-        .info-card h4 { color: #166534; margin-bottom: 12px; font-size: 0.9rem; }
-        .info-row { display: flex; margin-bottom: 8px; font-size: 0.85rem; }
-        .info-label { font-weight: 600; width: 110px; color: #475569; }
-        .info-value { flex: 1; color: #1e293b; }
-        .modal-footer { padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; }
-        .modal-footer button { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; }
-        .btn-save { background: #10b981; color: white; }
-        .btn-cancel { background: #e2e8f0; color: #475569; }
-        .loading { text-align: center; padding: 40px; color: #64748b; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
-        .toast { position: fixed; bottom: 20px; left: 16px; right: 16px; background: #1e293b; color: white; padding: 14px; border-radius: 12px; text-align: center; z-index: 400; font-size: 0.9rem; }
-        .hoja-ruta { font-family: Arial, Helvetica, sans-serif; background: white; padding: 0; margin: 0 auto; }
-        .hoja-header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 16px; }
-        .hoja-header h2 { color: #1e293b; font-size: 1.2rem; margin-bottom: 4px; }
-        .hoja-header .subtitle { font-size: 0.75rem; color: #64748b; }
-        .hoja-section { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: white; page-break-inside: avoid; }
-        .hoja-section-title { font-weight: bold; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-        .hoja-row { display: flex; margin-bottom: 6px; font-size: 0.75rem; line-height: 1.3; }
-        .hoja-label { font-weight: 600; width: 100px; color: #475569; flex-shrink: 0; }
-        .hoja-value { flex: 1; color: #1e293b; }
-        .hoja-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .conductor-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; background: white; }
-        .conductor-box h5 { font-size: 0.7rem; color: #3b82f6; margin-bottom: 6px; }
-        .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; margin-bottom: 12px; }
-        .viaje-destacado .hoja-row { font-size: 0.8rem; margin-bottom: 8px; }
-        .viaje-destacado .hoja-label { width: 115px; font-weight: 700; color: #1e40af; }
-        .viaje-destacado .hoja-value { font-weight: 600; color: #1e3a8a; }
-        .texto-fijo { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: white; min-height: 70px; white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; font-size: 0.75rem; margin-top: 6px; }
-        .texto-fijo.vacio { color: #94a3b8; font-style: italic; }
-        .hoja-actions { display: flex; gap: 10px; margin-bottom: 16px; justify-content: flex-end; }
-        .hoja-actions button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-        .btn-print { background: #64748b; color: white; }
-        .btn-pdf { background: #ef4444; color: white; }
-        .monto { font-weight: bold; color: #10b981; }
-        .saldo-rojo { color: #ef4444 !important; font-weight: bold; }
-        .saldo-verde { color: #10b981 !important; font-weight: bold; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .menu-btn:active {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            font-size: 1rem;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .add-btn {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:active {
+            background: #2563eb;
+            transform: scale(0.95);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar-mobile {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            bottom: 0;
+            width: 280px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 201;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-mobile.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .close-sidebar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+        }
+
+        .nav-list {
+            flex: 1;
+            padding: 20px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:active {
+            background: #334155;
+        }
+
+        .nav-item.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .login-box p {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 24px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 12px;
+        }
+
+        .main-content {
+            margin-top: 76px;
+            padding: 12px;
+            padding-bottom: 80px;
+        }
+
+        .search-container {
+            margin-bottom: 12px;
+            position: sticky;
+            top: 76px;
+            background: #f1f5f9;
+            z-index: 10;
+            padding: 8px 0;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 50px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .search-box span {
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            background: transparent;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            min-width: 700px;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-edit, .btn-delete, .btn-view, .btn-report {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-edit {
+            background: #eab308;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-report {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 300;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            color: #1e293b;
+            font-size: 1.2rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .info-card {
+            background: #f0fdf4;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .info-card h4 {
+            color: #166534;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 110px;
+            color: #475569;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #1e293b;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 16px;
+            right: 16px;
+            background: #1e293b;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 400;
+            font-size: 0.9rem;
+        }
+
+        /* Estilos para la Hoja de Ruta */
+        .hoja-ruta {
+            font-family: Arial, Helvetica, sans-serif;
+            background: white;
+            padding: 0;
+            margin: 0 auto;
+        }
+
+        .hoja-header {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .hoja-header h2 {
+            color: #1e293b;
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .hoja-header .subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .hoja-section {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: white;
+            page-break-inside: avoid;
+        }
+
+        .hoja-section-title {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+            padding-left: 8px;
+        }
+
+        .hoja-row {
+            display: flex;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .hoja-label {
+            font-weight: 600;
+            width: 100px;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .hoja-value {
+            flex: 1;
+            color: #1e293b;
+        }
+
+        .hoja-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .conductor-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+        }
+
+        .conductor-box h5 {
+            font-size: 0.7rem;
+            color: #3b82f6;
+            margin-bottom: 6px;
+        }
+
+        .viaje-destacado {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            margin-bottom: 12px;
+        }
+        
+        .viaje-destacado .hoja-row {
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .viaje-destacado .hoja-label {
+            width: 115px;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .viaje-destacado .hoja-value {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .texto-fijo {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+            min-height: 70px;
+            white-space: pre-wrap;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 0.75rem;
+            margin-top: 6px;
+        }
+        
+        .texto-fijo.vacio {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .hoja-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+        
+        .hoja-actions button {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-print {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-pdf {
+            background: #ef4444;
+            color: white;
+        }
+
+        .monto {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .saldo-rojo {
+            color: #ef4444 !important;
+            font-weight: bold;
+        }
+        
+        .saldo-verde {
+            color: #10b981 !important;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -105,7 +679,7 @@
             <p>Ingrese sus credenciales</p>
             <input type="text" id="loginUsuario" class="login-input" placeholder="Usuario" autocomplete="off">
             <input type="password" id="loginPassword" class="login-input" placeholder="Contraseña">
-            <button class="login-btn" id="loginButton">Ingresar</button>
+            <button class="login-btn" onclick="iniciarSesion()">Ingresar</button>
             <div id="loginError" class="login-error"></div>
         </div>
     </div>
@@ -117,23 +691,42 @@
             <button class="add-btn" id="addBtnGlobal" onclick="mostrarModalAgregar()">+</button>
             <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
         </div>
+
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
         <div class="sidebar-mobile" id="sidebarMobile">
             <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
-            <div class="sidebar-header"><h2>🚍 Transporte</h2><p id="userInfo">Cargando...</p></div>
+            <div class="sidebar-header">
+                <h2>🚍 Transporte</h2>
+                <p id="userInfo">Cargando...</p>
+            </div>
             <div class="nav-list" id="navList"></div>
         </div>
+
         <div class="main-content">
-            <div class="search-container"><div class="search-box"><span>🔍</span><input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()"></div></div>
-            <div id="table-container"><div class="loading">Cargando datos...</div></div>
+            <div class="search-container">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
+                </div>
+            </div>
+            <div id="table-container">
+                <div class="loading">Cargando datos...</div>
+            </div>
         </div>
     </div>
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="modal-titulo">Agregar Registro</h3><button class="modal-close" onclick="cerrarModal()">✕</button></div>
+            <div class="modal-header">
+                <h3 id="modal-titulo">Agregar Registro</h3>
+                <button class="modal-close" onclick="cerrarModal()">✕</button>
+            </div>
             <div class="modal-body" id="modal-campos"></div>
-            <div class="modal-footer" id="modal-footer"><button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button type="button" class="btn-save" id="btnGuardar">Guardar</button></div>
+            <div class="modal-footer" id="modal-footer">
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn-save" id="btnGuardar">Guardar</button>
+            </div>
         </div>
     </div>
 
@@ -148,11 +741,26 @@
         window.modalModo = 'form';
 
         const configPermisos = {
-            master: { puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'], soloVer: [] },
-            administracion: { puedeEditar: ['pagos', 'cuentacorriente'], soloVer: ['ordenes', 'carpetas'] },
-            marketing: { puedeEditar: ['ordenes', 'contratantes', 'subcontratantes'], soloVer: ['carpetas', 'pagos', 'cuentacorriente'] },
-            trafico: { puedeEditar: ['ordenes', 'carpetas', 'buses', 'conductores', 'contratantes', 'subcontratantes'], soloVer: ['pagos', 'cuentacorriente'] },
-            contratante: { puedeEditar: [], soloVer: ['ordenes', 'carpetas'] }
+            master: {
+                puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
+                soloVer: []
+            },
+            administracion: {
+                puedeEditar: ['pagos', 'cuentacorriente'],
+                soloVer: ['ordenes', 'carpetas']
+            },
+            marketing: {
+                puedeEditar: ['ordenes', 'contratantes', 'subcontratantes'],
+                soloVer: ['carpetas', 'pagos', 'cuentacorriente']
+            },
+            trafico: {
+                puedeEditar: ['ordenes', 'carpetas', 'buses', 'conductores', 'contratantes', 'subcontratantes'],
+                soloVer: ['pagos', 'cuentacorriente']
+            },
+            contratante: {
+                puedeEditar: [],
+                soloVer: ['ordenes', 'carpetas']
+            }
         };
 
         const todasLasTablas = [
@@ -169,354 +777,1606 @@
         ];
 
         window.relaciones = {
-            ordenes: { empresas_id: { tabla: 'empresas', campo: 'nombre' }, contratante_id: { tabla: 'contratantes', campo: 'contratante' }, subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' }, confecciono: { tabla: 'usuarios', campo: 'nombre' } },
-            subcontratantes: { contratante: { tabla: 'contratantes', campo: 'contratante' } },
-            carpetas: { orden_id: { tabla: 'ordenes', campo: 'id' }, conductor1_id: { tabla: 'conductores', campo: 'nombre' }, conductor2_id: { tabla: 'conductores', campo: 'nombre' }, interno_id: { tabla: 'buses', campo: 'Interno' } },
-            conductores: { empresa_id: { tabla: 'empresas', campo: 'nombre' } },
-            buses: { empresa_id: { tabla: 'empresas', campo: 'nombre' } },
-            cuentacorriente: { contratante_id: { tabla: 'contratantes', campo: 'contratante' }, usuario_id: { tabla: 'usuarios', campo: 'nombre' } },
-            pagos: { orden_id: { tabla: 'ordenes', campo: 'id' }, usuario_id: { tabla: 'usuarios', campo: 'nombre' } },
-            contratantes: { usuario_id: { tabla: 'usuarios', campo: 'nombre' } }
+            ordenes: {
+                empresas_id: { tabla: 'empresas', campo: 'nombre' },
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
+                subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
+                confecciono: { tabla: 'usuarios', campo: 'nombre' }
+            },
+            subcontratantes: {
+                contratante: { tabla: 'contratantes', campo: 'contratante' }
+            },
+            carpetas: {
+                orden_id: { tabla: 'ordenes', campo: 'id' },
+                conductor1_id: { tabla: 'conductores', campo: 'nombre' },
+                conductor2_id: { tabla: 'conductores', campo: 'nombre' },
+                interno_id: { tabla: 'buses', campo: 'Interno' }
+            },
+            conductores: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
+            },
+            buses: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
+            },
+            cuentacorriente: {
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
+            },
+            pagos: {
+                orden_id: { tabla: 'ordenes', campo: 'id' },
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
+            },
+            contratantes: {
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
+            }
         };
 
-        function mostrarToast(mensaje, esError = false) { const toast = document.createElement('div'); toast.className = 'toast'; toast.style.background = esError ? '#ef4444' : '#10b981'; toast.textContent = mensaje; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
-        function formatearFecha(fecha) { if (!fecha) return '-'; try { const date = new Date(fecha); return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch(e) { return fecha; } }
-        function formatearFechaCorta(fecha) { if (!fecha) return '-'; try { return new Date(fecha).toLocaleDateString('es-AR'); } catch(e) { return fecha; } }
-        function formatearMonto(monto) { if (!monto && monto !== 0) return '-'; return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(monto); }
+        // Cachés para nombres
+        window.cacheContratantes = {};
+        window.cacheSubcontratantes = {};
+        window.cacheBuses = {};
+
+        function mostrarToast(mensaje, esError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = esError ? '#ef4444' : '#10b981';
+            toast.textContent = mensaje;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return '-';
+            try {
+                const date = new Date(fecha);
+                return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } catch(e) {
+                return fecha;
+            }
+        }
+
+        function formatearFechaCorta(fecha) {
+            if (!fecha) return '-';
+            try {
+                return new Date(fecha).toLocaleDateString('es-AR');
+            } catch(e) {
+                return fecha;
+            }
+        }
+
+        function formatearMonto(monto) {
+            if (!monto && monto !== 0) return '-';
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 0
+            }).format(monto);
+        }
+
+        async function cargarCacheNombres() {
+            // Cargar contratantes
+            const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
+            if (contratantes) {
+                contratantes.forEach(c => { window.cacheContratantes[c.id] = c.contratante; });
+            }
+            
+            // Cargar subcontratantes
+            const { data: subcontratantes } = await supabase.from('subcontratantes').select('id, subcontratante');
+            if (subcontratantes) {
+                subcontratantes.forEach(s => { window.cacheSubcontratantes[s.id] = s.subcontratante; });
+            }
+            
+            // Cargar buses
+            const { data: buses } = await supabase.from('buses').select('id, Interno');
+            if (buses) {
+                buses.forEach(b => { window.cacheBuses[b.id] = b.Interno; });
+            }
+        }
 
         async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
-            const { data: compras, error: err1 } = await supabase.from('cuentacorriente').select('kmcomprados').eq('contratante_id', contratanteId);
+            
+            const { data: compras, error: err1 } = await supabase
+                .from('cuentacorriente')
+                .select('kmcomprados')
+                .eq('contratante_id', contratanteId);
+            
             if (err1) return 0;
+            
             const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados) || 0), 0) || 0;
-            const { data: subcontratantes, error: errSub } = await supabase.from('subcontratantes').select('id').eq('contratante', contratanteId);
+            
+            const { data: subcontratantes, error: errSub } = await supabase
+                .from('subcontratantes')
+                .select('id')
+                .eq('contratante', contratanteId);
+            
             if (errSub) return totalComprados;
+            
             const subcontratantesIds = subcontratantes?.map(s => s.id) || [];
+            
             if (subcontratantesIds.length === 0) return totalComprados;
-            const { data: ordenesCC, error: err2 } = await supabase.from('ordenes').select('km_descontados').in('subcontratante', subcontratantesIds).eq('forma_pago', 'cuenta_corriente');
+            
+            const { data: ordenesCC, error: err2 } = await supabase
+                .from('ordenes')
+                .select('km_descontados')
+                .in('subcontratante', subcontratantesIds)
+                .eq('forma_pago', 'cuenta_corriente');
+            
             if (err2) return totalComprados;
+            
             const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
+            
             return totalComprados - totalDescontados;
         }
-        async function getKmDisponibles(contratanteId) { return getKmDisponiblesPorContratante(contratanteId); }
-        async function getSaldoOrden(ordenId, cotizacion) { if (!ordenId) return 0; const { data: pagos, error } = await supabase.from('pagos').select('monto').eq('orden_id', ordenId); if (error) return cotizacion || 0; const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0) || 0; const saldo = (parseFloat(cotizacion) || 0) - totalPagado; return saldo; }
-        async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) { const subcontratanteSelect = document.getElementById('field_subcontratante'); if (!subcontratanteSelect) return; subcontratanteSelect.innerHTML = '<option value="">Seleccionar...</option>'; if (!contratanteId) return; const { data: subcontratantes, error } = await supabase.from('subcontratantes').select('id, subcontratante').eq('contratante', contratanteId); if (error) { console.error('Error cargando subcontratantes:', error); return; } if (subcontratantes && subcontratantes.length > 0) { for (let sub of subcontratantes) { const selected = (valorSeleccionado == sub.id) ? 'selected' : ''; subcontratanteSelect.innerHTML += `<option value="${sub.id}" ${selected}>${sub.subcontratante}</option>`; } } else { subcontratanteSelect.innerHTML += '<option value="">No hay subcontratantes disponibles</option>'; } }
-        async function cargarDatosOrden(ordenId) { if (!ordenId) return; const { data: orden, error } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)').eq('id', ordenId).single(); if (error) { console.error('Error cargando orden:', error); return; } const empresaSpan = document.getElementById('info_empresa'); const contratanteSpan = document.getElementById('info_contratante'); const subcontratanteSpan = document.getElementById('info_subcontratante'); const fechaIdaSpan = document.getElementById('info_fecha_ida'); const origenSpan = document.getElementById('info_origen'); const destinoSpan = document.getElementById('info_destino'); const fechaRegresoSpan = document.getElementById('info_fecha_regreso'); if (empresaSpan) empresaSpan.textContent = orden.empresas?.nombre || '-'; if (contratanteSpan) contratanteSpan.textContent = orden.contratantes?.contratante || '-'; if (subcontratanteSpan) subcontratanteSpan.textContent = orden.subcontratantes?.subcontratante || '-'; if (fechaIdaSpan) fechaIdaSpan.textContent = formatearFecha(orden.fecha_ida); if (origenSpan) origenSpan.textContent = `${orden.direccion_origen || ''} - ${orden.origen || ''}`; if (destinoSpan) destinoSpan.textContent = `${orden.direccion_destino || ''} - ${orden.destino || ''}`; if (fechaRegresoSpan) fechaRegresoSpan.textContent = formatearFecha(orden.fecha_regreso); }
-        function actualizarKmDescontados() { const kmInput = document.getElementById('field_kilometros'); const kmDescontadosInput = document.getElementById('field_km_descontados'); const formaPagoSelect = document.getElementById('forma_pago_select'); const kmGroup = document.getElementById('km_descontados_group'); if (kmInput && kmDescontadosInput && formaPagoSelect && kmGroup) { if (formaPagoSelect.value === 'cuenta_corriente') { kmGroup.style.display = 'block'; const kmValue = parseInt(kmInput.value) || 0; kmDescontadosInput.value = kmValue; kmDescontadosInput.readOnly = true; kmDescontadosInput.style.backgroundColor = '#f0f0f0'; } else { kmGroup.style.display = 'none'; kmDescontadosInput.value = 0; } } }
-        function imprimirReporteOrden(htmlContent) { const printWindow = window.open('', '_blank'); if (!printWindow) { mostrarToast('Por favor, permita las ventanas emergentes', true); return; } printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orden de Viaje</title><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: Arial, Helvetica, sans-serif; background: white; padding: 10mm; margin: 0; } .reporte { max-width: 100%; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; } .reporte-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; } .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; } .reporte-header .subtitle { font-size: 0.85rem; color: #666; } .reporte-section { border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; page-break-inside: avoid; } .reporte-section-title { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; } .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; } .reporte-label { font-weight: 600; width: 130px; color: #555; flex-shrink: 0; } .reporte-value { flex: 1; color: #333; } .texto-fijo-reporte { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 80px; margin-top: 6px; font-size: 0.85rem; white-space: pre-wrap; } .monto { font-weight: bold; color: #10b981; } .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; } .viaje-destacado .reporte-label { color: #1e40af; } .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; } .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; } .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; } .conductor-box { border: 1px solid #ccc; border-radius: 6px; padding: 10px; background: #f8fafc; } .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; } @page { size: A4; margin: 10mm; } @media print { body { margin: 0; padding: 0; } }</style></head><body>${htmlContent}<script>window.onload = () => { window.print(); window.close(); };<\/script></body></html>`); printWindow.document.close(); }
-        function generarPDFOrden(htmlContent) { const printWindow = window.open('', '_blank'); if (!printWindow) { mostrarToast('Por favor, permita las ventanas emergentes', true); return; } printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orden de Viaje</title><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: Arial, Helvetica, sans-serif; background: white; padding: 10mm; margin: 0; } .reporte { max-width: 100%; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; } .reporte-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; } .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; } .reporte-header .subtitle { font-size: 0.85rem; color: #666; } .reporte-section { border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; page-break-inside: avoid; } .reporte-section-title { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; } .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; } .reporte-label { font-weight: 600; width: 130px; color: #555; flex-shrink: 0; } .reporte-value { flex: 1; color: #333; } .texto-fijo-reporte { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 80px; margin-top: 6px; font-size: 0.85rem; white-space: pre-wrap; } .monto { font-weight: bold; color: #10b981; } .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; } .viaje-destacado .reporte-label { color: #1e40af; } .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; } .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; } .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; } .conductor-box { border: 1px solid #ccc; border-radius: 6px; padding: 10px; background: #f8fafc; } .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; } @page { size: A4; margin: 10mm; } @media print { body { margin: 0; padding: 0; } }</style></head><body>${htmlContent}<script>window.onload = () => { window.print(); window.close(); };<\/script></body></html>`); printWindow.document.close(); }
+
+        async function getKmDisponibles(contratanteId) {
+            return getKmDisponiblesPorContratante(contratanteId);
+        }
+
+        async function getSaldoOrden(ordenId, cotizacion) {
+            if (!ordenId) return 0;
+            
+            const { data: pagos, error } = await supabase
+                .from('pagos')
+                .select('monto')
+                .eq('orden_id', ordenId);
+            
+            if (error) return cotizacion || 0;
+            
+            const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0) || 0;
+            const saldo = (parseFloat(cotizacion) || 0) - totalPagado;
+            
+            return saldo;
+        }
+
+        async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) {
+            const subcontratanteSelect = document.getElementById('field_subcontratante');
+            if (!subcontratanteSelect) return;
+            
+            subcontratanteSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            if (!contratanteId) {
+                return;
+            }
+            
+            const { data: subcontratantes, error } = await supabase
+                .from('subcontratantes')
+                .select('id, subcontratante')
+                .eq('contratante', contratanteId);
+            
+            if (error) {
+                console.error('Error cargando subcontratantes:', error);
+                return;
+            }
+            
+            if (subcontratantes && subcontratantes.length > 0) {
+                for (let sub of subcontratantes) {
+                    const selected = (valorSeleccionado == sub.id) ? 'selected' : '';
+                    subcontratanteSelect.innerHTML += `<option value="${sub.id}" ${selected}>${sub.subcontratante}</option>`;
+                }
+            } else {
+                subcontratanteSelect.innerHTML += '<option value="">No hay subcontratantes disponibles</option>';
+            }
+        }
+
+        async function cargarDatosOrden(ordenId) {
+            if (!ordenId) return;
+            
+            const { data: orden, error } = await supabase
+                .from('ordenes')
+                .select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)')
+                .eq('id', ordenId)
+                .single();
+            
+            if (error) {
+                console.error('Error cargando orden:', error);
+                return;
+            }
+            
+            const empresaSpan = document.getElementById('info_empresa');
+            const contratanteSpan = document.getElementById('info_contratante');
+            const subcontratanteSpan = document.getElementById('info_subcontratante');
+            const fechaIdaSpan = document.getElementById('info_fecha_ida');
+            const origenSpan = document.getElementById('info_origen');
+            const destinoSpan = document.getElementById('info_destino');
+            const fechaRegresoSpan = document.getElementById('info_fecha_regreso');
+            
+            if (empresaSpan) empresaSpan.textContent = orden.empresas?.nombre || '-';
+            if (contratanteSpan) contratanteSpan.textContent = orden.contratantes?.contratante || '-';
+            if (subcontratanteSpan) subcontratanteSpan.textContent = orden.subcontratantes?.subcontratante || '-';
+            if (fechaIdaSpan) fechaIdaSpan.textContent = formatearFecha(orden.fecha_ida);
+            if (origenSpan) origenSpan.textContent = `${orden.direccion_origen || ''} - ${orden.origen || ''}`;
+            if (destinoSpan) destinoSpan.textContent = `${orden.direccion_destino || ''} - ${orden.destino || ''}`;
+            if (fechaRegresoSpan) fechaRegresoSpan.textContent = formatearFecha(orden.fecha_regreso);
+        }
+
+        function actualizarKmDescontados() {
+            const kmInput = document.getElementById('field_kilometros');
+            const kmDescontadosInput = document.getElementById('field_km_descontados');
+            const formaPagoSelect = document.getElementById('forma_pago_select');
+            const kmGroup = document.getElementById('km_descontados_group');
+            
+            if (kmInput && kmDescontadosInput && formaPagoSelect && kmGroup) {
+                if (formaPagoSelect.value === 'cuenta_corriente') {
+                    kmGroup.style.display = 'block';
+                    const kmValue = parseInt(kmInput.value) || 0;
+                    kmDescontadosInput.value = kmValue;
+                    kmDescontadosInput.readOnly = true;
+                    kmDescontadosInput.style.backgroundColor = '#f0f0f0';
+                } else {
+                    kmGroup.style.display = 'none';
+                    kmDescontadosInput.value = 0;
+                }
+            }
+        }
+
+        function imprimirReporteOrden(htmlContent) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                mostrarToast('Por favor, permita las ventanas emergentes', true);
+                return;
+            }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Orden de Viaje</title>
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: Arial, Helvetica, sans-serif; background: white; padding: 10mm; margin: 0; }
+                            .reporte { max-width: 100%; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
+                            .reporte-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+                            .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+                            .reporte-header .subtitle { font-size: 0.85rem; color: #666; }
+                            .reporte-section { border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; page-break-inside: avoid; }
+                            .reporte-section-title { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+                            .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; }
+                            .reporte-label { font-weight: 600; width: 130px; color: #555; flex-shrink: 0; }
+                            .reporte-value { flex: 1; color: #333; }
+                            .texto-fijo-reporte { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 80px; margin-top: 6px; font-size: 0.85rem; white-space: pre-wrap; }
+                            .monto { font-weight: bold; color: #10b981; }
+                            .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; }
+                            .viaje-destacado .reporte-label { color: #1e40af; }
+                            .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
+                            .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; }
+                            .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+                            .conductor-box { border: 1px solid #ccc; border-radius: 6px; padding: 10px; background: #f8fafc; }
+                            .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; }
+                            @page { size: A4; margin: 10mm; }
+                            @media print { body { margin: 0; padding: 0; } }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                        <script>window.onload = () => { window.print(); window.close(); };<\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function generarPDFOrden(htmlContent) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                mostrarToast('Por favor, permita las ventanas emergentes', true);
+                return;
+            }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Orden de Viaje</title>
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: Arial, Helvetica, sans-serif; background: white; padding: 10mm; margin: 0; }
+                            .reporte { max-width: 100%; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
+                            .reporte-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+                            .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+                            .reporte-header .subtitle { font-size: 0.85rem; color: #666; }
+                            .reporte-section { border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; page-break-inside: avoid; }
+                            .reporte-section-title { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+                            .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; }
+                            .reporte-label { font-weight: 600; width: 130px; color: #555; flex-shrink: 0; }
+                            .reporte-value { flex: 1; color: #333; }
+                            .texto-fijo-reporte { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 80px; margin-top: 6px; font-size: 0.85rem; white-space: pre-wrap; }
+                            .monto { font-weight: bold; color: #10b981; }
+                            .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; }
+                            .viaje-destacado .reporte-label { color: #1e40af; }
+                            .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
+                            .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; }
+                            .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+                            .conductor-box { border: 1px solid #ccc; border-radius: 6px; padding: 10px; background: #f8fafc; }
+                            .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; }
+                            @page { size: A4; margin: 10mm; }
+                            @media print { body { margin: 0; padding: 0; } }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                        <script>window.onload = () => { window.print(); window.close(); };<\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
 
         window.verInformeOrden = async (ordenId) => {
             try {
                 mostrarToast('Cargando informe de orden...');
-                const { data: orden, error } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)').eq('id', ordenId).single();
+                
+                const { data: orden, error } = await supabase
+                    .from('ordenes')
+                    .select('*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante, cuit)')
+                    .eq('id', ordenId)
+                    .single();
+                
                 if (error) throw error;
-                const { data: usuario } = await supabase.from('usuarios').select('nombre').eq('id', orden.confecciono).single();
+                
+                const { data: usuario } = await supabase
+                    .from('usuarios')
+                    .select('nombre')
+                    .eq('id', orden.confecciono)
+                    .single();
+                
                 const paradasTexto = orden.paradas || '';
                 const movimientosTexto = orden.movimientos || '';
                 const obsBusesTexto = orden.obs_buses || '';
                 const obsCotizacionTexto = orden.obs_cotizacion || '';
                 const obsGastosTexto = orden.obs_gastos || '';
+                
                 const formaPagoTexto = orden.forma_pago === 'cuenta_corriente' ? '🏦 CUENTA CORRIENTE (Descuenta KM)' : '💵 PAGO DIRECTO';
                 const kmDisponibles = await getKmDisponibles(orden.contratante_id);
                 const kmInsuficientes = orden.forma_pago === 'cuenta_corriente' && kmDisponibles < (orden.km_descontados || 0);
-                const reporteHtml = `<div class="reporte"><div class="reporte-header"><h2>${orden.empresas?.nombre || 'EMPRESA'}</h2><div class="subtitle">ORDEN DE VIAJE N° ${orden.id}</div></div><div class="reporte-section"><div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div><div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${orden.contratantes?.contratante || '-'}</span></div><div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${orden.contratantes?.cuit || '-'}</span></div><div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${orden.subcontratantes?.subcontratante || '-'}</span></div></div><div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}"><div class="reporte-section-title">💰 FORMA DE PAGO</div><div class="reporte-row"><span class="reporte-label">Forma de Pago:</span><span class="reporte-value">${formaPagoTexto}</span></div>${orden.forma_pago === 'cuenta_corriente' ? `<div class="reporte-row"><span class="reporte-label">KM a descontar:</span><span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span></div><div class="reporte-row"><span class="reporte-label">KM disponibles:</span><span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span></div>${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}` : ''}</div><div class="reporte-section viaje-destacado"><div class="reporte-section-title">🚌 DATOS DEL VIAJE - IDA</div><div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_ida)}</span></div><div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_ida || '-'}</span></div><div class="reporte-row"><span class="reporte-label">📍 Dirección Origen:</span><span class="reporte-value">${orden.direccion_origen || '-'}</span></div><div class="reporte-row"><span class="reporte-label">🏁 Origen:</span><span class="reporte-value">${orden.origen || '-'}</span></div><div class="reporte-row"><span class="reporte-label">📍 Dirección Destino:</span><span class="reporte-value">${orden.direccion_destino || '-'}</span></div><div class="reporte-row"><span class="reporte-label">🏁 Destino:</span><span class="reporte-value">${orden.destino || '-'}</span></div></div><div class="reporte-section viaje-destacado"><div class="reporte-section-title">🔄 DATOS DEL VIAJE - REGRESO</div><div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_regreso)}</span></div><div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_regreso || '-'}</span></div></div><div class="reporte-section"><div class="reporte-section-title">📍 PARADAS</div><div class="texto-fijo-reporte ${!paradasTexto ? 'vacio' : ''}">${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div><div class="reporte-section"><div class="reporte-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo-reporte ${!movimientosTexto ? 'vacio' : ''}">${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div><div class="reporte-section"><div class="reporte-section-title">🚎 FLOTA</div><div class="reporte-row"><span class="reporte-label">Cantidad de Buses:</span><span class="reporte-value">${orden.cantidad_buses || '-'}</span></div><div class="reporte-row"><span class="reporte-label">Observación Buses:</span><span class="reporte-value">${obsBusesTexto || '-'}</span></div></div><div class="reporte-section"><div class="reporte-section-title">💰 COTIZACIÓN</div><div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div><div class="reporte-row"><span class="reporte-label">Kilómetros:</span><span class="reporte-value">${orden.kilometros || '-'} km</span></div><div class="reporte-row"><span class="reporte-label">Observación Cotización:</span><span class="reporte-value">${obsCotizacionTexto || '-'}</span></div></div><div class="reporte-section"><div class="reporte-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div><div class="reporte-row"><span class="reporte-label">Comidas:</span><span class="reporte-value">${orden.comidas || '-'}</span></div><div class="reporte-row"><span class="reporte-label">Alojamiento:</span><span class="reporte-value">${orden.alojamiento || '-'}</span></div><div class="reporte-row"><span class="reporte-label">Observación Gastos:</span><span class="reporte-value">${obsGastosTexto || '-'}</span></div></div><div class="reporte-section"><div class="reporte-section-title">📝 CONFECCIÓN</div><div class="reporte-row"><span class="reporte-label">Confeccionó:</span><span class="reporte-value">${usuario?.nombre || '-'}</span></div><div class="reporte-row"><span class="reporte-label">Fecha de emisión:</span><span class="reporte-value">${new Date().toLocaleDateString('es-AR')}</span></div></div></div>`;
-                const reporteConBotones = `<div class="reporte-actions"><button class="btn-print" onclick="window.imprimirReporteActual()">🖨️ Imprimir</button><button class="btn-pdf" onclick="window.generarPDFActual()">📄 Compartir PDF</button></div>${reporteHtml}`;
+                
+                const reporteHtml = `
+                    <div class="reporte">
+                        <div class="reporte-header">
+                            <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
+                            <div class="subtitle">ORDEN DE VIAJE N° ${orden.id}</div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
+                            <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${orden.contratantes?.contratante || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${orden.contratantes?.cuit || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${orden.subcontratantes?.subcontratante || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
+                            <div class="reporte-section-title">💰 FORMA DE PAGO</div>
+                            <div class="reporte-row"><span class="reporte-label">Forma de Pago:</span><span class="reporte-value">${formaPagoTexto}</span></div>
+                            ${orden.forma_pago === 'cuenta_corriente' ? `
+                            <div class="reporte-row"><span class="reporte-label">KM a descontar:</span><span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span></div>
+                            <div class="reporte-row"><span class="reporte-label">KM disponibles:</span><span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span></div>
+                            ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}
+                            ` : ''}
+                        </div>
+                        
+                        <div class="reporte-section viaje-destacado">
+                            <div class="reporte-section-title">🚌 DATOS DEL VIAJE - IDA</div>
+                            <div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_ida)}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_ida || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">📍 Dirección Origen:</span><span class="reporte-value">${orden.direccion_origen || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">🏁 Origen:</span><span class="reporte-value">${orden.origen || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">📍 Dirección Destino:</span><span class="reporte-value">${orden.direccion_destino || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">🏁 Destino:</span><span class="reporte-value">${orden.destino || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section viaje-destacado">
+                            <div class="reporte-section-title">🔄 DATOS DEL VIAJE - REGRESO</div>
+                            <div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_regreso)}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_regreso || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">📍 PARADAS</div>
+                            <div class="texto-fijo-reporte ${!paradasTexto ? 'vacio' : ''}">
+                                ${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
+                            </div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">🔄 MOVIMIENTOS</div>
+                            <div class="texto-fijo-reporte ${!movimientosTexto ? 'vacio' : ''}">
+                                ${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
+                            </div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">🚎 FLOTA</div>
+                            <div class="reporte-row"><span class="reporte-label">Cantidad de Buses:</span><span class="reporte-value">${orden.cantidad_buses || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Observación Buses:</span><span class="reporte-value">${obsBusesTexto || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">💰 COTIZACIÓN</div>
+                            <div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Kilómetros:</span><span class="reporte-value">${orden.kilometros || '-'} km</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Observación Cotización:</span><span class="reporte-value">${obsCotizacionTexto || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
+                            <div class="reporte-row"><span class="reporte-label">Comidas:</span><span class="reporte-value">${orden.comidas || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Alojamiento:</span><span class="reporte-value">${orden.alojamiento || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Observación Gastos:</span><span class="reporte-value">${obsGastosTexto || '-'}</span></div>
+                        </div>
+                        
+                        <div class="reporte-section">
+                            <div class="reporte-section-title">📝 CONFECCIÓN</div>
+                            <div class="reporte-row"><span class="reporte-label">Confeccionó:</span><span class="reporte-value">${usuario?.nombre || '-'}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Fecha de emisión:</span><span class="reporte-value">${new Date().toLocaleDateString('es-AR')}</span></div>
+                        </div>
+                    </div>
+                `;
+                
+                const reporteConBotones = `
+                    <div class="reporte-actions">
+                        <button class="btn-print" onclick="window.imprimirReporteActual()">🖨️ Imprimir</button>
+                        <button class="btn-pdf" onclick="window.generarPDFActual()">📄 Compartir PDF</button>
+                    </div>
+                    ${reporteHtml}
+                `;
+                
                 window.modalModo = 'detalle';
                 document.getElementById('modal-titulo').textContent = `📄 INFORME ORDEN DE VIAJE N° ${orden.id}`;
                 document.getElementById('modal-campos').innerHTML = reporteConBotones;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
+                
                 window.imprimirReporteActual = () => imprimirReporteOrden(reporteHtml);
                 window.generarPDFActual = () => generarPDFOrden(reporteHtml);
-            } catch (error) { mostrarToast('Error al cargar el informe: ' + error.message, true); }
+                
+            } catch (error) {
+                mostrarToast('Error al cargar el informe: ' + error.message, true);
+            }
         };
 
         async function validarLimiteCarpetas(ordenId, carpetaIdActual = null) {
             if (!ordenId) return { valido: true };
-            const { data: orden, error } = await supabase.from('ordenes').select('cantidad_buses').eq('id', ordenId).single();
-            if (error || !orden) return { valido: false, mensaje: 'No se pudo verificar la orden' };
+            
+            const { data: orden, error } = await supabase
+                .from('ordenes')
+                .select('cantidad_buses')
+                .eq('id', ordenId)
+                .single();
+            
+            if (error || !orden) {
+                return { valido: false, mensaje: 'No se pudo verificar la orden' };
+            }
+            
             const cantidadBuses = parseInt(orden.cantidad_buses) || 0;
-            if (cantidadBuses === 0) return { valido: true };
-            let query = supabase.from('carpetas').select('id', { count: 'exact', head: true }).eq('orden_id', ordenId);
-            if (carpetaIdActual) query = query.neq('id', carpetaIdActual);
+            
+            if (cantidadBuses === 0) {
+                return { valido: true };
+            }
+            
+            let query = supabase
+                .from('carpetas')
+                .select('id', { count: 'exact', head: true })
+                .eq('orden_id', ordenId);
+            
+            if (carpetaIdActual) {
+                query = query.neq('id', carpetaIdActual);
+            }
+            
             const { count, error: countError } = await query;
-            if (countError) return { valido: false, mensaje: 'Error al verificar carpetas existentes' };
-            if (count >= cantidadBuses) return { valido: false, mensaje: `⚠️ Esta orden tiene ${cantidadBuses} bus(es) y ya tiene ${count} carpeta(s) creada(s). No puede crear más carpetas.` };
+            
+            if (countError) {
+                return { valido: false, mensaje: 'Error al verificar carpetas existentes' };
+            }
+            
+            if (count >= cantidadBuses) {
+                return { 
+                    valido: false, 
+                    mensaje: `⚠️ Esta orden tiene ${cantidadBuses} bus(es) y ya tiene ${count} carpeta(s) creada(s). No puede crear más carpetas.`
+                };
+            }
+            
             return { valido: true };
         }
 
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
-            const { data: contratanteData } = await supabase.from('contratantes').select('id').eq('usuario_id', window.usuarioActual.id).single();
+            
+            const { data: contratanteData } = await supabase
+                .from('contratantes')
+                .select('id')
+                .eq('usuario_id', window.usuarioActual.id)
+                .single();
+            
             if (!contratanteData) return [];
-            const { data: subcontratantesData } = await supabase.from('subcontratantes').select('id').eq('contratante', contratanteData.id);
+            
+            const { data: subcontratantesData } = await supabase
+                .from('subcontratantes')
+                .select('id')
+                .eq('contratante', contratanteData.id);
+            
             const subcontratantesIds = subcontratantesData?.map(s => s.id) || [];
+            
             if (subcontratantesIds.length === 0) return [];
-            if (tabla === 'ordenes') return data.filter(item => subcontratantesIds.includes(item.subcontratante));
-            if (tabla === 'carpetas') return data.filter(item => subcontratantesIds.includes(item.subcontratante_id));
+            
+            if (tabla === 'ordenes') {
+                return data.filter(item => subcontratantesIds.includes(item.subcontratante));
+            }
+            if (tabla === 'carpetas') {
+                return data.filter(item => subcontratantesIds.includes(item.subcontratante_id));
+            }
             return data;
         }
 
         function getTablasPermitidas() {
             if (!window.permisos) return [];
             const permitidas = [];
-            window.permisos.puedeEditar.forEach(tabla => { const info = todasLasTablas.find(t => t.id === tabla); if (info) permitidas.push({ ...info, puedeEditar: true }); });
-            window.permisos.soloVer.forEach(tabla => { const info = todasLasTablas.find(t => t.id === tabla); if (info && !permitidas.find(p => p.id === tabla)) permitidas.push({ ...info, puedeEditar: false }); });
+            
+            window.permisos.puedeEditar.forEach(tabla => {
+                const info = todasLasTablas.find(t => t.id === tabla);
+                if (info) permitidas.push({ ...info, puedeEditar: true });
+            });
+            
+            window.permisos.soloVer.forEach(tabla => {
+                const info = todasLasTablas.find(t => t.id === tabla);
+                if (info && !permitidas.find(p => p.id === tabla)) {
+                    permitidas.push({ ...info, puedeEditar: false });
+                }
+            });
+            
             return permitidas;
         }
 
         function generarSidebar() {
             const navList = document.getElementById('navList');
             const tablasPermitidas = getTablasPermitidas();
+            
             let html = `<div class="nav-section-title">📋 MIS TABLAS</div>`;
-            tablasPermitidas.forEach(tabla => { html += `<button class="nav-item" onclick="cargarTabla('${tabla.id}')">${tabla.nombre}</button>`; });
+            tablasPermitidas.forEach(tabla => {
+                html += `<button class="nav-item" onclick="cargarTabla('${tabla.id}')">${tabla.nombre}</button>`;
+            });
             navList.innerHTML = html;
         }
 
-        function puedeEditarTabla(tablaId) { if (!window.permisos) return false; return window.permisos.puedeEditar.includes(tablaId); }
-        function puedeVerTabla(tablaId) { if (!window.permisos) return false; return window.permisos.puedeEditar.includes(tablaId) || window.permisos.soloVer.includes(tablaId); }
-        window.toggleSidebar = () => { const sidebar = document.getElementById('sidebarMobile'); const overlay = document.getElementById('sidebarOverlay'); sidebar.classList.toggle('open'); overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none'; };
+        function puedeEditarTabla(tablaId) {
+            if (!window.permisos) return false;
+            return window.permisos.puedeEditar.includes(tablaId);
+        }
+
+        function puedeVerTabla(tablaId) {
+            if (!window.permisos) return false;
+            return window.permisos.puedeEditar.includes(tablaId) || window.permisos.soloVer.includes(tablaId);
+        }
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarMobile');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        };
 
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
-                    const { data: orden } = await supabase.from('ordenes').select('*, contratantes(contratante), subcontratantes(subcontratante)').eq('id', item.orden_id).single();
-                    if (orden) { item.origen = orden.origen; item.destino = orden.destino; item.fecha_ida = orden.fecha_ida; item.contratante = orden.contratantes?.contratante || '-'; item.subcontratante = orden.subcontratantes?.subcontratante || '-'; }
+                    const { data: orden } = await supabase
+                        .from('ordenes')
+                        .select('origen, destino, fecha_ida')
+                        .eq('id', item.orden_id)
+                        .single();
+                    if (orden) {
+                        item.origen = orden.origen;
+                        item.destino = orden.destino;
+                        item.fecha_ida = orden.fecha_ida;
+                    }
                 }
             }
             return data;
         }
 
         window.cargarTabla = async (tabla) => {
-            if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso para ver esta tabla', true); return; }
+            if (!puedeVerTabla(tabla)) {
+                mostrarToast('No tiene permiso para ver esta tabla', true);
+                return;
+            }
+            
             window.tablaActual = tabla;
             const puedeEditar = puedeEditarTabla(tabla);
+            
             let titulo = tabla.charAt(0).toUpperCase() + tabla.slice(1);
             if (tabla === 'ordenes') titulo = '📦 Órdenes';
             if (tabla === 'carpetas') titulo = '📁 Carpetas';
             document.getElementById('titulo-tabla').innerHTML = titulo;
             document.getElementById('searchInput').value = '';
+            
             const addBtn = document.getElementById('addBtnGlobal');
-            if (addBtn) addBtn.style.display = puedeEditar ? 'flex' : 'none';
+            if (addBtn) {
+                addBtn.style.display = puedeEditar ? 'flex' : 'none';
+            }
+            
             toggleSidebar();
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
+            
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
+                
                 data = await filtrarPorContratante(data, tabla);
-                if (tabla === 'carpetas') data = await enriquecerCarpetasConOrden(data);
+                
+                if (tabla === 'carpetas') {
+                    data = await enriquecerCarpetasConOrden(data);
+                }
+                
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
                         for (let [campoId, relacion] of Object.entries(window.relaciones[tabla])) {
                             if (item[campoId]) {
-                                const { data: relacionData } = await supabase.from(relacion.tabla).select(relacion.campo).eq('id', item[campoId]).single();
-                                if (relacionData) item[`${campoId}_nombre`] = relacionData[relacion.campo];
+                                const { data: relacionData } = await supabase
+                                    .from(relacion.tabla)
+                                    .select(relacion.campo)
+                                    .eq('id', item[campoId])
+                                    .single();
+                                if (relacionData) {
+                                    item[`${campoId}_nombre`] = relacionData[relacion.campo];
+                                }
                             }
                         }
                     }
                 }
+                
                 window.datosActuales = data;
                 renderizarTabla(puedeEditar);
-            } catch (error) { console.error(error); document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`; }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+            }
         };
 
-        window.filtrarTabla = () => { const puedeEditar = puedeEditarTabla(window.tablaActual); renderizarTabla(puedeEditar); };
+        window.filtrarTabla = () => {
+            const puedeEditar = puedeEditarTabla(window.tablaActual);
+            renderizarTabla(puedeEditar);
+        };
 
         function renderizarTabla(puedeEditar) {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             let datosFiltrados = window.datosActuales;
-            if (searchText) datosFiltrados = window.datosActuales.filter(item => JSON.stringify(Object.values(item)).toLowerCase().includes(searchText));
-            if (!datosFiltrados || datosFiltrados.length === 0) { document.getElementById('table-container').innerHTML = `<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>`; return; }
-            let columnas, esContratantes = false, esOrdenes = false;
-            if (window.tablaActual === 'carpetas') columnas = ['id', 'orden_id', 'contratante', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'interno_id'];
-            else if (window.tablaActual === 'ordenes') { columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono']; esOrdenes = true; }
-            else if (window.tablaActual === 'contratantes') { columnas = ['id', 'contratante', 'telefono_cont', 'cuit', 'usuario_id']; esContratantes = true; }
-            else columnas = Object.keys(datosFiltrados[0]).filter(key => key !== 'created_at' && !key.includes('_nombre'));
+            
+            if (searchText) {
+                datosFiltrados = window.datosActuales.filter(item => {
+                    return JSON.stringify(Object.values(item)).toLowerCase().includes(searchText);
+                });
+            }
+            
+            if (!datosFiltrados || datosFiltrados.length === 0) {
+                document.getElementById('table-container').innerHTML = `
+                    <div class="empty-state">
+                        <span>📭</span>
+                        <p>No hay datos disponibles</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let columnas;
+            let esContratantes = false;
+            let esOrdenes = false;
+            
+            if (window.tablaActual === 'carpetas') {
+                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'origen', 'destino', 'interno_id'];
+            } else if (window.tablaActual === 'ordenes') {
+                columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
+                esOrdenes = true;
+            } else if (window.tablaActual === 'contratantes') {
+                columnas = ['id', 'contratante', 'telefono_cont', 'cuit', 'usuario_id'];
+                esContratantes = true;
+            } else {
+                columnas = Object.keys(datosFiltrados[0]).filter(key => 
+                    key !== 'created_at' && !key.includes('_nombre')
+                );
+            }
+            
             let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
-            const nombresColumnas = { id: 'ID', orden_id: 'ORDEN ID', contratante: 'CONTRATANTE', subcontratante: 'SUBCONTRATANTE', fecha_ida: 'FECHA IDA', origen: 'ORIGEN', destino: 'DESTINO', interno_id: 'INTERNO ID', empresas_id: 'EMPRESA', contratante_id: 'CONTRATANTE', subcontratante: 'SUBCONTRATANTE', cantidad_buses: 'CANT. BUSES', cotizacion: 'COTIZACIÓN', forma_pago: 'FORMA PAGO', confecciono: 'CONFECCIONÓ', telefono_cont: 'TELÉFONO', cuit: 'CUIT', usuario_id: 'USUARIO ASIGNADO' };
-            columnas.forEach(col => { let nombreMostrar = nombresColumnas[col] || col.replace(/_/g, ' ').toUpperCase(); html += `<th>${nombreMostrar}</th>`; });
-            if (esContratantes) html += `<th>📊 KM DISPONIBLES</th>`;
-            if (esOrdenes) html += `<th>💰 SALDO</th>`;
+            
+            const nombresColumnas = {
+                id: 'ID',
+                orden_id: 'ORDEN ID',
+                contratante_id: 'CONTRATANTE',
+                subcontratante_id: 'SUBCONTRATANTE',
+                fecha_ida: 'FECHA IDA',
+                origen: 'ORIGEN',
+                destino: 'DESTINO',
+                interno_id: 'INTERNO ID',
+                empresas_id: 'EMPRESA',
+                subcontratante: 'SUBCONTRATANTE',
+                cantidad_buses: 'CANT. BUSES',
+                cotizacion: 'COTIZACIÓN',
+                forma_pago: 'FORMA PAGO',
+                confecciono: 'CONFECCIONÓ',
+                contratante: 'CONTRATANTE',
+                telefono_cont: 'TELÉFONO',
+                cuit: 'CUIT',
+                usuario_id: 'USUARIO ASIGNADO'
+            };
+            
+            columnas.forEach(col => {
+                let nombreMostrar = nombresColumnas[col] || col.replace(/_/g, ' ').toUpperCase();
+                html += `<th>${nombreMostrar}</th>`;
+            });
+            
+            if (esContratantes) {
+                html += `<th>📊 KM DISPONIBLES</th>`;
+            }
+            
+            if (esOrdenes) {
+                html += `<th>💰 SALDO</th>`;
+            }
+            
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
+            
+            // Procesar cada fila
             for (let item of datosFiltrados) {
                 html += '<tr>';
                 for (let col of columnas) {
                     let valor = item[col];
-                    if (col === 'interno_id' && valor && window.tablaActual === 'carpetas') { const { data: bus } = await supabase.from('buses').select('Interno').eq('id', valor).single(); valor = bus?.Interno || valor; }
-                    if (col === 'fecha_ida' && valor) valor = formatearFechaCorta(valor);
-                    if (typeof valor === 'string' && valor.length > 40) valor = valor.substring(0, 40) + '...';
+                    
+                    // Para carpetas, convertir IDs a nombres usando la caché
+                    if (window.tablaActual === 'carpetas') {
+                        if (col === 'contratante_id') {
+                            valor = window.cacheContratantes[valor] || '-';
+                        } else if (col === 'subcontratante_id') {
+                            valor = window.cacheSubcontratantes[valor] || '-';
+                        } else if (col === 'fecha_ida' && valor) {
+                            valor = formatearFechaCorta(valor);
+                        } else if (col === 'origen' && !valor) {
+                            valor = '-';
+                        } else if (col === 'destino' && !valor) {
+                            valor = '-';
+                        } else if (col === 'interno_id' && valor) {
+                            valor = window.cacheBuses[valor] || valor;
+                        }
+                    } else {
+                        if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                            if (item[`${col}_nombre`]) {
+                                valor = item[`${col}_nombre`];
+                            }
+                        }
+                        
+                        if (col.includes('fecha') && valor) {
+                            valor = formatearFechaCorta(valor);
+                        }
+                        
+                        if (col === 'cotizacion' && valor) {
+                            valor = formatearMonto(valor);
+                        }
+                        
+                        if (col === 'forma_pago') {
+                            valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
+                        }
+                    }
+                    
+                    if (typeof valor === 'string' && valor.length > 40) {
+                        valor = valor.substring(0, 40) + '...';
+                    }
+                    
                     html += `<td>${valor !== null && valor !== undefined ? valor : '-'}</td>`;
                 }
-                if (esContratantes) html += `<td style="font-weight:bold;">-<\/td>`;
-                if (esOrdenes) html += `<td style="font-weight:bold;">-<\/td>`;
-                if (window.tablaActual === 'ordenes') html += `<td class="actions-cell"><button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}<\/td>`;
-                else if (window.tablaActual === 'carpetas') html += `<td class="actions-cell"><button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}<\/td>`;
-                else if (puedeEditar) html += `<td class="actions-cell"><button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button><button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button><\/td>`;
-                else html += `<td class="actions-cell"><span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span><\/td>`;
+                
+                if (esContratantes) {
+                    html += `<td style="font-weight:bold;">-<\/td>`;
+                }
+                
+                if (esOrdenes) {
+                    html += `<td style="font-weight:bold;">-<\/td>`;
+                }
+                
+                if (window.tablaActual === 'ordenes') {
+                    html += `<td class="actions-cell">
+                                <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
+                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                              <\/td>`;
+                } else if (window.tablaActual === 'carpetas') {
+                    html += `<td class="actions-cell">
+                                <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
+                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
+                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
+                              <\/td>`;
+                } else if (puedeEditar) {
+                    html += `<td class="actions-cell">
+                                <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
+                                <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
+                              <\/td>`;
+                } else {
+                    html += `<td class="actions-cell">
+                                <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
+                              <\/td>`;
+                }
                 html += '</tr>';
             }
+            
             html += '</tbody></table></div>';
             document.getElementById('table-container').innerHTML = html;
         }
 
-        window.mostrarModalAgregar = async () => { if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso para agregar registros', true); return; } window.modalModo = 'form'; window.editandoId = null; document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`; document.getElementById('modal-footer').style.display = 'flex'; await cargarFormulario(); document.getElementById('modal').classList.add('show'); };
-        window.editarRegistro = async (id) => { if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso para editar', true); return; } window.modalModo = 'form'; window.editandoId = id; document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`; document.getElementById('modal-footer').style.display = 'flex'; const registro = window.datosActuales.find(r => r.id === id); if (registro) { await cargarFormulario(registro); document.getElementById('modal').classList.add('show'); } };
+        window.mostrarModalAgregar = async () => {
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para agregar registros', true);
+                return;
+            }
+            
+            window.modalModo = 'form';
+            window.editandoId = null;
+            document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
+            document.getElementById('modal-footer').style.display = 'flex';
+            await cargarFormulario();
+            document.getElementById('modal').classList.add('show');
+        };
+
+        window.editarRegistro = async (id) => {
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para editar', true);
+                return;
+            }
+            window.modalModo = 'form';
+            window.editandoId = id;
+            document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
+            document.getElementById('modal-footer').style.display = 'flex';
+            const registro = window.datosActuales.find(r => r.id === id);
+            if (registro) {
+                await cargarFormulario(registro);
+                document.getElementById('modal').classList.add('show');
+            }
+        };
 
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
+            
+            // Para carpetas: formulario específico
             if (window.tablaActual === 'carpetas') {
-                const { data: ordenes } = await supabase.from('ordenes').select('id').order('id', { ascending: false });
-                const { data: conductores } = await supabase.from('conductores').select('id, nombre').order('nombre');
-                const { data: buses } = await supabase.from('buses').select('id, Interno, Dominio').order('Interno');
-                let htmlForm = `<div class="form-group"><label>ORDEN DE VIAJE</label><select name="orden_id" id="select_orden" onchange="cargarDatosOrden(this.value)" required><option value="">Seleccionar orden...</option>`;
-                if (ordenes) { for (let ord of ordenes) { const selected = (registro?.orden_id == ord.id) ? 'selected' : ''; htmlForm += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`; } }
-                htmlForm += `</select></div><div class="info-card"><h4>📋 DATOS DE LA ORDEN SELECCIONADA</h4><div class="info-row"><span class="info-label">Empresa:</span><span class="info-value" id="info_empresa">-</span></div><div class="info-row"><span class="info-label">Contratante:</span><span class="info-value" id="info_contratante">-</span></div><div class="info-row"><span class="info-label">Subcontratante:</span><span class="info-value" id="info_subcontratante">-</span></div><div class="info-row"><span class="info-label">Fecha Ida:</span><span class="info-value" id="info_fecha_ida">-</span></div><div class="info-row"><span class="info-label">Origen:</span><span class="info-value" id="info_origen">-</span></div><div class="info-row"><span class="info-label">Destino:</span><span class="info-value" id="info_destino">-</span></div><div class="info-row"><span class="info-label">Fecha Regreso:</span><span class="info-value" id="info_fecha_regreso">-</span></div></div><h4 style="margin:16px 0 8px; color:#1e293b;">📁 DATOS DE LA CARPETA</h4>`;
-                htmlForm += `<div class="form-group"><label>MICRO NUM</label><input type="text" name="micro_num" value="${registro?.micro_num || ''}"></div>`;
-                htmlForm += `<div class="form-group"><label>CONTACTO</label><input type="text" name="contacto" value="${registro?.contacto || ''}"></div>`;
-                htmlForm += `<div class="form-group"><label>OBSERVACIONES ANTES DE INICIAR</label><textarea name="obs_antes_iniciar" rows="3">${registro?.obs_antes_iniciar || ''}</textarea></div>`;
-                htmlForm += `<div class="form-group"><label>CONDUCTOR 1</label><select name="conductor1_id"><option value="">Seleccionar conductor...</option>`;
-                if (conductores) { for (let c of conductores) { const selected = (registro?.conductor1_id == c.id) ? 'selected' : ''; htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`; } }
-                htmlForm += `</select></div><div class="form-group"><label>CONDUCTOR 2</label><select name="conductor2_id"><option value="">Seleccionar conductor...</option>`;
-                if (conductores) { for (let c of conductores) { const selected = (registro?.conductor2_id == c.id) ? 'selected' : ''; htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`; } }
-                htmlForm += `</select></div><div class="form-group"><label>INTERNO / BUS</label><select name="interno_id"><option value="">Seleccionar interno...</option>`;
-                if (buses) { for (let b of buses) { const selected = (registro?.interno_id == b.id) ? 'selected' : ''; htmlForm += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`; } }
+                // Obtener lista de órdenes
+                const { data: ordenes } = await supabase
+                    .from('ordenes')
+                    .select('id')
+                    .order('id', { ascending: false });
+                
+                // Obtener lista de conductores
+                const { data: conductores } = await supabase
+                    .from('conductores')
+                    .select('id, nombre')
+                    .order('nombre');
+                
+                // Obtener lista de buses
+                const { data: buses } = await supabase
+                    .from('buses')
+                    .select('id, Interno, Dominio')
+                    .order('Interno');
+                
+                let htmlForm = `
+                    <div class="form-group">
+                        <label>ORDEN DE VIAJE</label>
+                        <select name="orden_id" id="select_orden" onchange="cargarDatosOrden(this.value)" required>
+                            <option value="">Seleccionar orden...</option>`;
+                
+                if (ordenes) {
+                    for (let ord of ordenes) {
+                        const selected = (registro?.orden_id == ord.id) ? 'selected' : '';
+                        htmlForm += `<option value="${ord.id}" ${selected}>Orden N° ${ord.id}</option>`;
+                    }
+                }
+                htmlForm += `</select>
+                    </div>`;
+                
+                // Tarjeta con datos de la orden (solo lectura)
+                htmlForm += `
+                    <div class="info-card">
+                        <h4>📋 DATOS DE LA ORDEN SELECCIONADA</h4>
+                        <div class="info-row"><span class="info-label">Empresa:</span><span class="info-value" id="info_empresa">-</span></div>
+                        <div class="info-row"><span class="info-label">Contratante:</span><span class="info-value" id="info_contratante">-</span></div>
+                        <div class="info-row"><span class="info-label">Subcontratante:</span><span class="info-value" id="info_subcontratante">-</span></div>
+                        <div class="info-row"><span class="info-label">Fecha Ida:</span><span class="info-value" id="info_fecha_ida">-</span></div>
+                        <div class="info-row"><span class="info-label">Origen:</span><span class="info-value" id="info_origen">-</span></div>
+                        <div class="info-row"><span class="info-label">Destino:</span><span class="info-value" id="info_destino">-</span></div>
+                        <div class="info-row"><span class="info-label">Fecha Regreso:</span><span class="info-value" id="info_fecha_regreso">-</span></div>
+                    </div>`;
+                
+                // Campos de la carpeta
+                htmlForm += `<h4 style="margin: 16px 0 8px; color: #1e293b;">📁 DATOS DE LA CARPETA</h4>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>MICRO NUM</label>
+                                <input type="text" name="micro_num" value="${registro?.micro_num || ''}" placeholder="Número de micro">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>CONTACTO</label>
+                                <input type="text" name="contacto" value="${registro?.contacto || ''}" placeholder="Contacto">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIONES ANTES DE INICIAR</label>
+                                <textarea name="obs_antes_iniciar" rows="3" placeholder="Observaciones antes de iniciar el viaje">${registro?.obs_antes_iniciar || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>CONDUCTOR 1</label>
+                                <select name="conductor1_id">
+                                    <option value="">Seleccionar conductor...</option>`;
+                if (conductores) {
+                    for (let c of conductores) {
+                        const selected = (registro?.conductor1_id == c.id) ? 'selected' : '';
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                    }
+                }
                 htmlForm += `</select></div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>CONDUCTOR 2</label>
+                                <select name="conductor2_id">
+                                    <option value="">Seleccionar conductor...</option>`;
+                if (conductores) {
+                    for (let c of conductores) {
+                        const selected = (registro?.conductor2_id == c.id) ? 'selected' : '';
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+                    }
+                }
+                htmlForm += `</select></div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>INTERNO / BUS</label>
+                                <select name="interno_id">
+                                    <option value="">Seleccionar interno...</option>`;
+                if (buses) {
+                    for (let b of buses) {
+                        const selected = (registro?.interno_id == b.id) ? 'selected' : '';
+                        htmlForm += `<option value="${b.id}" ${selected}>Interno ${b.Interno} - Dominio ${b.Dominio}</option>`;
+                    }
+                }
+                htmlForm += `</select></div>`;
+                
                 container.innerHTML = htmlForm;
-                if (registro && registro.orden_id) { await cargarDatosOrden(registro.orden_id); const selectOrden = document.getElementById('select_orden'); if (selectOrden) selectOrden.value = registro.orden_id; }
+                
+                // Si estamos editando, cargar los datos de la orden
+                if (registro && registro.orden_id) {
+                    await cargarDatosOrden(registro.orden_id);
+                    const selectOrden = document.getElementById('select_orden');
+                    if (selectOrden) selectOrden.value = registro.orden_id;
+                }
+                
                 return;
             }
+            
+            // Para la tabla ordenes - con forma de pago corregida
             if (window.tablaActual === 'ordenes') {
+                // Obtener datos para selects
                 const { data: empresas } = await supabase.from('empresas').select('id, nombre');
                 const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
-                let htmlForm = `<div class="form-group"><label>CONTRATANTE</label><select name="contratante_id" id="field_contratante_id" onchange="onContratanteChange()" required><option value="">Seleccionar contratante...</option>`;
-                if (contratantes) { for (let c of contratantes) { const selected = (registro?.contratante_id == c.id) ? 'selected' : ''; htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`; } }
-                htmlForm += `</select></div><div class="form-group"><label>SUBCONTRATANTE</label><select name="subcontratante" id="field_subcontratante" required><option value="">Primero seleccione un contratante</option></select></div><div class="form-group"><label>EMPRESA</label><select name="empresas_id" required><option value="">Seleccionar empresa...</option>`;
-                if (empresas) { for (let e of empresas) { const selected = (registro?.empresas_id == e.id) ? 'selected' : ''; htmlForm += `<option value="${e.id}" ${selected}>${e.nombre}</option>`; } }
-                htmlForm += `</select></div><div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required></div><div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value="${registro?.hora_ida || ''}"></div><div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}"></div><div class="form-group"><label>ORIGEN</label><input type="text" name="origen" value="${registro?.origen || ''}"></div><div class="form-group"><label>DIRECCIÓN DESTINO</label><input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}"></div><div class="form-group"><label>DESTINO</label><input type="text" name="destino" value="${registro?.destino || ''}"></div><div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}"></div><div class="form-group"><label>HORA REGRESO</label><input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}"></div><div class="form-group"><label>PARADAS</label><textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea></div><div class="form-group"><label>MOVIMIENTOS</label><textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea></div><div class="form-group"><label>CANTIDAD DE BUSES</label><input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}"></div><div class="form-group"><label>OBSERVACIÓN BUSES</label><textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea></div><div class="form-group"><label>COTIZACIÓN</label><input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}"></div><div class="form-group"><label>KILÓMETROS</label><input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()"></div><div class="form-group"><label>OBSERVACIÓN COTIZACIÓN</label><textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea></div><div class="form-group"><label>COMIDAS</label><input type="text" name="comidas" value="${registro?.comidas || ''}"></div><div class="form-group"><label>ALOJAMIENTO</label><input type="text" name="alojamiento" value="${registro?.alojamiento || ''}"></div><div class="form-group"><label>OBSERVACIÓN GASTOS</label><textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea></div><div class="form-group"><label>FORMA DE PAGO</label><select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()"><option value="pago_directo" ${registro?.forma_pago === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option><option value="cuenta_corriente" ${registro?.forma_pago === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente</option></select></div>`;
+                
+                let htmlForm = `
+                    <div class="form-group">
+                        <label>CONTRATANTE</label>
+                        <select name="contratante_id" id="field_contratante_id" onchange="onContratanteChange()" required>
+                            <option value="">Seleccionar contratante...</option>`;
+                if (contratantes) {
+                    for (let c of contratantes) {
+                        const selected = (registro?.contratante_id == c.id) ? 'selected' : '';
+                        htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
+                    }
+                }
+                htmlForm += `</select>
+                    </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>SUBCONTRATANTE</label>
+                                <select name="subcontratante" id="field_subcontratante" required>
+                                    <option value="">Primero seleccione un contratante</option>
+                                </select>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>EMPRESA</label>
+                                <select name="empresas_id" required>`;
+                htmlForm += `<option value="">Seleccionar empresa...</option>`;
+                if (empresas) {
+                    for (let e of empresas) {
+                        const selected = (registro?.empresas_id == e.id) ? 'selected' : '';
+                        htmlForm += `<option value="${e.id}" ${selected}>${e.nombre}</option>`;
+                    }
+                }
+                htmlForm += `</select></div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>FECHA IDA</label>
+                                <input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>HORA IDA</label>
+                                <input type="time" name="hora_ida" value="${registro?.hora_ida || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DIRECCIÓN ORIGEN</label>
+                                <input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>ORIGEN</label>
+                                <input type="text" name="origen" value="${registro?.origen || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DIRECCIÓN DESTINO</label>
+                                <input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>DESTINO</label>
+                                <input type="text" name="destino" value="${registro?.destino || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>FECHA REGRESO</label>
+                                <input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>HORA REGRESO</label>
+                                <input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>PARADAS</label>
+                                <textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>MOVIMIENTOS</label>
+                                <textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>CANTIDAD DE BUSES</label>
+                                <input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN BUSES</label>
+                                <textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>COTIZACIÓN</label>
+                                <input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>KILÓMETROS</label>
+                                <input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN COTIZACIÓN</label>
+                                <textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea>
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>COMIDAS</label>
+                                <input type="text" name="comidas" value="${registro?.comidas || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>ALOJAMIENTO</label>
+                                <input type="text" name="alojamiento" value="${registro?.alojamiento || ''}">
+                            </div>`;
+                
+                htmlForm += `<div class="form-group">
+                                <label>OBSERVACIÓN GASTOS</label>
+                                <textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea>
+                            </div>`;
+                
+                // Forma de pago - SOLO DOS OPCIONES
+                htmlForm += `<div class="form-group">
+                                <label>FORMA DE PAGO</label>
+                                <select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()">
+                                    <option value="pago_directo" ${registro?.forma_pago === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>
+                                    <option value="cuenta_corriente" ${registro?.forma_pago === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente</option>
+                                </select>
+                            </div>`;
+                
+                // Campo KM a descontar (solo visible si selecciona cuenta corriente)
                 const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
-                htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}><label>KM A DESCONTAR</label><input type="number" name="km_descontados" id="field_km_descontados" value="${registro?.km_descontados || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;"></div>`;
+                htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>
+                                <label>KM A DESCONTAR</label>
+                                <input type="number" name="km_descontados" id="field_km_descontados" value="${registro?.km_descontados || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">
+                            </div>`;
+                
                 container.innerHTML = htmlForm;
-                if (registro && registro.contratante_id) await cargarSubcontratantesPorContratante(registro.contratante_id, registro.subcontratante);
-                setTimeout(() => { const kmInput = document.getElementById('field_kilometros'); const formaPagoSelect = document.getElementById('forma_pago_select'); if (formaPagoSelect) formaPagoSelect.addEventListener('change', actualizarKmDescontados); if (kmInput) kmInput.addEventListener('input', actualizarKmDescontados); actualizarKmDescontados(); }, 50);
+                
+                // Si estamos editando, cargar los subcontratantes
+                if (registro && registro.contratante_id) {
+                    await cargarSubcontratantesPorContratante(registro.contratante_id, registro.subcontratante);
+                }
+                
+                // Configurar eventos
+                setTimeout(() => {
+                    const kmInput = document.getElementById('field_kilometros');
+                    const formaPagoSelect = document.getElementById('forma_pago_select');
+                    
+                    if (formaPagoSelect) {
+                        formaPagoSelect.addEventListener('change', actualizarKmDescontados);
+                    }
+                    if (kmInput) {
+                        kmInput.addEventListener('change', actualizarKmDescontados);
+                        kmInput.addEventListener('input', actualizarKmDescontados);
+                    }
+                    
+                    actualizarKmDescontados();
+                }, 50);
+                
                 return;
             }
-            const { data: columnas, error } = await supabase.from(window.tablaActual).select('*').limit(1);
-            if (error || !columnas || columnas.length === 0) { container.innerHTML = '<p>Error cargando formulario</p>'; return; }
+            
+            // Para las demás tablas
+            const { data: columnas, error } = await supabase
+                .from(window.tablaActual)
+                .select('*')
+                .limit(1);
+            
+            if (error || !columnas || columnas.length === 0) {
+                container.innerHTML = '<p>Error cargando formulario</p>';
+                return;
+            }
+            
             const estructura = Object.keys(columnas[0]).filter(key => key !== 'id' && key !== 'created_at');
+            
             let htmlForm = '';
             for (let col of estructura) {
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
+                
                 if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
-                    htmlForm += `<div class="form-group"><label>${label}</label><select name="${col}"><option value="">Seleccionar...</option>`;
-                    if (opciones) { for (let op of opciones) { const selected = valor == op.id ? 'selected' : ''; const displayValue = op[relacion.campo] || op.nombre || op.contratante || op.id; htmlForm += `<option value="${op.id}" ${selected}>${displayValue}</option>`; } }
+                    
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<select name="${col}">`;
+                    htmlForm += `<option value="">Seleccionar...</option>`;
+                    if (opciones) {
+                        for (let op of opciones) {
+                            const selected = valor == op.id ? 'selected' : '';
+                            const displayValue = op[relacion.campo] || op.nombre || op.contratante || op.id;
+                            htmlForm += `<option value="${op.id}" ${selected}>${displayValue}</option>`;
+                        }
+                    }
                     htmlForm += `</select></div>`;
-                } else if (col.includes('fecha')) { let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : ''; htmlForm += `<div class="form-group"><label>${label}</label><input type="date" name="${col}" value="${fechaValor}"></div>`;
-                } else if (col.includes('obs')) { htmlForm += `<div class="form-group"><label>${label}</label><textarea name="${col}" rows="3">${valor || ''}</textarea></div>`;
-                } else { htmlForm += `<div class="form-group"><label>${label}</label><input type="text" name="${col}" value="${valor || ''}"></div>`; }
+                } else if (col.includes('fecha')) {
+                    let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<input type="date" name="${col}" value="${fechaValor}">`;
+                    htmlForm += `</div>`;
+                } else if (col.includes('obs')) {
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
+                    htmlForm += `</div>`;
+                } else {
+                    htmlForm += `<div class="form-group">`;
+                    htmlForm += `<label>${label}</label>`;
+                    htmlForm += `<input type="text" name="${col}" value="${valor || ''}">`;
+                    htmlForm += `</div>`;
+                }
             }
+            
             container.innerHTML = htmlForm;
         }
 
         window.cargarDatosOrden = cargarDatosOrden;
-        window.onContratanteChange = async () => { const contratanteSelect = document.getElementById('field_contratante_id'); const contratanteId = contratanteSelect ? contratanteSelect.value : null; await cargarSubcontratantesPorContratante(contratanteId); };
+        window.onContratanteChange = async () => {
+            const contratanteSelect = document.getElementById('field_contratante_id');
+            const contratanteId = contratanteSelect ? contratanteSelect.value : null;
+            await cargarSubcontratantesPorContratante(contratanteId);
+        };
+
         window.actualizarKmDescontados = actualizarKmDescontados;
 
         const btnGuardar = document.getElementById('btnGuardar');
         if (btnGuardar) {
             btnGuardar.onclick = async () => {
-                if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso para modificar', true); cerrarModal(); return; }
+                if (!puedeEditarTabla(window.tablaActual)) {
+                    mostrarToast('No tiene permiso para modificar', true);
+                    cerrarModal();
+                    return;
+                }
+                
                 const formFields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
                 const datos = {};
+                
                 for (let field of formFields) {
-                    let value = field.value, name = field.name;
+                    let value = field.value;
+                    let name = field.name;
+                    
                     if (value && value.toString().trim()) {
-                        if (name === 'cotizacion' || name === 'monto') datos[name] = parseFloat(value);
-                        else if (name === 'km_descontados' || name === 'kilometros') datos[name] = parseInt(value) || 0;
-                        else datos[name] = value;
+                        if (name === 'cotizacion' || name === 'monto') {
+                            datos[name] = parseFloat(value);
+                        } else if (name === 'km_descontados' || name === 'kilometros') {
+                            datos[name] = parseInt(value) || 0;
+                        } else {
+                            datos[name] = value;
+                        }
                     }
                 }
-                if (window.tablaActual === 'carpetas') { const ordenSelect = document.getElementById('select_orden'); if (ordenSelect && ordenSelect.value) datos.orden_id = parseInt(ordenSelect.value); else { mostrarToast('Debe seleccionar una orden de viaje', true); return; } }
-                if (window.tablaActual === 'ordenes') datos.confecciono = window.usuarioActual.id;
-                if (window.tablaActual === 'carpetas' && datos.orden_id) { const validacion = await validarLimiteCarpetas(datos.orden_id, window.editandoId); if (!validacion.valido) { mostrarToast(validacion.mensaje, true); return; } }
-                if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') datos.usuario_id = window.usuarioActual.id;
+                
+                // Para carpetas, asegurar que orden_id está presente
+                if (window.tablaActual === 'carpetas') {
+                    const ordenSelect = document.getElementById('select_orden');
+                    if (ordenSelect && ordenSelect.value) {
+                        datos.orden_id = parseInt(ordenSelect.value);
+                    } else {
+                        mostrarToast('Debe seleccionar una orden de viaje', true);
+                        return;
+                    }
+                }
+                
+                if (window.tablaActual === 'ordenes') {
+                    datos.confecciono = window.usuarioActual.id;
+                }
+                
+                if (window.tablaActual === 'carpetas' && datos.orden_id) {
+                    const validacion = await validarLimiteCarpetas(datos.orden_id, window.editandoId);
+                    if (!validacion.valido) {
+                        mostrarToast(validacion.mensaje, true);
+                        return;
+                    }
+                }
+                
+                if (window.tablaActual === 'cuentacorriente' || window.tablaActual === 'pagos') {
+                    datos.usuario_id = window.usuarioActual.id;
+                }
+                
                 try {
-                    if (window.editandoId) { const { error } = await supabase.from(window.tablaActual).update(datos).eq('id', window.editandoId); if (error) throw error; mostrarToast('✅ Registro actualizado'); }
-                    else { const { error } = await supabase.from(window.tablaActual).insert([datos]); if (error) throw error; mostrarToast('✅ Registro agregado'); }
-                    cerrarModal(); window.cargarTabla(window.tablaActual);
-                } catch (error) { mostrarToast('❌ Error: ' + error.message, true); }
+                    if (window.editandoId) {
+                        const { error } = await supabase
+                            .from(window.tablaActual)
+                            .update(datos)
+                            .eq('id', window.editandoId);
+                        if (error) throw error;
+                        mostrarToast('✅ Registro actualizado');
+                    } else {
+                        const { error } = await supabase
+                            .from(window.tablaActual)
+                            .insert([datos]);
+                        if (error) throw error;
+                        mostrarToast('✅ Registro agregado');
+                    }
+                    cerrarModal();
+                    window.cargarTabla(window.tablaActual);
+                } catch (error) {
+                    console.error('Error al guardar:', error);
+                    mostrarToast('❌ Error: ' + error.message, true);
+                }
             };
         }
 
         window.eliminarRegistro = async (id) => {
-            if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso para eliminar', true); return; }
-            if (confirm('¿Eliminar este registro?')) { const { error } = await supabase.from(window.tablaActual).delete().eq('id', id); if (error) mostrarToast('Error: ' + error.message, true); else { mostrarToast('Registro eliminado'); window.cargarTabla(window.tablaActual); } }
+            if (!puedeEditarTabla(window.tablaActual)) {
+                mostrarToast('No tiene permiso para eliminar', true);
+                return;
+            }
+            
+            if (confirm('¿Eliminar este registro?')) {
+                const { error } = await supabase
+                    .from(window.tablaActual)
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) {
+                    mostrarToast('Error: ' + error.message, true);
+                } else {
+                    mostrarToast('Registro eliminado');
+                    window.cargarTabla(window.tablaActual);
+                }
+            }
         };
-        window.cerrarModal = () => { document.getElementById('modal').classList.remove('show'); window.editandoId = null; window.modalModo = 'form'; document.getElementById('modal-footer').style.display = 'flex'; };
+
+        window.cerrarModal = () => {
+            document.getElementById('modal').classList.remove('show');
+            window.editandoId = null;
+            window.modalModo = 'form';
+            document.getElementById('modal-footer').style.display = 'flex';
+        };
 
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
-                const { data: carpeta, error } = await supabase.from('carpetas').select('*').eq('id', carpetaId).single();
+                
+                const { data: carpeta, error } = await supabase
+                    .from('carpetas')
+                    .select('*')
+                    .eq('id', carpetaId)
+                    .single();
+                
                 if (error) throw error;
-                const { data: orden, error: errOrden } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)').eq('id', carpeta.orden_id).single();
+                
+                const { data: orden, error: errOrden } = await supabase
+                    .from('ordenes')
+                    .select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)')
+                    .eq('id', carpeta.orden_id)
+                    .single();
+                
                 if (errOrden) throw errOrden;
+                
                 let conductor1 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
-                if (carpeta.conductor1_id) { const { data: c1 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor1_id).single(); if (c1) conductor1 = c1; }
+                if (carpeta.conductor1_id) {
+                    const { data: c1 } = await supabase
+                        .from('conductores')
+                        .select('legajo, dni, vto_reg, nombre')
+                        .eq('id', carpeta.conductor1_id)
+                        .single();
+                    if (c1) conductor1 = c1;
+                }
+                
                 let conductor2 = { legajo: '-', dni: '-', vto_reg: '-', nombre: '-' };
-                if (carpeta.conductor2_id) { const { data: c2 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor2_id).single(); if (c2) conductor2 = c2; }
+                if (carpeta.conductor2_id) {
+                    const { data: c2 } = await supabase
+                        .from('conductores')
+                        .select('legajo, dni, vto_reg, nombre')
+                        .eq('id', carpeta.conductor2_id)
+                        .single();
+                    if (c2) conductor2 = c2;
+                }
+                
                 let bus = { Dominio: '-', Capacidad: '-', Interno: '-' };
-                if (carpeta.interno_id) { const { data: b } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single(); if (b) bus = b; }
+                if (carpeta.interno_id) {
+                    const { data: b } = await supabase
+                        .from('buses')
+                        .select('Dominio, Capacidad, Interno')
+                        .eq('id', carpeta.interno_id)
+                        .single();
+                    if (b) bus = b;
+                }
+                
                 const vtoReg1 = conductor1.vto_reg ? formatearFechaCorta(conductor1.vto_reg) : '-';
                 const vtoReg2 = conductor2.vto_reg ? formatearFechaCorta(conductor2.vto_reg) : '-';
+                
                 const paradasTexto = orden.paradas || '';
                 const movimientosTexto = orden.movimientos || '';
-                const hojaHtml = `<div class="hoja-ruta"><div class="hoja-actions"><button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button><button class="btn-pdf" onclick="window.generarPDFHojaActual()">📄 Compartir PDF</button></div><div class="hoja-header"><h2>${orden.empresas?.nombre || 'EMPRESA'}</h2><div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div><div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div></div><div class="hoja-section"><div class="hoja-section-title">📋 CONTRATANTE</div><div class="hoja-row"><span class="hoja-label">Contratante:</span><span class="hoja-value">${orden.contratantes?.contratante || '-'}</span></div><div class="hoja-row"><span class="hoja-label">CUIT:</span><span class="hoja-value">${orden.contratantes?.cuit || '-'}</span></div><div class="hoja-row"><span class="hoja-label">Subcontratante:</span><span class="hoja-value">${orden.subcontratantes?.subcontratante || '-'}</span></div><div class="hoja-row"><span class="hoja-label">Contacto:</span><span class="hoja-value">${carpeta.contacto || orden.subcontratantes?.telefono || '-'}</span></div></div><div class="hoja-section"><div class="hoja-section-title">⚠️ OBSERVACIONES ANTES DE INICIAR</div><div class="hoja-value">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div></div><div class="hoja-section viaje-destacado"><div class="hoja-section-title">🚌 IDA</div><div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span></div><div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_ida || '-'}</span></div><div class="hoja-row"><span class="hoja-label">📍 Dirección Origen:</span><span class="hoja-value">${orden.direccion_origen || '-'}</span></div><div class="hoja-row"><span class="hoja-label">🏁 Origen:</span><span class="hoja-value">${orden.origen || '-'}</span></div><div class="hoja-row"><span class="hoja-label">📍 Dirección Destino:</span><span class="hoja-value">${orden.direccion_destino || '-'}</span></div><div class="hoja-row"><span class="hoja-label">🏁 Destino:</span><span class="hoja-value">${orden.destino || '-'}</span></div></div><div class="hoja-section viaje-destacado"><div class="hoja-section-title">🔄 REGRESO</div><div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span></div><div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_regreso || '-'}</span></div></div><div class="hoja-section"><div class="hoja-section-title">📍 PARADAS</div><div class="texto-fijo">${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div><div class="hoja-section"><div class="hoja-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo">${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}</div></div><div class="hoja-section"><div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div><div class="hoja-row"><span class="hoja-label">Comidas:</span><span class="hoja-value">${orden.comidas || '-'}</span></div><div class="hoja-row"><span class="hoja-label">Alojamiento:</span><span class="hoja-value">${orden.alojamiento || '-'}</span></div></div><div class="hoja-section"><div class="hoja-section-title">🚎 INTERNO / BUS</div><div class="hoja-row"><span class="hoja-label">Interno:</span><span class="hoja-value">${bus.Interno}</span></div><div class="hoja-row"><span class="hoja-label">Dominio:</span><span class="hoja-value">${bus.Dominio}</span></div><div class="hoja-row"><span class="hoja-label">Capacidad:</span><span class="hoja-value">${bus.Capacidad}</span></div></div><div class="hoja-grid-2"><div class="conductor-box"><h5>🚌 CONDUCTOR 1</h5><div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor1.nombre}</span></div><div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor1.legajo}</span></div><div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor1.dni}</span></div><div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg1}</span></div></div><div class="conductor-box"><h5>🚌 CONDUCTOR 2</h5><div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor2.nombre}</span></div><div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor2.legajo}</span></div><div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor2.dni}</span></div><div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg2}</span></div></div></div><div class="hoja-section"><div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div><div class="hoja-value">${orden.obs_gastos || 'Sin observaciones'}</div></div><div class="hoja-section"><div class="hoja-section-title">📏 KILOMETRAJE</div><div class="hoja-row"><span class="hoja-label">Km al iniciar:</span><span class="hoja-value">_______________</span></div><div class="hoja-row"><span class="hoja-label">Km al finalizar:</span><span class="hoja-value">_______________</span></div><div class="hoja-row"><span class="hoja-label">Total Km:</span><span class="hoja-value">_______________</span></div></div></div>`;
+                
+                const hojaHtml = `
+                    <div class="hoja-ruta">
+                        <div class="hoja-actions">
+                            <button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button>
+                            <button class="btn-pdf" onclick="window.generarPDFHojaActual()">📄 Compartir PDF</button>
+                        </div>
+                        
+                        <div class="hoja-header">
+                            <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
+                            <div class="subtitle">ORDEN DE VIAJE N° ${orden.id} | CARPETA ID: ${carpeta.id}</div>
+                            <div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📋 CONTRATANTE</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Contratante:</span>
+                                <span class="hoja-value">${orden.contratantes?.contratante || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">CUIT:</span>
+                                <span class="hoja-value">${orden.contratantes?.cuit || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Subcontratante:</span>
+                                <span class="hoja-value">${orden.subcontratantes?.subcontratante || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Contacto:</span>
+                                <span class="hoja-value">${carpeta.contacto || orden.subcontratantes?.telefono || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">⚠️ OBSERVACIONES ANTES DE INICIAR</div>
+                            <div class="hoja-value" style="font-style:italic;">${carpeta.obs_antes_iniciar || 'Sin observaciones'}</div>
+                        </div>
+                        
+                        <div class="hoja-section viaje-destacado">
+                            <div class="hoja-section-title">🚌 IDA</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">📅 Fecha:</span>
+                                <span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">⏰ Hora:</span>
+                                <span class="hoja-value">${orden.hora_ida || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">📍 Dirección Origen:</span>
+                                <span class="hoja-value">${orden.direccion_origen || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">🏁 Origen:</span>
+                                <span class="hoja-value">${orden.origen || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">📍 Dirección Destino:</span>
+                                <span class="hoja-value">${orden.direccion_destino || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">🏁 Destino:</span>
+                                <span class="hoja-value">${orden.destino || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section viaje-destacado">
+                            <div class="hoja-section-title">🔄 REGRESO</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">📅 Fecha:</span>
+                                <span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">⏰ Hora:</span>
+                                <span class="hoja-value">${orden.hora_regreso || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📍 PARADAS</div>
+                            <div class="texto-fijo ${!paradasTexto ? 'vacio' : ''}">
+                                ${paradasTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🔄 MOVIMIENTOS</div>
+                            <div class="texto-fijo ${!movimientosTexto ? 'vacio' : ''}">
+                                ${movimientosTexto || '__________________________________________________\n__________________________________________________\n__________________________________________________'}
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Comidas:</span>
+                                <span class="hoja-value">${orden.comidas || '-'}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Alojamiento:</span>
+                                <span class="hoja-value">${orden.alojamiento || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">🚎 INTERNO / BUS</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Interno:</span>
+                                <span class="hoja-value">${bus.Interno}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Dominio:</span>
+                                <span class="hoja-value">${bus.Dominio}</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Capacidad:</span>
+                                <span class="hoja-value">${bus.Capacidad}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-grid-2">
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 1</h5>
+                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor1.nombre}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor1.legajo}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor1.dni}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg1}</span></div>
+                            </div>
+                            <div class="conductor-box">
+                                <h5>🚌 CONDUCTOR 2</h5>
+                                <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${conductor2.nombre}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${conductor2.legajo}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${conductor2.dni}</span></div>
+                                <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${vtoReg2}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div>
+                            <div class="hoja-value" style="font-style:italic;">${orden.obs_gastos || 'Sin observaciones'}</div>
+                        </div>
+                        
+                        <div class="hoja-section">
+                            <div class="hoja-section-title">📏 KILOMETRAJE</div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Km al iniciar:</span>
+                                <span class="hoja-value">_______________</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Km al finalizar:</span>
+                                <span class="hoja-value">_______________</span>
+                            </div>
+                            <div class="hoja-row">
+                                <span class="hoja-label">Total Km:</span>
+                                <span class="hoja-value">_______________</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
                 window.modalModo = 'detalle';
                 document.getElementById('modal-titulo').textContent = `📋 HOJA DE RUTA - Viaje N° ${orden.id}`;
                 document.getElementById('modal-campos').innerHTML = hojaHtml;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
+                
                 window.imprimirHojaActual = () => imprimirReporteOrden(hojaHtml);
                 window.generarPDFHojaActual = () => generarPDFOrden(hojaHtml);
-            } catch (error) { mostrarToast('Error al cargar el detalle: ' + error.message, true); }
+                
+            } catch (error) {
+                mostrarToast('Error al cargar el detalle: ' + error.message, true);
+            }
         };
 
-        // LOGIN - Asignación directa y segura
-        const loginBtn = document.getElementById('loginButton');
-        if (loginBtn) {
-            loginBtn.onclick = async function() {
-                const usuario = document.getElementById('loginUsuario').value.trim();
-                const password = document.getElementById('loginPassword').value;
-                const errorDiv = document.getElementById('loginError');
-                if (!usuario || !password) { errorDiv.textContent = 'Complete ambos campos'; return; }
-                errorDiv.textContent = '';
-                try {
-                    const { data, error } = await supabase.from('usuarios').select('*').eq('usuario', usuario).eq('contraseña', password);
-                    if (error) throw error;
-                    if (!data || data.length === 0) { errorDiv.textContent = 'Usuario o contraseña incorrectos'; return; }
-                    const user = data[0];
-                    const rol = user.nivel;
-                    if (!configPermisos[rol]) { errorDiv.textContent = 'Rol de usuario no reconocido'; return; }
-                    window.usuarioActual = user;
-                    window.permisos = configPermisos[rol];
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
-                    generarSidebar();
-                    const tablasPermitidas = getTablasPermitidas();
-                    if (tablasPermitidas.length > 0) window.cargarTabla(tablasPermitidas[0].id);
-                } catch (error) { errorDiv.textContent = 'Error de conexión: ' + error.message; console.error(error); }
-            };
-        } else {
-            console.error('No se encontró el botón de login');
-        }
-
+        window.iniciarSesion = async () => {
+            const usuario = document.getElementById('loginUsuario').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!usuario || !password) {
+                document.getElementById('loginError').textContent = 'Complete ambos campos';
+                return;
+            }
+            
+            document.getElementById('loginError').textContent = '';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('usuario', usuario)
+                    .eq('contraseña', password);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+                    return;
+                }
+                
+                const user = data[0];
+                const rol = user.nivel;
+                
+                if (!configPermisos[rol]) {
+                    document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
+                    return;
+                }
+                
+                window.usuarioActual = user;
+                window.permisos = configPermisos[rol];
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                
+                // Cargar caché de nombres
+                await cargarCacheNombres();
+                
+                generarSidebar();
+                
+                const tablasPermitidas = getTablasPermitidas();
+                if (tablasPermitidas.length > 0) {
+                    window.cargarTabla(tablasPermitidas[0].id);
+                }
+                
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Error de conexión';
+                console.error(error);
+            }
+        };
+        
         window.cerrarSesion = () => {
-            window.usuarioActual = null; window.permisos = null; window.tablaActual = null;
+            window.usuarioActual = null;
+            window.permisos = null;
+            window.tablaActual = null;
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
             document.getElementById('loginUsuario').value = '';
