@@ -1,4 +1,4 @@
-q<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -2206,64 +2206,61 @@ q<!DOCTYPE html>
             }
         };
 
-                  window.iniciarSesion = function() {
+        window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
-            const errorDiv = document.getElementById('loginError');
             
             if (!usuario || !password) {
-                errorDiv.textContent = 'Complete ambos campos';
+                document.getElementById('loginError').textContent = 'Complete ambos campos';
                 return;
             }
             
-            errorDiv.textContent = '';
-            errorDiv.style.color = '#ef4444';
+            document.getElementById('loginError').textContent = '';
             
-            // Función interna async
-            (async () => {
-                try {
-                    const { data, error } = await supabase
-                        .from('usuarios')
-                        .select('*')
-                        .eq('usuario', usuario)
-                        .eq('contraseña', password);
-                    
-                    if (error) throw error;
-                    
-                    if (!data || data.length === 0) {
-                        errorDiv.textContent = 'Usuario o contraseña incorrectos';
-                        return;
-                    }
-                    
-                    const user = data[0];
-                    const rol = user.nivel;
-                    
-                    if (!configPermisos[rol]) {
-                        errorDiv.textContent = 'Rol de usuario no reconocido';
-                        return;
-                    }
-                    
-                    window.usuarioActual = user;
-                    window.permisos = configPermisos[rol];
-                    
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
-                    
-                    await cargarCacheNombres();
-                    generarSidebar();
-                    
-                    const tablasPermitidas = getTablasPermitidas();
-                    if (tablasPermitidas.length > 0) {
-                        window.cargarTabla(tablasPermitidas[0].id);
-                    }
-                    
-                } catch (error) {
-                    console.error(error);
-                    errorDiv.textContent = 'Error de conexión';
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('usuario', usuario)
+                    .eq('contraseña', password);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+                    return;
                 }
-            })();
-        };      
+                
+                const user = data[0];
+                const rol = user.nivel;
+                
+                if (!configPermisos[rol]) {
+                    document.getElementById('loginError').textContent = 'Rol de usuario no reconocido';
+                    return;
+                }
+                
+                window.usuarioActual = user;
+                window.permisos = configPermisos[rol];
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                
+                await cargarCacheNombres();
+                
+                generarSidebar();
+                
+                const tablasPermitidas = getTablasPermitidas();
+                if (tablasPermitidas.length > 0) {
+                    window.cargarTabla(tablasPermitidas[0].id);
+                }
+                
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Error de conexión';
+                console.error(error);
+            }
+        };
+        
         window.cerrarSesion = () => {
             window.usuarioActual = null;
             window.permisos = null;
