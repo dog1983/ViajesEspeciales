@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+q<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -2206,7 +2206,7 @@
             }
         };
 
-        window.iniciarSesion = async () => {
+                window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
             
@@ -2218,13 +2218,18 @@
             document.getElementById('loginError').textContent = '';
             
             try {
+                console.log('Intentando login con:', usuario);
+                
                 const { data, error } = await supabase
                     .from('usuarios')
                     .select('*')
                     .eq('usuario', usuario)
                     .eq('contraseña', password);
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error de Supabase:', error);
+                    throw error;
+                }
                 
                 if (!data || data.length === 0) {
                     document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
@@ -2255,12 +2260,13 @@
                     window.cargarTabla(tablasPermitidas[0].id);
                 }
                 
+                console.log('Login exitoso');
+                
             } catch (error) {
-                document.getElementById('loginError').textContent = 'Error de conexión';
-                console.error(error);
+                console.error('Error detallado:', error);
+                document.getElementById('loginError').textContent = 'Error de conexión: ' + error.message;
             }
         };
-        
         window.cerrarSesion = () => {
             window.usuarioActual = null;
             window.permisos = null;
