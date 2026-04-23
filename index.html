@@ -1403,9 +1403,26 @@
                 
                 data = await filtrarPorContratante(data, tabla);
                 
-                if (tabla === 'carpetas') {
-                    data = await enriquecerCarpetasConOrden(data);
-                }
+                // Reemplaza la sección donde se enriquecen los datos de carpetas
+// Busca esta función en tu código (alrededor de línea 1402-1432)
+
+if (tabla === 'carpetas') {
+    // Enriquecer carpetas con datos de la orden relacionada
+    for (let carpeta of data) {
+        if (carpeta.orden_id) {
+            const { data: orden } = await supabase
+                .from('ordenes')
+                .select('contratante_id, subcontratante, empresas_id')
+                .eq('id', carpeta.orden_id)
+                .single();
+            
+            if (orden) {
+                carpeta.contratante_id = orden.contratante_id;
+                carpeta.subcontratante_id = orden.subcontratante;
+            }
+        }
+    }
+}
                 
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
