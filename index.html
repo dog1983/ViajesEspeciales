@@ -1407,22 +1407,33 @@
 // Busca esta función en tu código (alrededor de línea 1402-1432)
 
 if (tabla === 'carpetas') {
-    // Enriquecer carpetas con datos de la orden relacionada
     for (let carpeta of data) {
         if (carpeta.orden_id) {
             const { data: orden } = await supabase
                 .from('ordenes')
-                .select('contratante_id, subcontratante, empresas_id,fecha_ida,origen,destino')
+                .select(`
+                    contratante_id,
+                    subcontratante,
+                    fecha_ida,
+                    hora_ida,
+                    origen,
+                    destino
+                `)
                 .eq('id', carpeta.orden_id)
                 .single();
-            
+
             if (orden) {
                 carpeta.contratante_id = orden.contratante_id;
                 carpeta.subcontratante_id = orden.subcontratante;
+                carpeta.fecha_ida = orden.fecha_ida;
+                carpeta.hora_ida = orden.hora_ida;
+                carpeta.origen = orden.origen;
+                carpeta.destino = orden.destino;
             }
         }
     }
 }
+
                 
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
@@ -1457,7 +1468,10 @@ if (tabla === 'carpetas') {
         function renderizarTabla(puedeEditar) {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             let datosFiltrados = window.datosActuales;
-            
+            if (window.tablaActual === 'ordenes') {
+    html += `<button class="btn-view" onclick="duplicarOrden(${item.id})">🔁 Duplicar</button>`;
+}
+
             if (searchText) {
                 datosFiltrados = window.datosActuales.filter(item => {
                     return JSON.stringify(Object.values(item)).toLowerCase().includes(searchText);
@@ -1479,18 +1493,17 @@ if (tabla === 'carpetas') {
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'origen', 'destino', 'interno_id'];
-            } else if (window.tablaActual === 'ordenes') {
-                columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
-                esOrdenes = true;
-            } else if (window.tablaActual === 'contratantes') {
-                columnas = ['id', 'contratante', 'telefono_cont', 'cuit', 'usuario_id'];
-                esContratantes = true;
-            } else {
-                columnas = Object.keys(datosFiltrados[0]).filter(key => 
-                    key !== 'created_at' && !key.includes('_nombre')
-                );
-            }
+    columnas = [
+        'contratante_id',
+        'subcontratante_id',
+        'fecha_ida',
+        'hora_ida',
+        'origen',
+        'destino',
+        'interno_id'
+    ];
+}
+
             
             let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
@@ -2400,6 +2413,41 @@ if (tabla === 'carpetas') {
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginError').textContent = '';
         };
+        window.duplicarOrden = async (id) => {
+    try {
+        const { data: orden, error } = await supabase
+            .from('ordenes')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+
+        delete orden.id;
+        delete orden.created_at;
+
+        orden.fecha_ida = '';
+        orden.hora_ida = '';
+        orden.fecha_regreso = '';
+        orden.hora_regreso = '';
+        orden.cotizacion = null;
+        orden.forma_pago = '';
+        orden.km_descontados = 0;
+
+        const { error: insertError } = await supabase
+            .from('ordenes')
+            .insert([orden]);
+
+        if (insertError) throw insertError;
+
+        mostrarToast('Orden duplicada correctamente');
+        cargarTabla('ordenes');
+
+    } catch (err) {
+        mostrarToast(err.message, true);
+    }
+};
+
     </script>
 </body>
 </html>
