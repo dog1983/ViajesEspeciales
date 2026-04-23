@@ -1412,7 +1412,7 @@ if (tabla === 'carpetas') {
         if (carpeta.orden_id) {
             const { data: orden } = await supabase
                 .from('ordenes')
-                .select('contratante_id, subcontratante, empresas_id')
+                .select('contratante_id, subcontratante, empresas_id,fecha_ida,origen,destino')
                 .eq('id', carpeta.orden_id)
                 .single();
             
