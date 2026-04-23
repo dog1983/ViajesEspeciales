@@ -299,7 +299,7 @@
             text-align: left;
             font-weight: 600;
             color: #475569;
-            border-bottom: 2px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             position: sticky;
             top: 0;
             background: #f8fafc;
@@ -308,7 +308,7 @@
 
         .data-table td {
             padding: 12px 10px;
-            border-bottom: 1px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
             color: #334155;
             white-space: nowrap;
         }
@@ -1475,7 +1475,7 @@
                 );
             }
             
-            let html = `<div class="table-wrapper"><table class="data-table"><thead></table>`;
+            let html = `<div class="table-wrapper"><table class="data-table"><thead><tr>`;
             
             const nombresColumnas = {
                 id: 'ID',
@@ -1511,7 +1511,7 @@
                 html += `<th>💰 SALDO</th>`;
             }
             
-            html += `<th>ACCIONES</th><tr></thead><tbody>`;
+            html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
             // Procesar cada fila
             for (let item of datosFiltrados) {
