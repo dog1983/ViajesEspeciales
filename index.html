@@ -334,31 +334,40 @@
         }
 
         .data-table td {
-            padding: 12px 10px;
+            padding: 8px 10px;
             border-bottom: 1px solid #f1f5f9;
             color: #334155;
             white-space: nowrap;
+            vertical-align: middle;
         }
 
         .data-table tbody tr:hover {
             background: #f8fafc;
         }
 
+        .data-table th:last-child,
+        .data-table td:last-child {
+            min-width: 200px;
+        }
+
         .actions-cell {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             white-space: nowrap;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            align-items: center;
         }
 
         .btn-edit, .btn-delete, .btn-view, .btn-report, .btn-duplicate {
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             font-size: 0.7rem;
             cursor: pointer;
             border: none;
             font-weight: 500;
             transition: transform 0.1s, opacity 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-edit {
@@ -476,6 +485,20 @@
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             border-color: #3b82f6;
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23475569'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            background-color: white;
+        }
+
+        .form-group select:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
         }
 
         .info-card {
@@ -776,6 +799,17 @@
         .reporte-actions button:active {
             transform: scale(0.95);
         }
+
+        @media (max-width: 768px) {
+            .btn-edit, .btn-delete, .btn-view, .btn-report, .btn-duplicate {
+                padding: 5px 8px;
+                font-size: 0.65rem;
+            }
+            
+            .actions-cell {
+                gap: 4px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -883,6 +917,22 @@
             { id: 'cuentacorriente', nombre: '🏦 Cuenta Corriente' },
             { id: 'pagos', nombre: '💸 Pagos' }
         ];
+
+        const nivelesUsuario = ['master', 'administracion', 'marketing', 'trafico', 'contratante'];
+        const nombresNiveles = {
+            master: '🔑 Master',
+            administracion: '💰 Administración',
+            marketing: '📢 Marketing',
+            trafico: '🚦 Tráfico',
+            contratante: '👤 Contratante'
+        };
+        const nombresNivelesCorto = {
+            master: '🔑 Master',
+            administracion: '💰 Admin',
+            marketing: '📢 Market',
+            trafico: '🚦 Tráfico',
+            contratante: '👤 Contrat.'
+        };
 
         window.relaciones = {
             ordenes: {
@@ -1230,7 +1280,7 @@
                             ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}
                             ` : ''}
                             <div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div>
-                            <div class="reporte-row"><span class="reporte-label">Saldo Pendiente:</span><span class="reporte-value ${saldo > 0 ? 'monto' : 'saldo-verde'}" style="font-weight:bold;">${saldo > 0 ? formatearMonto(saldo) : (saldo < 0 ? `Sobrante: ${formatearMonto(Math.abs(saldo))}` : '✓ Saldado')}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Saldo Pendiente:</span><span class="reporte-value ${saldo > 0 ? 'monto' : ''}" style="font-weight:bold; color: ${saldo > 0 ? '#ef4444' : (saldo < 0 ? '#10b981' : '#10b981')};">${saldo > 0 ? formatearMonto(saldo) : (saldo < 0 ? `Sobrante: ${formatearMonto(Math.abs(saldo))}` : '✓ Saldado')}</span></div>
                         </div>
                         
                         <div class="reporte-section viaje-destacado">
@@ -1584,7 +1634,11 @@
                 contratante: 'CONTRATANTE',
                 telefono_cont: 'TELÉFONO',
                 cuit: 'CUIT',
-                usuario_id: 'USUARIO ASIGNADO'
+                usuario_id: 'USUARIO ASIGNADO',
+                nivel: 'NIVEL',
+                usuario: 'USUARIO',
+                nombre: 'NOMBRE',
+                contraseña: 'CONTRASEÑA'
             };
             
             columnas.forEach(col => {
@@ -1624,6 +1678,11 @@
                 for (let col of columnas) {
                     let valor = item[col];
                     
+                    // Traducir nivel de usuario
+                    if (col === 'nivel' && valor) {
+                        valor = nombresNivelesCorto[valor] || valor;
+                    }
+                    
                     if (window.tablaActual === 'carpetas') {
                         if (col === 'contratante_id') {
                             valor = window.cacheContratantes[valor] || '-';
@@ -1655,6 +1714,11 @@
                         
                         if (col === 'forma_pago') {
                             valor = valor === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
+                        }
+                        
+                        // Ocultar contraseña en la tabla
+                        if (col === 'contraseña' && valor) {
+                            valor = '••••••••';
                         }
                     }
                     
@@ -2163,7 +2227,20 @@
                 let valor = registro ? registro[col] : '';
                 let label = col.replace(/_/g, ' ').toUpperCase();
                 
-                if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
+                // Manejo especial para el campo nivel en usuarios
+                if (col === 'nivel') {
+                    htmlForm += `<div class="form-group">
+                                    <label>${label}</label>
+                                    <select name="${col}" required>
+                                        <option value="">Seleccionar nivel...</option>`;
+                    for (let nivel of nivelesUsuario) {
+                        const selected = valor === nivel ? 'selected' : '';
+                        htmlForm += `<option value="${nivel}" ${selected}>${nombresNiveles[nivel]}</option>`;
+                    }
+                    htmlForm += `</select></div>`;
+                }
+                // Manejo de relaciones (foreign keys)
+                else if (window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
@@ -2176,12 +2253,22 @@
                         }
                     }
                     htmlForm += `</select></div>`;
-                } else if (col.includes('fecha')) {
+                }
+                // Manejo de fechas
+                else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
                     htmlForm += `<div class="form-group"><label>${label}</label><input type="date" name="${col}" value="${fechaValor}"></div>`;
-                } else if (col.includes('obs')) {
+                }
+                // Manejo de observaciones
+                else if (col.includes('obs')) {
                     htmlForm += `<div class="form-group"><label>${label}</label><textarea name="${col}" rows="3">${valor || ''}</textarea></div>`;
-                } else {
+                }
+                // Campo contraseña
+                else if (col === 'contraseña') {
+                    htmlForm += `<div class="form-group"><label>${label}</label><input type="password" name="${col}" value="${valor || ''}"></div>`;
+                }
+                // Resto de campos
+                else {
                     htmlForm += `<div class="form-group"><label>${label}</label><input type="text" name="${col}" value="${valor || ''}"></div>`;
                 }
             }
@@ -2218,7 +2305,7 @@
                     if (value && value.toString().trim()) {
                         if (name === 'cotizacion' || name === 'monto') {
                             datos[name] = parseFloat(value);
-                        } else if (name === 'km_descontados' || name === 'kilometros') {
+                        } else if (name === 'km_descontados' || name === 'kilometros' || name === 'kmcomprados') {
                             datos[name] = parseInt(value) || 0;
                         } else if (name === 'orden_id' || name === 'contratante_id' || name === 'empresas_id' || 
                                    name === 'conductor1_id' || name === 'conductor2_id' || name === 'interno_id' ||
@@ -2229,6 +2316,8 @@
                         }
                     } else if (name === 'km_descontados') {
                         datos[name] = 0;
+                    } else if (name === 'nivel' && value) {
+                        datos[name] = value;
                     }
                 }
                 
@@ -2535,7 +2624,7 @@
                 
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                document.getElementById('userInfo').innerHTML = `${user.nombre || user.usuario}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol.toUpperCase()}</span>`;
+                document.getElementById('userInfo').innerHTML = `${user.nombre || user.usuario}<br><span style="font-size:0.7rem; color:#94a3b8;">${nombresNiveles[rol] || rol.toUpperCase()}</span>`;
                 
                 await cargarCacheNombres();
                 
