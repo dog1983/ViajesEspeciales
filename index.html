@@ -348,6 +348,11 @@
             color: white;
         }
 
+        .btn-duplicate {
+            background: #8b5cf6;
+            color: white;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -1361,13 +1366,16 @@
                 if (item.orden_id) {
                     const { data: orden } = await supabase
                         .from('ordenes')
-                        .select('origen, destino, fecha_ida')
+                        .select('contratante_id, subcontratante, fecha_ida, hora_ida, origen, destino')
                         .eq('id', item.orden_id)
                         .single();
                     if (orden) {
+                        item.contratante_id = orden.contratante_id;
+                        item.subcontratante_id = orden.subcontratante;
+                        item.fecha_ida = orden.fecha_ida;
+                        item.hora_ida = orden.hora_ida;
                         item.origen = orden.origen;
                         item.destino = orden.destino;
-                        item.fecha_ida = orden.fecha_ida;
                     }
                 }
             }
@@ -1403,26 +1411,9 @@
                 
                 data = await filtrarPorContratante(data, tabla);
                 
-                // Reemplaza la sección donde se enriquecen los datos de carpetas
-// Busca esta función en tu código (alrededor de línea 1402-1432)
-
-if (tabla === 'carpetas') {
-    // Enriquecer carpetas con datos de la orden relacionada
-    for (let carpeta of data) {
-        if (carpeta.orden_id) {
-            const { data: orden } = await supabase
-                .from('ordenes')
-                .select('contratante_id, subcontratante, empresas_id,fecha_ida,origen,destino')
-                .eq('id', carpeta.orden_id)
-                .single();
-            
-            if (orden) {
-                carpeta.contratante_id = orden.contratante_id;
-                carpeta.subcontratante_id = orden.subcontratante;
-            }
-        }
-    }
-}
+                if (tabla === 'carpetas') {
+                    data = await enriquecerCarpetasConOrden(data);
+                }
                 
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
@@ -1479,7 +1470,7 @@ if (tabla === 'carpetas') {
             let esOrdenes = false;
             
             if (window.tablaActual === 'carpetas') {
-                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'origen', 'destino', 'interno_id'];
+                columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'hora_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
                 columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
@@ -1500,6 +1491,7 @@ if (tabla === 'carpetas') {
                 contratante_id: 'CONTRATANTE',
                 subcontratante_id: 'SUBCONTRATANTE',
                 fecha_ida: 'FECHA IDA',
+                hora_ida: 'HORA IDA',
                 origen: 'ORIGEN',
                 destino: 'DESTINO',
                 interno_id: 'INTERNO ID',
@@ -1583,12 +1575,17 @@ if (tabla === 'carpetas') {
                 }
                 
                 if (esOrdenes) {
-                    html += `<td style="font-weight:bold;">-<\/td>`;
+                    const saldo = await getSaldoOrden(item.id, item.cotizacion);
+                    const saldoFormateado = formatearMonto(Math.abs(saldo));
+                    const saldoClase = saldo > 0 ? 'saldo-rojo' : (saldo < 0 ? 'saldo-verde' : '');
+                    const saldoTexto = saldo > 0 ? `- ${saldoFormateado}` : (saldo < 0 ? `✓ ${saldoFormateado}` : '✓ SALDADO');
+                    html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}<\/td>`;
                 }
                 
                 if (window.tablaActual === 'ordenes') {
                     html += `<td class="actions-cell">
                                 <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
+                                <button class="btn-duplicate" onclick="duplicarOrden(${item.id})">📋 Duplicar</button>
                                 ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
                                 ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
                               <\/td>`;
@@ -1608,7 +1605,7 @@ if (tabla === 'carpetas') {
                                 <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
                               <\/td>`;
                 }
-                html += '</tr>';
+                html += '<tr>';
             }
             
             html += '</tbody></table></div>';
@@ -1642,6 +1639,195 @@ if (tabla === 'carpetas') {
             if (registro) {
                 await cargarFormulario(registro);
                 document.getElementById('modal').classList.add('show');
+            }
+        };
+
+        // Función para duplicar una orden existente
+        window.duplicarOrden = async (id) => {
+            if (!puedeEditarTabla('ordenes')) {
+                mostrarToast('No tiene permiso para duplicar órdenes', true);
+                return;
+            }
+            
+            try {
+                mostrarToast('Cargando datos de la orden para duplicar...');
+                
+                const { data: ordenOriginal, error } = await supabase
+                    .from('ordenes')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                const nuevaOrden = {
+                    empresas_id: ordenOriginal.empresas_id,
+                    contratante_id: ordenOriginal.contratante_id,
+                    subcontratante: ordenOriginal.subcontratante,
+                    fecha_ida: '',
+                    hora_ida: '',
+                    direccion_origen: ordenOriginal.direccion_origen || '',
+                    origen: ordenOriginal.origen || '',
+                    direccion_destino: ordenOriginal.direccion_destino || '',
+                    destino: ordenOriginal.destino || '',
+                    fecha_regreso: '',
+                    hora_regreso: '',
+                    paradas: ordenOriginal.paradas || '',
+                    movimientos: ordenOriginal.movimientos || '',
+                    cantidad_buses: ordenOriginal.cantidad_buses || '',
+                    obs_buses: ordenOriginal.obs_buses || '',
+                    cotizacion: '',
+                    kilometros: ordenOriginal.kilometros || '',
+                    obs_cotizacion: ordenOriginal.obs_cotizacion || '',
+                    comidas: ordenOriginal.comidas || '',
+                    alojamiento: ordenOriginal.alojamiento || '',
+                    obs_gastos: ordenOriginal.obs_gastos || '',
+                    forma_pago: ordenOriginal.forma_pago || 'pago_directo',
+                    km_descontados: ordenOriginal.km_descontados || 0
+                };
+                
+                window.modalModo = 'form';
+                window.editandoId = null;
+                document.getElementById('modal-titulo').textContent = '📋 Duplicar Orden (Complete los datos faltantes)';
+                document.getElementById('modal-footer').style.display = 'flex';
+                
+                await cargarFormularioDuplicado(nuevaOrden);
+                document.getElementById('modal').classList.add('show');
+                
+                mostrarToast('Orden cargada para duplicar. Complete fecha, hora y cotización.');
+                
+            } catch (error) {
+                mostrarToast('Error al duplicar la orden: ' + error.message, true);
+            }
+        };
+        
+        // Función especial para cargar formulario con datos precargados (duplicado)
+        async function cargarFormularioDuplicado(datosPrecargados) {
+            const container = document.getElementById('modal-campos');
+            
+            const { data: empresas } = await supabase.from('empresas').select('id, nombre');
+            const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
+            
+            let subcontratantesOptions = '';
+            if (datosPrecargados.contratante_id) {
+                const { data: subcontratantes } = await supabase
+                    .from('subcontratantes')
+                    .select('id, subcontratante')
+                    .eq('contratante', datosPrecargados.contratante_id);
+                if (subcontratantes) {
+                    for (let sub of subcontratantes) {
+                        const selected = (datosPrecargados.subcontratante == sub.id) ? 'selected' : '';
+                        subcontratantesOptions += `<option value="${sub.id}" ${selected}>${sub.subcontratante}</option>`;
+                    }
+                }
+            }
+            
+            let htmlForm = `
+                <div class="form-group">
+                    <label>CONTRATANTE</label>
+                    <select name="contratante_id" id="field_contratante_id" onchange="onContratanteChangeDuplicado()" required>
+                        <option value="">Seleccionar contratante...</option>`;
+            if (contratantes) {
+                for (let c of contratantes) {
+                    const selected = (datosPrecargados.contratante_id == c.id) ? 'selected' : '';
+                    htmlForm += `<option value="${c.id}" ${selected}>${c.contratante}</option>`;
+                }
+            }
+            htmlForm += `</select>
+                </div>`;
+            
+            htmlForm += `<div class="form-group">
+                            <label>SUBCONTRATANTE</label>
+                            <select name="subcontratante" id="field_subcontratante" required>
+                                ${subcontratantesOptions || '<option value="">Primero seleccione un contratante</option>'}
+                            </select>
+                        </div>`;
+            
+            htmlForm += `<div class="form-group">
+                            <label>EMPRESA</label>
+                            <select name="empresas_id" required>`;
+            htmlForm += `<option value="">Seleccionar empresa...</option>`;
+            if (empresas) {
+                for (let e of empresas) {
+                    const selected = (datosPrecargados.empresas_id == e.id) ? 'selected' : '';
+                    htmlForm += `<option value="${e.id}" ${selected}>${e.nombre}</option>`;
+                }
+            }
+            htmlForm += `</select></div>`;
+            
+            htmlForm += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="" required></div>`;
+            htmlForm += `<div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value=""></div>`;
+            htmlForm += `<div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${datosPrecargados.direccion_origen || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>ORIGEN</label><input type="text" name="origen" value="${datosPrecargados.origen || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>DIRECCIÓN DESTINO</label><input type="text" name="direccion_destino" value="${datosPrecargados.direccion_destino || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>DESTINO</label><input type="text" name="destino" value="${datosPrecargados.destino || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value=""></div>`;
+            htmlForm += `<div class="form-group"><label>HORA REGRESO</label><input type="time" name="hora_regreso" value=""></div>`;
+            htmlForm += `<div class="form-group"><label>PARADAS</label><textarea name="paradas" rows="2">${datosPrecargados.paradas || ''}</textarea></div>`;
+            htmlForm += `<div class="form-group"><label>MOVIMIENTOS</label><textarea name="movimientos" rows="2">${datosPrecargados.movimientos || ''}</textarea></div>`;
+            htmlForm += `<div class="form-group"><label>CANTIDAD DE BUSES</label><input type="number" name="cantidad_buses" value="${datosPrecargados.cantidad_buses || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>OBSERVACIÓN BUSES</label><textarea name="obs_buses" rows="2">${datosPrecargados.obs_buses || ''}</textarea></div>`;
+            htmlForm += `<div class="form-group"><label>COTIZACIÓN</label><input type="number" step="0.01" name="cotizacion" value=""></div>`;
+            htmlForm += `<div class="form-group"><label>KILÓMETROS</label><input type="number" name="kilometros" id="field_kilometros" value="${datosPrecargados.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()"></div>`;
+            htmlForm += `<div class="form-group"><label>OBSERVACIÓN COTIZACIÓN</label><textarea name="obs_cotizacion" rows="2">${datosPrecargados.obs_cotizacion || ''}</textarea></div>`;
+            htmlForm += `<div class="form-group"><label>COMIDAS</label><input type="text" name="comidas" value="${datosPrecargados.comidas || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>ALOJAMIENTO</label><input type="text" name="alojamiento" value="${datosPrecargados.alojamiento || ''}"></div>`;
+            htmlForm += `<div class="form-group"><label>OBSERVACIÓN GASTOS</label><textarea name="obs_gastos" rows="2">${datosPrecargados.obs_gastos || ''}</textarea></div>`;
+            htmlForm += `<div class="form-group"><label>FORMA DE PAGO</label>
+                            <select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()">
+                                <option value="pago_directo" ${datosPrecargados.forma_pago === 'pago_directo' ? 'selected' : ''}>💵 Pago Directo</option>
+                                <option value="cuenta_corriente" ${datosPrecargados.forma_pago === 'cuenta_corriente' ? 'selected' : ''}>🏦 Cuenta Corriente</option>
+                            </select>
+                        </div>`;
+            
+            const hiddenStyle = (datosPrecargados.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
+            htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>
+                            <label>KM A DESCONTAR</label>
+                            <input type="number" name="km_descontados" id="field_km_descontados" value="${datosPrecargados.km_descontados || 0}" step="1" min="0" readonly style="background-color:#f0f0f0;">
+                        </div>`;
+            
+            container.innerHTML = htmlForm;
+            
+            setTimeout(() => {
+                const kmInput = document.getElementById('field_kilometros');
+                const formaPagoSelect = document.getElementById('forma_pago_select');
+                
+                if (formaPagoSelect) {
+                    formaPagoSelect.addEventListener('change', actualizarKmDescontados);
+                }
+                if (kmInput) {
+                    kmInput.addEventListener('change', actualizarKmDescontados);
+                    kmInput.addEventListener('input', actualizarKmDescontados);
+                }
+                actualizarKmDescontados();
+            }, 50);
+        }
+        
+        // Función para manejar cambio de contratante en el duplicado
+        window.onContratanteChangeDuplicado = async () => {
+            const contratanteSelect = document.getElementById('field_contratante_id');
+            const contratanteId = contratanteSelect ? contratanteSelect.value : null;
+            const subcontratanteSelect = document.getElementById('field_subcontratante');
+            
+            if (!subcontratanteSelect) return;
+            
+            subcontratanteSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            if (!contratanteId) return;
+            
+            const { data: subcontratantes, error } = await supabase
+                .from('subcontratantes')
+                .select('id, subcontratante')
+                .eq('contratante', contratanteId);
+            
+            if (error) return;
+            
+            if (subcontratantes && subcontratantes.length > 0) {
+                for (let sub of subcontratantes) {
+                    subcontratanteSelect.innerHTML += `<option value="${sub.id}">${sub.subcontratante}</option>`;
+                }
+            } else {
+                subcontratanteSelect.innerHTML += '<option value="">No hay subcontratantes disponibles</option>';
             }
         };
 
@@ -1955,10 +2141,7 @@ if (tabla === 'carpetas') {
                     const relacion = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(relacion.tabla).select('*');
                     
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<select name="${col}">`;
-                    htmlForm += `<option value="">Seleccionar...</option>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><select name="${col}"><option value="">Seleccionar...</option>`;
                     if (opciones) {
                         for (let op of opciones) {
                             const selected = valor == op.id ? 'selected' : '';
@@ -1969,23 +2152,13 @@ if (tabla === 'carpetas') {
                     htmlForm += `</select></div>`;
                 } else if (col.includes('fecha')) {
                     let fechaValor = valor ? new Date(valor).toISOString().split('T')[0] : '';
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<input type="date" name="${col}" value="${fechaValor}">`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><input type="date" name="${col}" value="${fechaValor}"></div>`;
                 } else if (col.includes('obs')) {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<textarea name="${col}" rows="3">${valor || ''}</textarea>`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><textarea name="${col}" rows="3">${valor || ''}</textarea></div>`;
                 } else {
-                    htmlForm += `<div class="form-group">`;
-                    htmlForm += `<label>${label}</label>`;
-                    htmlForm += `<input type="text" name="${col}" value="${valor || ''}">`;
-                    htmlForm += `</div>`;
+                    htmlForm += `<div class="form-group"><label>${label}</label><input type="text" name="${col}" value="${valor || ''}"></div>`;
                 }
             }
-            
             container.innerHTML = htmlForm;
         }
 
