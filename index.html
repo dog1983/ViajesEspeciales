@@ -122,6 +122,7 @@
         .sidebar-header {
             padding: 24px 20px;
             border-bottom: 1px solid #334155;
+            color: white;
         }
 
         .sidebar-header h2 {
@@ -153,6 +154,15 @@
             overflow-y: auto;
         }
 
+        .nav-section-title {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            padding: 8px 16px;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .nav-item {
             background: transparent;
             border: none;
@@ -165,6 +175,11 @@
             font-weight: 500;
             width: 100%;
             margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #334155;
         }
 
         .nav-item:active {
@@ -196,6 +211,7 @@
             width: 90%;
             max-width: 320px;
             text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         .login-box h2 {
@@ -216,10 +232,11 @@
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
         .login-input:focus {
-            outline: none;
             border-color: #3b82f6;
         }
 
@@ -233,12 +250,22 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #2563eb;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
         }
 
         .login-error {
             color: #ef4444;
             font-size: 0.8rem;
             margin-top: 12px;
+            min-height: 20px;
         }
 
         .main-content {
@@ -313,19 +340,25 @@
             white-space: nowrap;
         }
 
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
         .actions-cell {
             display: flex;
             gap: 8px;
             white-space: nowrap;
+            flex-wrap: wrap;
         }
 
-        .btn-edit, .btn-delete, .btn-view, .btn-report {
+        .btn-edit, .btn-delete, .btn-view, .btn-report, .btn-duplicate {
             padding: 6px 12px;
             border-radius: 8px;
             font-size: 0.7rem;
             cursor: pointer;
             border: none;
             font-weight: 500;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
         .btn-edit {
@@ -351,6 +384,11 @@
         .btn-duplicate {
             background: #8b5cf6;
             color: white;
+        }
+
+        .btn-edit:active, .btn-delete:active, .btn-view:active, .btn-report:active, .btn-duplicate:active {
+            transform: scale(0.95);
+            opacity: 0.9;
         }
 
         .modal {
@@ -402,6 +440,11 @@
             width: 44px;
             height: 44px;
             color: #64748b;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background: #f1f5f9;
         }
 
         .modal-body {
@@ -427,6 +470,12 @@
             border-radius: 12px;
             font-size: 1rem;
             font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #3b82f6;
         }
 
         .info-card {
@@ -453,6 +502,7 @@
             font-weight: 600;
             width: 110px;
             color: #475569;
+            flex-shrink: 0;
         }
 
         .info-value {
@@ -475,6 +525,7 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
         .btn-save {
@@ -485,6 +536,11 @@
         .btn-cancel {
             background: #e2e8f0;
             color: #475569;
+        }
+
+        .modal-footer button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
 
         .loading {
@@ -499,6 +555,12 @@
             color: #94a3b8;
         }
 
+        .empty-state span {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 16px;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -511,6 +573,19 @@
             text-align: center;
             z-index: 400;
             font-size: 0.9rem;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         /* Estilos para la Hoja de Ruta */
@@ -649,6 +724,11 @@
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .hoja-actions button:active {
+            transform: scale(0.95);
         }
         
         .btn-print {
@@ -674,6 +754,27 @@
         .saldo-verde {
             color: #10b981 !important;
             font-weight: bold;
+        }
+
+        .reporte-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+        
+        .reporte-actions button {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .reporte-actions button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -738,6 +839,7 @@
     <script type="module">
         import { supabase } from './conexion.js';
 
+        // Variables globales
         window.usuarioActual = null;
         window.permisos = null;
         window.tablaActual = null;
@@ -745,6 +847,7 @@
         window.editandoId = null;
         window.modalModo = 'form';
 
+        // Configuración de permisos por rol
         const configPermisos = {
             master: {
                 puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
@@ -821,13 +924,18 @@
         window.cacheSubcontratantes = {};
         window.cacheBuses = {};
 
+        // Funciones de utilidad
         function mostrarToast(mensaje, esError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.style.background = esError ? '#ef4444' : '#10b981';
             toast.textContent = mensaje;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         function formatearFecha(fecha) {
@@ -858,26 +966,25 @@
             }).format(monto);
         }
 
+        // Cargar cachés de nombres
         async function cargarCacheNombres() {
-            // Cargar contratantes
             const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
             if (contratantes) {
                 contratantes.forEach(c => { window.cacheContratantes[c.id] = c.contratante; });
             }
             
-            // Cargar subcontratantes
             const { data: subcontratantes } = await supabase.from('subcontratantes').select('id, subcontratante');
             if (subcontratantes) {
                 subcontratantes.forEach(s => { window.cacheSubcontratantes[s.id] = s.subcontratante; });
             }
             
-            // Cargar buses
             const { data: buses } = await supabase.from('buses').select('id, Interno');
             if (buses) {
                 buses.forEach(b => { window.cacheBuses[b.id] = b.Interno; });
             }
         }
 
+        // Cálculo de KM disponibles
         async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
             
@@ -918,6 +1025,7 @@
             return getKmDisponiblesPorContratante(contratanteId);
         }
 
+        // Cálculo de saldo de orden
         async function getSaldoOrden(ordenId, cotizacion) {
             if (!ordenId) return 0;
             
@@ -934,15 +1042,14 @@
             return saldo;
         }
 
+        // Cargar subcontratantes por contratante
         async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) {
             const subcontratanteSelect = document.getElementById('field_subcontratante');
             if (!subcontratanteSelect) return;
             
             subcontratanteSelect.innerHTML = '<option value="">Seleccionar...</option>';
             
-            if (!contratanteId) {
-                return;
-            }
+            if (!contratanteId) return;
             
             const { data: subcontratantes, error } = await supabase
                 .from('subcontratantes')
@@ -964,6 +1071,7 @@
             }
         }
 
+        // Cargar datos de orden en la tarjeta de información
         async function cargarDatosOrden(ordenId) {
             if (!ordenId) return;
             
@@ -995,6 +1103,7 @@
             if (fechaRegresoSpan) fechaRegresoSpan.textContent = formatearFecha(orden.fecha_regreso);
         }
 
+        // Actualizar KM descontados según forma de pago
         function actualizarKmDescontados() {
             const kmInput = document.getElementById('field_kilometros');
             const kmDescontadosInput = document.getElementById('field_km_descontados');
@@ -1015,6 +1124,7 @@
             }
         }
 
+        // Impresión de reporte
         function imprimirReporteOrden(htmlContent) {
             const printWindow = window.open('', '_blank');
             if (!printWindow) {
@@ -1063,52 +1173,10 @@
         }
 
         function generarPDFOrden(htmlContent) {
-            const printWindow = window.open('', '_blank');
-            if (!printWindow) {
-                mostrarToast('Por favor, permita las ventanas emergentes', true);
-                return;
-            }
-            
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Orden de Viaje</title>
-                        <style>
-                            * { margin: 0; padding: 0; box-sizing: border-box; }
-                            body { font-family: Arial, Helvetica, sans-serif; background: white; padding: 10mm; margin: 0; }
-                            .reporte { max-width: 100%; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }
-                            .reporte-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-                            .reporte-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
-                            .reporte-header .subtitle { font-size: 0.85rem; color: #666; }
-                            .reporte-section { border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; page-break-inside: avoid; }
-                            .reporte-section-title { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-                            .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.85rem; }
-                            .reporte-label { font-weight: 600; width: 130px; color: #555; flex-shrink: 0; }
-                            .reporte-value { flex: 1; color: #333; }
-                            .texto-fijo-reporte { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 80px; margin-top: 6px; font-size: 0.85rem; white-space: pre-wrap; }
-                            .monto { font-weight: bold; color: #10b981; }
-                            .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; }
-                            .viaje-destacado .reporte-label { color: #1e40af; }
-                            .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
-                            .km-disponible { background: #fef3c7; border: 1px solid #f59e0b; }
-                            .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-                            .conductor-box { border: 1px solid #ccc; border-radius: 6px; padding: 10px; background: #f8fafc; }
-                            .conductor-box h5 { font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px; }
-                            @page { size: A4; margin: 10mm; }
-                            @media print { body { margin: 0; padding: 0; } }
-                        </style>
-                    </head>
-                    <body>
-                        ${htmlContent}
-                        <script>window.onload = () => { window.print(); window.close(); };<\/script>
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
+            imprimirReporteOrden(htmlContent);
         }
 
+        // Ver informe de orden
         window.verInformeOrden = async (ordenId) => {
             try {
                 mostrarToast('Cargando informe de orden...');
@@ -1137,6 +1205,8 @@
                 const kmDisponibles = await getKmDisponibles(orden.contratante_id);
                 const kmInsuficientes = orden.forma_pago === 'cuenta_corriente' && kmDisponibles < (orden.km_descontados || 0);
                 
+                const saldo = await getSaldoOrden(orden.id, orden.cotizacion);
+                
                 const reporteHtml = `
                     <div class="reporte">
                         <div class="reporte-header">
@@ -1159,6 +1229,8 @@
                             <div class="reporte-row"><span class="reporte-label">KM disponibles:</span><span class="reporte-value ${kmDisponibles < (orden.km_descontados || 0) ? 'monto' : ''}">${kmDisponibles} km</span></div>
                             ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes en cuenta corriente</span></div>` : ''}
                             ` : ''}
+                            <div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div>
+                            <div class="reporte-row"><span class="reporte-label">Saldo Pendiente:</span><span class="reporte-value ${saldo > 0 ? 'monto' : 'saldo-verde'}" style="font-weight:bold;">${saldo > 0 ? formatearMonto(saldo) : (saldo < 0 ? `Sobrante: ${formatearMonto(Math.abs(saldo))}` : '✓ Saldado')}</span></div>
                         </div>
                         
                         <div class="reporte-section viaje-destacado">
@@ -1241,6 +1313,7 @@
             }
         };
 
+        // Validar límite de carpetas
         async function validarLimiteCarpetas(ordenId, carpetaIdActual = null) {
             if (!ordenId) return { valido: true };
             
@@ -1285,6 +1358,7 @@
             return { valido: true };
         }
 
+        // Filtro por contratante
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
             
@@ -1314,6 +1388,7 @@
             return data;
         }
 
+        // Gestión de permisos
         function getTablasPermitidas() {
             if (!window.permisos) return [];
             const permitidas = [];
@@ -1354,6 +1429,7 @@
             return window.permisos.puedeEditar.includes(tablaId) || window.permisos.soloVer.includes(tablaId);
         }
 
+        // Toggle sidebar
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarMobile');
             const overlay = document.getElementById('sidebarOverlay');
@@ -1361,6 +1437,7 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         };
 
+        // Enriquecer carpetas con datos de orden
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
@@ -1382,6 +1459,7 @@
             return data;
         }
 
+        // Cargar tabla
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) {
                 mostrarToast('No tiene permiso para ver esta tabla', true);
@@ -1433,19 +1511,21 @@
                 }
                 
                 window.datosActuales = data;
-                renderizarTabla(puedeEditar);
+                await renderizarTabla(puedeEditar);
             } catch (error) {
                 console.error(error);
                 document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
             }
         };
 
-        window.filtrarTabla = () => {
+        // Filtrar tabla
+        window.filtrarTabla = async () => {
             const puedeEditar = puedeEditarTabla(window.tablaActual);
-            renderizarTabla(puedeEditar);
+            await renderizarTabla(puedeEditar);
         };
 
-        function renderizarTabla(puedeEditar) {
+        // Renderizar tabla
+        async function renderizarTabla(puedeEditar) {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             let datosFiltrados = window.datosActuales;
             
@@ -1522,13 +1602,28 @@
             
             html += `<th>ACCIONES</th></tr></thead><tbody>`;
             
-            // Procesar cada fila
+            // Pre-calcular saldos para órdenes
+            const saldosCache = {};
+            if (esOrdenes) {
+                for (let item of datosFiltrados) {
+                    const saldo = await getSaldoOrden(item.id, item.cotizacion);
+                    saldosCache[item.id] = saldo;
+                }
+            }
+            
+            // Pre-calcular KM disponibles para contratantes
+            const kmCache = {};
+            if (esContratantes) {
+                for (let item of datosFiltrados) {
+                    kmCache[item.id] = await getKmDisponibles(item.id);
+                }
+            }
+            
             for (let item of datosFiltrados) {
                 html += '<tr>';
                 for (let col of columnas) {
                     let valor = item[col];
                     
-                    // Para carpetas, convertir IDs a nombres usando la caché
                     if (window.tablaActual === 'carpetas') {
                         if (col === 'contratante_id') {
                             valor = window.cacheContratantes[valor] || '-';
@@ -1571,47 +1666,61 @@
                 }
                 
                 if (esContratantes) {
-                    html += `<td style="font-weight:bold;">-<\/td>`;
+                    const kmDisp = kmCache[item.id] || 0;
+                    const kmClass = kmDisp < 100 ? 'saldo-rojo' : 'saldo-verde';
+                    html += `<td class="${kmClass}" style="font-weight:bold;">${kmDisp} km</td>`;
                 }
                 
                 if (esOrdenes) {
-                    const saldo = await getSaldoOrden(item.id, item.cotizacion);
-                    const saldoFormateado = formatearMonto(Math.abs(saldo));
+                    const saldo = saldosCache[item.id] || 0;
+                    const saldoAbs = Math.abs(saldo);
+                    const saldoFormateado = formatearMonto(saldoAbs);
                     const saldoClase = saldo > 0 ? 'saldo-rojo' : (saldo < 0 ? 'saldo-verde' : '');
-                    const saldoTexto = saldo > 0 ? `- ${saldoFormateado}` : (saldo < 0 ? `✓ ${saldoFormateado}` : '✓ SALDADO');
-                    html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}<\/td>`;
+                    const saldoTexto = saldo > 0 ? `⚠️ ${saldoFormateado}` : (saldo < 0 ? `✓ ${saldoFormateado}` : '✓ SALDADO');
+                    html += `<td class="${saldoClase}" style="font-weight:bold;">${saldoTexto}</td>`;
                 }
                 
+                html += '<td class="actions-cell">';
+                
                 if (window.tablaActual === 'ordenes') {
-                    html += `<td class="actions-cell">
-                                <button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>
-                                <button class="btn-duplicate" onclick="duplicarOrden(${item.id})">📋 Duplicar</button>
-                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                              <\/td>`;
+                    html += `<button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>`;
+                    html += `<button class="btn-duplicate" onclick="duplicarOrden(${item.id})">📋 Duplicar</button>`;
+                    if (puedeEditar) {
+                        html += `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>`;
+                        html += `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>`;
+                    }
                 } else if (window.tablaActual === 'carpetas') {
-                    html += `<td class="actions-cell">
-                                <button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>
-                                ${puedeEditar ? `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>` : ''}
-                                ${puedeEditar ? `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>` : ''}
-                              <\/td>`;
+                    html += `<button class="btn-view" onclick="verDetalleCarpeta(${item.id})">📋 Ver Hoja</button>`;
+                    if (puedeEditar) {
+                        html += `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>`;
+                        html += `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>`;
+                    }
                 } else if (puedeEditar) {
-                    html += `<td class="actions-cell">
-                                <button class="btn-edit" onclick="editarRegistro(${item.id})">Editar</button>
-                                <button class="btn-delete" onclick="eliminarRegistro(${item.id})">Eliminar</button>
-                              <\/td>`;
+                    html += `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>`;
+                    html += `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>`;
                 } else {
-                    html += `<td class="actions-cell">
-                                <span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>
-                              <\/td>`;
+                    html += `<span style="color:#94a3b8; font-size:0.7rem;">Solo lectura</span>`;
                 }
-                html += '<tr>';
+                
+                html += '</td></tr>';
             }
             
             html += '</tbody></table></div>';
             document.getElementById('table-container').innerHTML = html;
+            
+            // Marcar nav activo
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.textContent.toLowerCase().includes(window.tablaActual)) {
+                    item.classList.add('active');
+                }
+            });
         }
 
+        // Mostrar modal agregar
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) {
                 mostrarToast('No tiene permiso para agregar registros', true);
@@ -1620,12 +1729,13 @@
             
             window.modalModo = 'form';
             window.editandoId = null;
-            document.getElementById('modal-titulo').textContent = `Agregar ${window.tablaActual}`;
+            document.getElementById('modal-titulo').textContent = `➕ Agregar ${window.tablaActual}`;
             document.getElementById('modal-footer').style.display = 'flex';
             await cargarFormulario();
             document.getElementById('modal').classList.add('show');
         };
 
+        // Editar registro
         window.editarRegistro = async (id) => {
             if (!puedeEditarTabla(window.tablaActual)) {
                 mostrarToast('No tiene permiso para editar', true);
@@ -1633,7 +1743,7 @@
             }
             window.modalModo = 'form';
             window.editandoId = id;
-            document.getElementById('modal-titulo').textContent = `Editar ${window.tablaActual}`;
+            document.getElementById('modal-titulo').textContent = `✏️ Editar ${window.tablaActual}`;
             document.getElementById('modal-footer').style.display = 'flex';
             const registro = window.datosActuales.find(r => r.id === id);
             if (registro) {
@@ -1642,7 +1752,7 @@
             }
         };
 
-        // Función para duplicar una orden existente
+        // Duplicar orden
         window.duplicarOrden = async (id) => {
             if (!puedeEditarTabla('ordenes')) {
                 mostrarToast('No tiene permiso para duplicar órdenes', true);
@@ -1683,7 +1793,7 @@
                     alojamiento: ordenOriginal.alojamiento || '',
                     obs_gastos: ordenOriginal.obs_gastos || '',
                     forma_pago: ordenOriginal.forma_pago || 'pago_directo',
-                    km_descontados: ordenOriginal.km_descontados || 0
+                    km_descontados: 0
                 };
                 
                 window.modalModo = 'form';
@@ -1700,8 +1810,8 @@
                 mostrarToast('Error al duplicar la orden: ' + error.message, true);
             }
         };
-        
-        // Función especial para cargar formulario con datos precargados (duplicado)
+
+        // Cargar formulario para duplicado
         async function cargarFormularioDuplicado(datosPrecargados) {
             const container = document.getElementById('modal-campos');
             
@@ -1802,8 +1912,8 @@
                 actualizarKmDescontados();
             }, 50);
         }
-        
-        // Función para manejar cambio de contratante en el duplicado
+
+        // On contratante change para duplicado
         window.onContratanteChangeDuplicado = async () => {
             const contratanteSelect = document.getElementById('field_contratante_id');
             const contratanteId = contratanteSelect ? contratanteSelect.value : null;
@@ -1831,24 +1941,21 @@
             }
         };
 
+        // Cargar formulario
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             
-            // Para carpetas: formulario específico
             if (window.tablaActual === 'carpetas') {
-                // Obtener lista de órdenes
                 const { data: ordenes } = await supabase
                     .from('ordenes')
                     .select('id')
                     .order('id', { ascending: false });
                 
-                // Obtener lista de conductores
                 const { data: conductores } = await supabase
                     .from('conductores')
                     .select('id, nombre')
                     .order('nombre');
                 
-                // Obtener lista de buses
                 const { data: buses } = await supabase
                     .from('buses')
                     .select('id, Interno, Dominio')
@@ -1869,7 +1976,6 @@
                 htmlForm += `</select>
                     </div>`;
                 
-                // Tarjeta con datos de la orden (solo lectura)
                 htmlForm += `
                     <div class="info-card">
                         <h4>📋 DATOS DE LA ORDEN SELECCIONADA</h4>
@@ -1882,7 +1988,6 @@
                         <div class="info-row"><span class="info-label">Fecha Regreso:</span><span class="info-value" id="info_fecha_regreso">-</span></div>
                     </div>`;
                 
-                // Campos de la carpeta
                 htmlForm += `<h4 style="margin: 16px 0 8px; color: #1e293b;">📁 DATOS DE LA CARPETA</h4>`;
                 
                 htmlForm += `<div class="form-group">
@@ -1938,7 +2043,6 @@
                 
                 container.innerHTML = htmlForm;
                 
-                // Si estamos editando, cargar los datos de la orden
                 if (registro && registro.orden_id) {
                     await cargarDatosOrden(registro.orden_id);
                     const selectOrden = document.getElementById('select_orden');
@@ -1948,9 +2052,7 @@
                 return;
             }
             
-            // Para la tabla ordenes - con forma de pago corregida
             if (window.tablaActual === 'ordenes') {
-                // Obtener datos para selects
                 const { data: empresas } = await supabase.from('empresas').select('id, nombre');
                 const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
                 
@@ -1987,97 +2089,24 @@
                 }
                 htmlForm += `</select></div>`;
                 
-                htmlForm += `<div class="form-group">
-                                <label>FECHA IDA</label>
-                                <input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>HORA IDA</label>
-                                <input type="time" name="hora_ida" value="${registro?.hora_ida || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DIRECCIÓN ORIGEN</label>
-                                <input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>ORIGEN</label>
-                                <input type="text" name="origen" value="${registro?.origen || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DIRECCIÓN DESTINO</label>
-                                <input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>DESTINO</label>
-                                <input type="text" name="destino" value="${registro?.destino || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>FECHA REGRESO</label>
-                                <input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>HORA REGRESO</label>
-                                <input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>PARADAS</label>
-                                <textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>MOVIMIENTOS</label>
-                                <textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>CANTIDAD DE BUSES</label>
-                                <input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN BUSES</label>
-                                <textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>COTIZACIÓN</label>
-                                <input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>KILÓMETROS</label>
-                                <input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN COTIZACIÓN</label>
-                                <textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea>
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>COMIDAS</label>
-                                <input type="text" name="comidas" value="${registro?.comidas || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>ALOJAMIENTO</label>
-                                <input type="text" name="alojamiento" value="${registro?.alojamiento || ''}">
-                            </div>`;
-                
-                htmlForm += `<div class="form-group">
-                                <label>OBSERVACIÓN GASTOS</label>
-                                <textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea>
-                            </div>`;
-                
-                // Forma de pago - SOLO DOS OPCIONES
+                htmlForm += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required></div>`;
+                htmlForm += `<div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value="${registro?.hora_ida || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>ORIGEN</label><input type="text" name="origen" value="${registro?.origen || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DIRECCIÓN DESTINO</label><input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>DESTINO</label><input type="text" name="destino" value="${registro?.destino || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>HORA REGRESO</label><input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>PARADAS</label><textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>MOVIMIENTOS</label><textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>CANTIDAD DE BUSES</label><input type="number" name="cantidad_buses" value="${registro?.cantidad_buses || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN BUSES</label><textarea name="obs_buses" rows="2">${registro?.obs_buses || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>COTIZACIÓN</label><input type="number" step="0.01" name="cotizacion" value="${registro?.cotizacion || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>KILÓMETROS</label><input type="number" name="kilometros" id="field_kilometros" value="${registro?.kilometros || '0'}" step="1" min="0" onchange="actualizarKmDescontados()"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN COTIZACIÓN</label><textarea name="obs_cotizacion" rows="2">${registro?.obs_cotizacion || ''}</textarea></div>`;
+                htmlForm += `<div class="form-group"><label>COMIDAS</label><input type="text" name="comidas" value="${registro?.comidas || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>ALOJAMIENTO</label><input type="text" name="alojamiento" value="${registro?.alojamiento || ''}"></div>`;
+                htmlForm += `<div class="form-group"><label>OBSERVACIÓN GASTOS</label><textarea name="obs_gastos" rows="2">${registro?.obs_gastos || ''}</textarea></div>`;
                 htmlForm += `<div class="form-group">
                                 <label>FORMA DE PAGO</label>
                                 <select name="forma_pago" id="forma_pago_select" onchange="actualizarKmDescontados()">
@@ -2086,7 +2115,6 @@
                                 </select>
                             </div>`;
                 
-                // Campo KM a descontar (solo visible si selecciona cuenta corriente)
                 const hiddenStyle = (registro?.forma_pago === 'cuenta_corriente') ? '' : 'style="display:none;"';
                 htmlForm += `<div class="form-group" id="km_descontados_group" ${hiddenStyle}>
                                 <label>KM A DESCONTAR</label>
@@ -2095,12 +2123,10 @@
                 
                 container.innerHTML = htmlForm;
                 
-                // Si estamos editando, cargar los subcontratantes
                 if (registro && registro.contratante_id) {
                     await cargarSubcontratantesPorContratante(registro.contratante_id, registro.subcontratante);
                 }
                 
-                // Configurar eventos
                 setTimeout(() => {
                     const kmInput = document.getElementById('field_kilometros');
                     const formaPagoSelect = document.getElementById('forma_pago_select');
@@ -2119,7 +2145,7 @@
                 return;
             }
             
-            // Para las demás tablas
+            // Para otras tablas
             const { data: columnas, error } = await supabase
                 .from(window.tablaActual)
                 .select('*')
@@ -2162,15 +2188,17 @@
             container.innerHTML = htmlForm;
         }
 
-        window.cargarDatosOrden = cargarDatosOrden;
+        // On contratante change
         window.onContratanteChange = async () => {
             const contratanteSelect = document.getElementById('field_contratante_id');
             const contratanteId = contratanteSelect ? contratanteSelect.value : null;
             await cargarSubcontratantesPorContratante(contratanteId);
         };
 
+        window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
+        // Botón guardar
         const btnGuardar = document.getElementById('btnGuardar');
         if (btnGuardar) {
             btnGuardar.onclick = async () => {
@@ -2192,13 +2220,18 @@
                             datos[name] = parseFloat(value);
                         } else if (name === 'km_descontados' || name === 'kilometros') {
                             datos[name] = parseInt(value) || 0;
+                        } else if (name === 'orden_id' || name === 'contratante_id' || name === 'empresas_id' || 
+                                   name === 'conductor1_id' || name === 'conductor2_id' || name === 'interno_id' ||
+                                   name === 'subcontratante' || name === 'usuario_id' || name === 'contratante') {
+                            datos[name] = parseInt(value);
                         } else {
                             datos[name] = value;
                         }
+                    } else if (name === 'km_descontados') {
+                        datos[name] = 0;
                     }
                 }
                 
-                // Para carpetas, asegurar que orden_id está presente
                 if (window.tablaActual === 'carpetas') {
                     const ordenSelect = document.getElementById('select_orden');
                     if (ordenSelect && ordenSelect.value) {
@@ -2249,6 +2282,7 @@
             };
         }
 
+        // Eliminar registro
         window.eliminarRegistro = async (id) => {
             if (!puedeEditarTabla(window.tablaActual)) {
                 mostrarToast('No tiene permiso para eliminar', true);
@@ -2270,13 +2304,16 @@
             }
         };
 
+        // Cerrar modal
         window.cerrarModal = () => {
             document.getElementById('modal').classList.remove('show');
             window.editandoId = null;
             window.modalModo = 'form';
             document.getElementById('modal-footer').style.display = 'flex';
+            document.getElementById('modal-campos').innerHTML = '';
         };
 
+        // Ver detalle carpeta (hoja de ruta)
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -2373,42 +2410,18 @@
                         
                         <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🚌 IDA</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📅 Fecha:</span>
-                                <span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">⏰ Hora:</span>
-                                <span class="hoja-value">${orden.hora_ida || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📍 Dirección Origen:</span>
-                                <span class="hoja-value">${orden.direccion_origen || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">🏁 Origen:</span>
-                                <span class="hoja-value">${orden.origen || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📍 Dirección Destino:</span>
-                                <span class="hoja-value">${orden.direccion_destino || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">🏁 Destino:</span>
-                                <span class="hoja-value">${orden.destino || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_ida)}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_ida || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">📍 Dirección Origen:</span><span class="hoja-value">${orden.direccion_origen || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">🏁 Origen:</span><span class="hoja-value">${orden.origen || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">📍 Dirección Destino:</span><span class="hoja-value">${orden.direccion_destino || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">🏁 Destino:</span><span class="hoja-value">${orden.destino || '-'}</span></div>
                         </div>
                         
                         <div class="hoja-section viaje-destacado">
                             <div class="hoja-section-title">🔄 REGRESO</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">📅 Fecha:</span>
-                                <span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">⏰ Hora:</span>
-                                <span class="hoja-value">${orden.hora_regreso || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_regreso || '-'}</span></div>
                         </div>
                         
                         <div class="hoja-section">
@@ -2427,30 +2440,15 @@
                         
                         <div class="hoja-section">
                             <div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Comidas:</span>
-                                <span class="hoja-value">${orden.comidas || '-'}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Alojamiento:</span>
-                                <span class="hoja-value">${orden.alojamiento || '-'}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">Comidas:</span><span class="hoja-value">${orden.comidas || '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Alojamiento:</span><span class="hoja-value">${orden.alojamiento || '-'}</span></div>
                         </div>
                         
                         <div class="hoja-section">
                             <div class="hoja-section-title">🚎 INTERNO / BUS</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Interno:</span>
-                                <span class="hoja-value">${bus.Interno}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Dominio:</span>
-                                <span class="hoja-value">${bus.Dominio}</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Capacidad:</span>
-                                <span class="hoja-value">${bus.Capacidad}</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">Interno:</span><span class="hoja-value">${bus.Interno}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Dominio:</span><span class="hoja-value">${bus.Dominio}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Capacidad:</span><span class="hoja-value">${bus.Capacidad}</span></div>
                         </div>
                         
                         <div class="hoja-grid-2">
@@ -2477,18 +2475,9 @@
                         
                         <div class="hoja-section">
                             <div class="hoja-section-title">📏 KILOMETRAJE</div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Km al iniciar:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Km al finalizar:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
-                            <div class="hoja-row">
-                                <span class="hoja-label">Total Km:</span>
-                                <span class="hoja-value">_______________</span>
-                            </div>
+                            <div class="hoja-row"><span class="hoja-label">Km al iniciar:</span><span class="hoja-value">_______________</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Km al finalizar:</span><span class="hoja-value">_______________</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Total Km:</span><span class="hoja-value">_______________</span></div>
                         </div>
                     </div>
                 `;
@@ -2507,6 +2496,7 @@
             }
         };
 
+        // Login
         window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -2545,9 +2535,8 @@
                 
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                document.getElementById('userInfo').innerHTML = `${user.nombre}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol}</span>`;
+                document.getElementById('userInfo').innerHTML = `${user.nombre || user.usuario}<br><span style="font-size:0.7rem; color:#94a3b8;">${rol.toUpperCase()}</span>`;
                 
-                // Cargar caché de nombres
                 await cargarCacheNombres();
                 
                 generarSidebar();
@@ -2563,16 +2552,31 @@
             }
         };
         
+        // Cerrar sesión
         window.cerrarSesion = () => {
             window.usuarioActual = null;
             window.permisos = null;
             window.tablaActual = null;
+            window.datosActuales = [];
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
             document.getElementById('loginUsuario').value = '';
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginError').textContent = '';
         };
+
+        // Permitir login con Enter
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                window.iniciarSesion();
+            }
+        });
+
+        document.getElementById('loginUsuario').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('loginPassword').focus();
+            }
+        });
     </script>
 </body>
 </html>
