@@ -1433,6 +1433,7 @@
                 return data.filter(item => subcontratantesIds.includes(item.subcontratante));
             }
             if (tabla === 'carpetas') {
+                // El campo subcontratante_id se agrega después del enriquecimiento, por eso el filtro se aplica después
                 return data.filter(item => subcontratantesIds.includes(item.subcontratante_id));
             }
             return data;
@@ -1537,11 +1538,12 @@
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
                 
-                data = await filtrarPorContratante(data, tabla);
-                
+                // Para carpetas, enriquecemos primero y luego filtramos
                 if (tabla === 'carpetas') {
                     data = await enriquecerCarpetasConOrden(data);
                 }
+                
+                data = await filtrarPorContratante(data, tabla);
                 
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
@@ -1748,7 +1750,10 @@
                 
                 if (window.tablaActual === 'ordenes') {
                     html += `<button class="btn-report" onclick="verInformeOrden(${item.id})">📄 Ver Informe</button>`;
-                    html += `<button class="btn-duplicate" onclick="duplicarOrden(${item.id})">📋 Duplicar</button>`;
+                    // Solo mostramos el botón duplicar si el usuario tiene permisos de edición (no para contratante)
+                    if (puedeEditar) {
+                        html += `<button class="btn-duplicate" onclick="duplicarOrden(${item.id})">📋 Duplicar</button>`;
+                    }
                     if (puedeEditar) {
                         html += `<button class="btn-edit" onclick="editarRegistro(${item.id})">✏️</button>`;
                         html += `<button class="btn-delete" onclick="eliminarRegistro(${item.id})">🗑️</button>`;
