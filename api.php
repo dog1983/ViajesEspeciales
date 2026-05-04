@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 
 $host = 'localhost';
 $user = 'root';
-$pass = '';
+$pass = 'EspecialesGestion7272*';
 $dbname = 'transporte';
 
 $mysqli = new mysqli($host, $user, $pass, $dbname);
