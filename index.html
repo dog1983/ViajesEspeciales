@@ -628,7 +628,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Estilos para informes y hoja de ruta */
         .hoja-ruta, .reporte {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
@@ -737,15 +736,6 @@
             gap: 10px;
             margin-bottom: 16px;
             justify-content: flex-end;
-        }
-        .hoja-actions button, .reporte-actions button {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s;
         }
         .btn-print {
             background: #64748b;
@@ -1197,7 +1187,6 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // CORREGIDO: Filtro por fecha normalizando a YYYY-MM-DD
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1216,12 +1205,9 @@
                 const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    try {
-                        const fechaItem = new Date(item.fecha_ida).toISOString().split('T')[0];
-                        return fechaItem === fechaFiltro;
-                    } catch(e) {
-                        return false;
-                    }
+                    // Comparación directa de cadena (segura sin zona horaria)
+                    const fechaItem = typeof item.fecha_ida === 'string' ? item.fecha_ida.substring(0,10) : '';
+                    return fechaItem === fechaFiltro;
                 });
             }
 
