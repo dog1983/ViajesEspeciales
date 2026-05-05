@@ -780,7 +780,6 @@
     </style>
 </head>
 <body>
-    <!-- Pantalla de login -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <h2>🚍 Transporte</h2>
@@ -792,7 +791,6 @@
         </div>
     </div>
 
-    <!-- App principal -->
     <div id="app" style="display: none;">
         <div class="mobile-header">
             <button class="menu-btn" onclick="toggleSidebar()">☰</button>
@@ -825,7 +823,6 @@
         </div>
     </div>
 
-    <!-- Modal genérico -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -843,7 +840,6 @@
     <script type="module">
         import { supabase } from './conexion.js';
 
-        // Variables globales
         window.usuarioActual = null;
         window.permisos = null;
         window.tablaActual = null;
@@ -854,7 +850,6 @@
         window.columnaOrden = null;
         window.dirOrden = 'asc';
 
-        // Configuración de permisos por rol
         const configPermisos = {
             master: {
                 puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
@@ -946,7 +941,6 @@
         window.cacheSubcontratantes = {};
         window.cacheBuses = {};
 
-        // --- UTILIDADES ---
         function mostrarToast(mensaje, esError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -962,33 +956,19 @@
 
         function formatearFecha(fecha) {
             if (!fecha) return '-';
-            try {
-                const date = new Date(fecha);
-                return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            } catch(e) {
-                return fecha;
-            }
+            try { return new Date(fecha).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch(e) { return fecha; }
         }
 
         function formatearFechaCorta(fecha) {
             if (!fecha) return '-';
-            try {
-                return new Date(fecha).toLocaleDateString('es-AR');
-            } catch(e) {
-                return fecha;
-            }
+            try { return new Date(fecha).toLocaleDateString('es-AR'); } catch(e) { return fecha; }
         }
 
         function formatearMonto(monto) {
             if (!monto && monto !== 0) return '-';
-            return new Intl.NumberFormat('es-AR', {
-                style: 'currency',
-                currency: 'ARS',
-                minimumFractionDigits: 0
-            }).format(monto);
+            return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(monto);
         }
 
-        // --- CACHÉ DE NOMBRES ---
         async function cargarCacheNombres() {
             const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
             if (contratantes) contratantes.forEach(c => { window.cacheContratantes[c.id] = c.contratante; });
@@ -998,7 +978,6 @@
             if (buses) buses.forEach(b => { window.cacheBuses[b.id] = b.Interno; });
         }
 
-        // --- CÁLCULOS DE KM Y SALDO ---
         async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
             const { data: compras } = await supabase.from('cuentacorriente').select('kmcomprados').eq('contratante_id', contratanteId);
@@ -1010,6 +989,7 @@
             const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
             return totalComprados - totalDescontados;
         }
+
         async function getKmDisponibles(contratanteId) { return getKmDisponiblesPorContratante(contratanteId); }
 
         async function getSaldoOrden(ordenId, cotizacion) {
@@ -1019,7 +999,6 @@
             return (parseFloat(cotizacion) || 0) - totalPagado;
         }
 
-        // --- CARGA DE SUBCONTRATANTES ---
         async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) {
             const select = document.getElementById('field_subcontratante');
             if (!select) return;
@@ -1028,8 +1007,7 @@
             const { data: subs } = await supabase.from('subcontratantes').select('id, subcontratante').eq('contratante', contratanteId);
             if (subs && subs.length > 0) {
                 for (let sub of subs) {
-                    const sel = (valorSeleccionado == sub.id) ? 'selected' : '';
-                    select.innerHTML += `<option value="${sub.id}" ${sel}>${sub.subcontratante}</option>`;
+                    select.innerHTML += `<option value="${sub.id}" ${valorSeleccionado == sub.id ? 'selected' : ''}>${sub.subcontratante}</option>`;
                 }
             } else {
                 select.innerHTML += '<option value="">No hay subcontratantes disponibles</option>';
@@ -1067,16 +1045,15 @@
             }
         }
 
-        // --- IMPRESIÓN ---
         function imprimirReporteOrden(htmlContent) {
             const printWindow = window.open('', '_blank');
             if (!printWindow) { mostrarToast('Permita ventanas emergentes', true); return; }
             printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orden de Viaje</title><style> body { font-family: Arial; padding: 10mm; } </style></head><body>${htmlContent}<script>window.onload = () => { window.print(); window.close(); };<\/script></body></html>`);
             printWindow.document.close();
         }
+
         function generarPDFOrden(htmlContent) { imprimirReporteOrden(htmlContent); }
 
-        // --- VER INFORME DE ORDEN ---
         window.verInformeOrden = async (ordenId) => {
             try {
                 mostrarToast('Cargando informe de orden...');
@@ -1089,29 +1066,23 @@
                 const saldo = await getSaldoOrden(orden.id, orden.cotizacion);
                 const reporteHtml = `
                     <div class="reporte">
-                        <div class="reporte-header">
-                            <h2>${orden.empresas?.nombre || 'EMPRESA'}</h2>
-                            <div class="subtitle">ORDEN DE VIAJE N° ${orden.id}</div>
-                        </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
+                        <div class="reporte-header"><h2>${orden.empresas?.nombre || 'EMPRESA'}</h2><div class="subtitle">ORDEN DE VIAJE N° ${orden.id}</div></div>
+                        <div class="reporte-section"><div class="reporte-section-title">📋 DATOS DEL CONTRATANTE</div>
                             <div class="reporte-row"><span class="reporte-label">Contratante:</span><span class="reporte-value">${orden.contratantes?.contratante || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">CUIT:</span><span class="reporte-value">${orden.contratantes?.cuit || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Subcontratante:</span><span class="reporte-value">${orden.subcontratantes?.subcontratante || '-'}</span></div>
                         </div>
-                        <div class="reporte-section ${orden.forma_pago === 'cuenta_corriente' ? 'km-disponible' : ''}">
-                            <div class="reporte-section-title">💰 FORMA DE PAGO</div>
+                        <div class="reporte-section"><div class="reporte-section-title">💰 FORMA DE PAGO</div>
                             <div class="reporte-row"><span class="reporte-label">Forma de Pago:</span><span class="reporte-value">${formaPagoTexto}</span></div>
                             ${orden.forma_pago === 'cuenta_corriente' ? `
-                            <div class="reporte-row"><span class="reporte-label">KM a descontar:</span><span class="reporte-value ${kmInsuficientes ? 'monto' : ''}">${orden.km_descontados || 0} km</span></div>
+                            <div class="reporte-row"><span class="reporte-label">KM a descontar:</span><span class="reporte-value">${orden.km_descontados || 0} km</span></div>
                             <div class="reporte-row"><span class="reporte-label">KM disponibles:</span><span class="reporte-value">${kmDisponibles} km</span></div>
                             ${kmInsuficientes ? `<div class="reporte-row"><span class="reporte-label">⚠️ Advertencia:</span><span class="reporte-value" style="color:#ef4444;">KM insuficientes</span></div>` : ''}
                             ` : ''}
                             <div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Saldo Pendiente:</span><span class="reporte-value" style="font-weight:bold; color: ${saldo > 0 ? '#ef4444' : (saldo < 0 ? '#10b981' : '#10b981')};">${saldo > 0 ? formatearMonto(saldo) : (saldo < 0 ? `Sobrante: ${formatearMonto(Math.abs(saldo))}` : '✓ Saldado')}</span></div>
                         </div>
-                        <div class="reporte-section viaje-destacado">
-                            <div class="reporte-section-title">🚌 DATOS DEL VIAJE - IDA</div>
+                        <div class="reporte-section viaje-destacado"><div class="reporte-section-title">🚌 DATOS DEL VIAJE - IDA</div>
                             <div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_ida)}</span></div>
                             <div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_ida || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">📍 Dir. Origen:</span><span class="reporte-value">${orden.direccion_origen || '-'}</span></div>
@@ -1119,38 +1090,27 @@
                             <div class="reporte-row"><span class="reporte-label">📍 Dir. Destino:</span><span class="reporte-value">${orden.direccion_destino || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">🏁 Destino:</span><span class="reporte-value">${orden.destino || '-'}</span></div>
                         </div>
-                        <div class="reporte-section viaje-destacado">
-                            <div class="reporte-section-title">🔄 REGRESO</div>
+                        <div class="reporte-section viaje-destacado"><div class="reporte-section-title">🔄 REGRESO</div>
                             <div class="reporte-row"><span class="reporte-label">📅 Fecha:</span><span class="reporte-value">${formatearFecha(orden.fecha_regreso)}</span></div>
                             <div class="reporte-row"><span class="reporte-label">⏰ Hora:</span><span class="reporte-value">${orden.hora_regreso || '-'}</span></div>
                         </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">📍 PARADAS</div>
-                            <div class="texto-fijo-reporte ${!orden.paradas ? 'vacio' : ''}">${orden.paradas || '__________________________________________________'}</div>
-                        </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">🔄 MOVIMIENTOS</div>
-                            <div class="texto-fijo-reporte ${!orden.movimientos ? 'vacio' : ''}">${orden.movimientos || '__________________________________________________'}</div>
-                        </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">🚎 FLOTA</div>
+                        <div class="reporte-section"><div class="reporte-section-title">📍 PARADAS</div><div class="texto-fijo-reporte">${orden.paradas || '__________________________________________________'}</div></div>
+                        <div class="reporte-section"><div class="reporte-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo-reporte">${orden.movimientos || '__________________________________________________'}</div></div>
+                        <div class="reporte-section"><div class="reporte-section-title">🚎 FLOTA</div>
                             <div class="reporte-row"><span class="reporte-label">Cant. Buses:</span><span class="reporte-value">${orden.cantidad_buses || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Obs. Buses:</span><span class="reporte-value">${orden.obs_buses || '-'}</span></div>
                         </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">💰 COTIZACIÓN</div>
+                        <div class="reporte-section"><div class="reporte-section-title">💰 COTIZACIÓN</div>
                             <div class="reporte-row"><span class="reporte-label">Cotización:</span><span class="reporte-value monto">${formatearMonto(orden.cotizacion)}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Kilómetros:</span><span class="reporte-value">${orden.kilometros || '-'} km</span></div>
                             <div class="reporte-row"><span class="reporte-label">Obs. Cotiz.:</span><span class="reporte-value">${orden.obs_cotizacion || '-'}</span></div>
                         </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
+                        <div class="reporte-section"><div class="reporte-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
                             <div class="reporte-row"><span class="reporte-label">Comidas:</span><span class="reporte-value">${orden.comidas || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Alojamiento:</span><span class="reporte-value">${orden.alojamiento || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Obs. Gastos:</span><span class="reporte-value">${orden.obs_gastos || '-'}</span></div>
                         </div>
-                        <div class="reporte-section">
-                            <div class="reporte-section-title">📝 CONFECCIÓN</div>
+                        <div class="reporte-section"><div class="reporte-section-title">📝 CONFECCIÓN</div>
                             <div class="reporte-row"><span class="reporte-label">Confeccionó:</span><span class="reporte-value">${usuario?.nombre || '-'}</span></div>
                             <div class="reporte-row"><span class="reporte-label">Fecha emisión:</span><span class="reporte-value">${new Date().toLocaleDateString('es-AR')}</span></div>
                         </div>
@@ -1164,7 +1124,6 @@
             } catch (e) { mostrarToast('Error al cargar informe: ' + e.message, true); }
         };
 
-        // --- VALIDACIÓN DE CARPETAS ---
         async function validarLimiteCarpetas(ordenId, carpetaIdActual = null) {
             if (!ordenId) return { valido: true };
             const { data: orden } = await supabase.from('ordenes').select('cantidad_buses').eq('id', ordenId).single();
@@ -1179,7 +1138,6 @@
             return { valido: true };
         }
 
-        // --- FILTRO POR CONTRATANTE ---
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
             const { data: contratanteData } = await supabase.from('contratantes').select('id').eq('usuario_id', window.usuarioActual.id).single();
@@ -1192,7 +1150,6 @@
             return data;
         }
 
-        // --- ENRIQUECER CARPETAS ---
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
@@ -1210,7 +1167,6 @@
             return data;
         }
 
-        // --- PERMISOS Y NAVEGACIÓN ---
         function getTablasPermitidas() {
             if (!window.permisos) return [];
             const permitidas = [];
@@ -1241,7 +1197,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDENAMIENTO Y FILTRO (con corrección en filtro por fecha) ---
+        // CORREGIDO: Filtro por fecha normalizando a YYYY-MM-DD
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1255,15 +1211,17 @@
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             if (searchText) datos = datos.filter(item => JSON.stringify(Object.values(item)).toLowerCase().includes(searchText));
 
-            // Filtro por fecha de ida (solo si el input está visible y tiene valor)
             const fechaInput = document.getElementById('fechaFilter');
             if (fechaInput.style.display !== 'none' && fechaInput.value) {
                 const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    // Comparamos los primeros 10 caracteres (la fecha sin hora)
-                    const fechaItem = typeof item.fecha_ida === 'string' ? item.fecha_ida.substring(0,10) : '';
-                    return fechaItem === fechaFiltro;
+                    try {
+                        const fechaItem = new Date(item.fecha_ida).toISOString().split('T')[0];
+                        return fechaItem === fechaFiltro;
+                    } catch(e) {
+                        return false;
+                    }
                 });
             }
 
@@ -1291,7 +1249,6 @@
             await renderizarTabla(puedeEditar);
         };
 
-        // --- CARGAR TABLA ---
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1335,7 +1292,6 @@
             }
         };
 
-        // --- RENDERIZAR TABLA ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
@@ -1361,9 +1317,7 @@
             columnas.forEach(col => {
                 const nombreMostrar = nombresCols[col] || col.replace(/_/g,' ').toUpperCase();
                 let flecha = '';
-                if (col === window.columnaOrden) {
-                    flecha = window.dirOrden === 'asc' ? ' ▲' : ' ▼';
-                }
+                if (col === window.columnaOrden) flecha = window.dirOrden === 'asc' ? ' ▲' : ' ▼';
                 html += `<th onclick="ordenarTabla('${col}')">${nombreMostrar}${flecha}</th>`;
             });
             if (esContratantes) html += '<th>📊 KM DISPONIBLES</th>';
@@ -1397,8 +1351,7 @@
                     html += `<td>${val !== null && val !== undefined ? val : '-'}</td>`;
                 }
                 if (esContratantes) {
-                    const km = kmCache[item.id] || 0;
-                    html += `<td class="${km < 100 ? 'saldo-rojo' : 'saldo-verde'}" style="font-weight:bold;">${km} km</td>`;
+                    html += `<td class="${(kmCache[item.id] || 0) < 100 ? 'saldo-rojo' : 'saldo-verde'}" style="font-weight:bold;">${kmCache[item.id] || 0} km</td>`;
                 }
                 if (esOrdenes) {
                     const saldo = saldosCache[item.id] || 0;
@@ -1437,7 +1390,6 @@
             });
         }
 
-        // --- MOSTRAR MODAL AGREGAR / EDITAR ---
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form';
@@ -1478,7 +1430,6 @@
             } catch (e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // --- FORMULARIOS ---
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
@@ -1552,12 +1503,10 @@
                 setTimeout(() => {
                     document.getElementById('forma_pago_select')?.addEventListener('change', actualizarKmDescontados);
                     document.getElementById('field_kilometros')?.addEventListener('change', actualizarKmDescontados);
-                    document.getElementById('field_kilometros')?.addEventListener('input', actualizarKmDescontados);
                     actualizarKmDescontados();
                 }, 50);
                 return;
             }
-            // Otras tablas
             const { data: columnasArr } = await supabase.from(window.tablaActual).select('*').limit(1);
             if (!columnasArr || columnasArr.length === 0) { container.innerHTML = '<p>Error cargando formulario</p>'; return; }
             const estructura = Object.keys(columnasArr[0]).filter(k => k !== 'id' && k !== 'created_at');
@@ -1635,7 +1584,6 @@
             setTimeout(() => {
                 document.getElementById('forma_pago_select')?.addEventListener('change', actualizarKmDescontados);
                 document.getElementById('field_kilometros')?.addEventListener('change', actualizarKmDescontados);
-                document.getElementById('field_kilometros')?.addEventListener('input', actualizarKmDescontados);
                 actualizarKmDescontados();
             }, 50);
         }
@@ -1658,7 +1606,6 @@
         window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
-        // --- GUARDAR / ELIMINAR ---
         document.getElementById('btnGuardar').onclick = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); cerrarModal(); return; }
             const fields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
@@ -1717,7 +1664,6 @@
             document.getElementById('modal-campos').innerHTML = '';
         };
 
-        // --- VER HOJA DE RUTA (detalle carpeta) ---
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
@@ -1725,7 +1671,7 @@
                 const { data: orden } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)').eq('id', carpeta.orden_id).single();
                 let conductor1 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-' };
                 if (carpeta.conductor1_id) { const { data: c1 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor1_id).single(); if (c1) conductor1 = c1; }
-                let conductor2 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-'  };
+                let conductor2 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-' };
                 if (carpeta.conductor2_id) { const { data: c2 } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor2_id).single(); if (c2) conductor2 = c2; }
                 let bus = { Dominio:'-', Capacidad:'-', Interno:'-' };
                 if (carpeta.interno_id) { const { data: b } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single(); if (b) bus = b; }
@@ -1751,8 +1697,8 @@
                         <div class="hoja-row"><span class="hoja-label">📅 Fecha:</span><span class="hoja-value">${formatearFecha(orden.fecha_regreso)}</span></div>
                         <div class="hoja-row"><span class="hoja-label">⏰ Hora:</span><span class="hoja-value">${orden.hora_regreso || '-'}</span></div>
                     </div>
-                    <div class="hoja-section"><div class="hoja-section-title">📍 PARADAS</div><div class="texto-fijo ${!orden.paradas ? 'vacio' : ''}">${orden.paradas || '__________________________________________________'}</div></div>
-                    <div class="hoja-section"><div class="hoja-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo ${!orden.movimientos ? 'vacio' : ''}">${orden.movimientos || '__________________________________________________'}</div></div>
+                    <div class="hoja-section"><div class="hoja-section-title">📍 PARADAS</div><div class="texto-fijo">${orden.paradas || '__________________________________________________'}</div></div>
+                    <div class="hoja-section"><div class="hoja-section-title">🔄 MOVIMIENTOS</div><div class="texto-fijo">${orden.movimientos || '__________________________________________________'}</div></div>
                     <div class="hoja-section"><div class="hoja-section-title">🍽️ COMIDAS Y ALOJAMIENTO</div>
                         <div class="hoja-row"><span class="hoja-label">Comidas:</span><span class="hoja-value">${orden.comidas || '-'}</span></div>
                         <div class="hoja-row"><span class="hoja-label">Alojamiento:</span><span class="hoja-value">${orden.alojamiento || '-'}</span></div>
@@ -1792,7 +1738,6 @@
             } catch (e) { mostrarToast('Error al cargar hoja: ' + e.message, true); }
         };
 
-        // --- LOGIN ---
         window.iniciarSesion = async () => {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -1828,7 +1773,6 @@
             document.getElementById('loginError').textContent = '';
         };
 
-        // Enter en login
         document.getElementById('loginPassword').addEventListener('keypress', e => { if (e.key === 'Enter') window.iniciarSesion(); });
         document.getElementById('loginUsuario').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginPassword').focus(); });
     </script>
