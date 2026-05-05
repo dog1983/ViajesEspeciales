@@ -318,7 +318,7 @@
             font-size: 0.9rem;
             background: white;
             outline: none;
-            width: 150px;
+            width: 160px;
             flex-shrink: 0;
         }
 
@@ -817,7 +817,7 @@
                     <span>🔍</span>
                     <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
                 </div>
-                <input type="date" id="fechaFilter" onchange="filtrarTabla()" style="display:none;">
+                <input type="date" id="fechaFilter" onchange="filtrarTabla()" style="display:none;" title="Filtrar por fecha de ida">
             </div>
             <div id="table-container">
                 <div class="loading">Cargando datos...</div>
@@ -1241,7 +1241,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- NUEVO: Ordenamiento y filtro ---
+        // --- ORDENAMIENTO Y FILTRO (con corrección en filtro por fecha) ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1254,14 +1254,19 @@
             let datos = [...window.datosActuales];
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             if (searchText) datos = datos.filter(item => JSON.stringify(Object.values(item)).toLowerCase().includes(searchText));
+
+            // Filtro por fecha de ida (solo si el input está visible y tiene valor)
             const fechaInput = document.getElementById('fechaFilter');
             if (fechaInput.style.display !== 'none' && fechaInput.value) {
-                const fechaFiltro = fechaInput.value;
+                const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
                 datos = datos.filter(item => {
-                    const fechaItem = item.fecha_ida ? new Date(item.fecha_ida).toISOString().split('T')[0] : null;
+                    if (!item.fecha_ida) return false;
+                    // Comparamos los primeros 10 caracteres (la fecha sin hora)
+                    const fechaItem = typeof item.fecha_ida === 'string' ? item.fecha_ida.substring(0,10) : '';
                     return fechaItem === fechaFiltro;
                 });
             }
+
             if (window.columnaOrden) {
                 const dir = window.dirOrden === 'asc' ? 1 : -1;
                 datos.sort((a, b) => compararValores(a, b, window.columnaOrden) * dir);
@@ -1330,7 +1335,7 @@
             }
         };
 
-        // --- RENDERIZAR TABLA (con ordenamiento) ---
+        // --- RENDERIZAR TABLA ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
