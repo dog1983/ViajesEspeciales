@@ -932,7 +932,7 @@
         window.cacheSubcontratantes = {};
         window.cacheBuses = {};
 
-        // --- UTILIDADES ---
+        // --- UTILIDADES (FORMATEO DE FECHAS SIN ZONA HORARIA) ---
         function mostrarToast(mensaje, esError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -946,23 +946,28 @@
             }, 3000);
         }
 
+        // Parsea un string YYYY-MM-DD sin afectar zona horaria
+        function parseFechaLocal(fechaStr) {
+            if (!fechaStr) return null;
+            const partes = String(fechaStr).substring(0,10).split('-');
+            if (partes.length === 3) {
+                return new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+            }
+            return null;
+        }
+
         function formatearFecha(fecha) {
             if (!fecha) return '-';
-            try {
-                const date = new Date(fecha);
-                return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            } catch(e) {
-                return fecha;
-            }
+            const date = parseFechaLocal(fecha);
+            if (!date) return fecha;
+            return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
 
         function formatearFechaCorta(fecha) {
             if (!fecha) return '-';
-            try {
-                return new Date(fecha).toLocaleDateString('es-AR');
-            } catch(e) {
-                return fecha;
-            }
+            const date = parseFechaLocal(fecha);
+            if (!date) return fecha;
+            return date.toLocaleDateString('es-AR');
         }
 
         function formatearHora(hora) {
@@ -1216,7 +1221,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDEN Y FILTROS (CORRECCIÓN DEFINITIVA CON COMPARACIÓN DE FECHAS REALES) ---
+        // --- ORDEN Y FILTROS (CORRECCIÓN FINAL: COMPARACIÓN DIRECTA DE STRINGS YYYY-MM-DD) ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1233,11 +1238,11 @@
             const fechaInput = document.getElementById('fechaFilter');
             if (fechaInput.style.display !== 'none' && fechaInput.value) {
                 const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
-                const filtroTimestamp = new Date(fechaFiltro + 'T12:00:00').getTime(); // mediodía UTC evita desfases
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    const itemTimestamp = new Date(item.fecha_ida + 'T12:00:00').getTime();
-                    return itemTimestamp === filtroTimestamp;
+                    // Fecha almacenada como string YYYY-MM-DD, comparación directa
+                    const fechaItem = String(item.fecha_ida).substring(0,10);
+                    return fechaItem === fechaFiltro;
                 });
             }
 
@@ -1309,7 +1314,7 @@
             }
         };
 
-        // --- RENDERIZAR TABLA (hora_ida incluida) ---
+        // --- RENDERIZAR TABLA (ahora con fechas locales correctas) ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
@@ -1497,13 +1502,13 @@
                 html += `<div class="form-group"><label>EMPRESA</label><select name="empresas_id" required><option value="">Seleccionar...</option>`;
                 if (empresas) empresas.forEach(e => html += `<option value="${e.id}" ${registro?.empresas_id == e.id ? 'selected' : ''}>${e.nombre}</option>`);
                 html += `</select></div>`;
-                html += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required></div>`;
+                html += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? String(registro.fecha_ida).substring(0,10) : ''}" required></div>`;
                 html += `<div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value="${registro?.hora_ida || ''}"></div>`;
                 html += `<div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}"></div>`;
                 html += `<div class="form-group"><label>ORIGEN</label><input type="text" name="origen" value="${registro?.origen || ''}"></div>`;
                 html += `<div class="form-group"><label>DIRECCIÓN DESTINO</label><input type="text" name="direccion_destino" value="${registro?.direccion_destino || ''}"></div>`;
                 html += `<div class="form-group"><label>DESTINO</label><input type="text" name="destino" value="${registro?.destino || ''}"></div>`;
-                html += `<div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? new Date(registro.fecha_regreso).toISOString().split('T')[0] : ''}"></div>`;
+                html += `<div class="form-group"><label>FECHA REGRESO</label><input type="date" name="fecha_regreso" value="${registro?.fecha_regreso ? String(registro.fecha_regreso).substring(0,10) : ''}"></div>`;
                 html += `<div class="form-group"><label>HORA REGRESO</label><input type="time" name="hora_regreso" value="${registro?.hora_regreso || ''}"></div>`;
                 html += `<div class="form-group"><label>PARADAS</label><textarea name="paradas" rows="2">${registro?.paradas || ''}</textarea></div>`;
                 html += `<div class="form-group"><label>MOVIMIENTOS</label><textarea name="movimientos" rows="2">${registro?.movimientos || ''}</textarea></div>`;
