@@ -841,67 +841,93 @@
         window.columnaOrden = null;
         window.dirOrden = 'asc';
 
-        // Configuración de permisos
         const configPermisos = {
-            master: { puedeEditar: ['usuarios','contratantes','subcontratantes','empresas','conductores','buses','ordenes','carpetas','cuentacorriente','pagos'], soloVer: [] },
-            administracion: { puedeEditar: ['pagos','cuentacorriente'], soloVer: ['ordenes','carpetas'] },
-            marketing: { puedeEditar: ['ordenes','contratantes','subcontratantes'], soloVer: ['carpetas','pagos','cuentacorriente'] },
-            trafico: { puedeEditar: ['ordenes','carpetas','buses','conductores','contratantes','subcontratantes'], soloVer: ['pagos','cuentacorriente'] },
-            contratante: { puedeEditar: [], soloVer: ['ordenes','carpetas'] }
+            master: {
+                puedeEditar: ['usuarios', 'contratantes', 'subcontratantes', 'empresas', 'conductores', 'buses', 'ordenes', 'carpetas', 'cuentacorriente', 'pagos'],
+                soloVer: []
+            },
+            administracion: {
+                puedeEditar: ['pagos', 'cuentacorriente'],
+                soloVer: ['ordenes', 'carpetas']
+            },
+            marketing: {
+                puedeEditar: ['ordenes', 'contratantes', 'subcontratantes'],
+                soloVer: ['carpetas', 'pagos', 'cuentacorriente']
+            },
+            trafico: {
+                puedeEditar: ['ordenes', 'carpetas', 'buses', 'conductores', 'contratantes', 'subcontratantes'],
+                soloVer: ['pagos', 'cuentacorriente']
+            },
+            contratante: {
+                puedeEditar: [],
+                soloVer: ['ordenes', 'carpetas']
+            }
         };
 
         const todasLasTablas = [
-            { id: 'empresas', nombre: '🏢 Empresas' },
+            { id: 'empresas', nombre: '🏢 Empresas', soloLectura: true },
             { id: 'contratantes', nombre: '👤 Contratantes' },
             { id: 'subcontratantes', nombre: '📋 Subcontratantes' },
             { id: 'ordenes', nombre: '📦 Órdenes' },
             { id: 'carpetas', nombre: '📁 Carpetas' },
             { id: 'conductores', nombre: '🚌 Conductores' },
             { id: 'buses', nombre: '🚎 Buses' },
-            { id: 'usuarios', nombre: '👥 Usuarios' },
+            { id: 'usuarios', nombre: '👥 Usuarios', soloLectura: false },
             { id: 'cuentacorriente', nombre: '🏦 Cuenta Corriente' },
             { id: 'pagos', nombre: '💸 Pagos' }
         ];
 
-        const nivelesUsuario = ['master','administracion','marketing','trafico','contratante'];
+        const nivelesUsuario = ['master', 'administracion', 'marketing', 'trafico', 'contratante'];
         const nombresNiveles = {
-            master: '🔑 Master', administracion: '💰 Administración', marketing: '📢 Marketing',
-            trafico: '🚦 Tráfico', contratante: '👤 Contratante'
+            master: '🔑 Master',
+            administracion: '💰 Administración',
+            marketing: '📢 Marketing',
+            trafico: '🚦 Tráfico',
+            contratante: '👤 Contratante'
         };
         const nombresNivelesCorto = {
-            master: '🔑 Master', administracion: '💰 Admin', marketing: '📢 Market',
-            trafico: '🚦 Tráfico', contratante: '👤 Contrat.'
+            master: '🔑 Master',
+            administracion: '💰 Admin',
+            marketing: '📢 Market',
+            trafico: '🚦 Tráfico',
+            contratante: '👤 Contrat.'
         };
 
-        // Relaciones para obtener nombres
         window.relaciones = {
             ordenes: {
-                empresas_id: { tabla:'empresas', campo:'nombre' },
-                contratante_id: { tabla:'contratantes', campo:'contratante' },
-                subcontratante: { tabla:'subcontratantes', campo:'subcontratante' },
-                confecciono: { tabla:'usuarios', campo:'nombre' }
+                empresas_id: { tabla: 'empresas', campo: 'nombre' },
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
+                subcontratante: { tabla: 'subcontratantes', campo: 'subcontratante' },
+                confecciono: { tabla: 'usuarios', campo: 'nombre' }
             },
-            subcontratantes: { contratante: { tabla:'contratantes', campo:'contratante' } },
+            subcontratantes: {
+                contratante: { tabla: 'contratantes', campo: 'contratante' }
+            },
             carpetas: {
-                orden_id: { tabla:'ordenes', campo:'id' },
-                conductor1_id: { tabla:'conductores', campo:'nombre' },
-                conductor2_id: { tabla:'conductores', campo:'nombre' },
-                interno_id: { tabla:'buses', campo:'Interno' }
+                orden_id: { tabla: 'ordenes', campo: 'id' },
+                conductor1_id: { tabla: 'conductores', campo: 'nombre' },
+                conductor2_id: { tabla: 'conductores', campo: 'nombre' },
+                interno_id: { tabla: 'buses', campo: 'Interno' }
             },
-            conductores: { empresa_id: { tabla:'empresas', campo:'nombre' } },
-            buses: { empresa_id: { tabla:'empresas', campo:'nombre' } },
+            conductores: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
+            },
+            buses: {
+                empresa_id: { tabla: 'empresas', campo: 'nombre' }
+            },
             cuentacorriente: {
-                contratante_id: { tabla:'contratantes', campo:'contratante' },
-                usuario_id: { tabla:'usuarios', campo:'nombre' }
+                contratante_id: { tabla: 'contratantes', campo: 'contratante' },
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
             },
             pagos: {
-                orden_id: { tabla:'ordenes', campo:'id' },
-                usuario_id: { tabla:'usuarios', campo:'nombre' }
+                orden_id: { tabla: 'ordenes', campo: 'id' },
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
             },
-            contratantes: { usuario_id: { tabla:'usuarios', campo:'nombre' } }
+            contratantes: {
+                usuario_id: { tabla: 'usuarios', campo: 'nombre' }
+            }
         };
 
-        // Caché de nombres
         window.cacheContratantes = {};
         window.cacheSubcontratantes = {};
         window.cacheBuses = {};
@@ -913,52 +939,68 @@
             toast.style.background = esError ? '#ef4444' : '#10b981';
             toast.textContent = mensaje;
             document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         function formatearFecha(fecha) {
             if (!fecha) return '-';
-            try { return new Date(fecha).toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' }); } catch(e) { return fecha; }
+            try {
+                const date = new Date(fecha);
+                return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } catch(e) {
+                return fecha;
+            }
         }
 
         function formatearFechaCorta(fecha) {
             if (!fecha) return '-';
-            try { return new Date(fecha).toLocaleDateString('es-AR'); } catch(e) { return fecha; }
+            try {
+                return new Date(fecha).toLocaleDateString('es-AR');
+            } catch(e) {
+                return fecha;
+            }
         }
 
         function formatearHora(hora) {
-            // Devuelve HH:MM en formato 24h sin segundos
             if (!hora) return '-';
-            // Supabase devuelve "HH:MM:SS", tomamos los primeros 5 caracteres
+            // Supabase devuelve "HH:MM:SS" o similar; tomamos los primeros 5 caracteres
             if (typeof hora === 'string' && hora.length >= 5) return hora.substring(0,5);
             return hora;
         }
 
         function formatearMonto(monto) {
             if (!monto && monto !== 0) return '-';
-            return new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:0 }).format(monto);
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 0
+            }).format(monto);
         }
 
         // --- CACHÉ DE NOMBRES ---
         async function cargarCacheNombres() {
             const { data: contratantes } = await supabase.from('contratantes').select('id, contratante');
-            if (contratantes) contratantes.forEach(c => window.cacheContratantes[c.id] = c.contratante);
+            if (contratantes) contratantes.forEach(c => { window.cacheContratantes[c.id] = c.contratante; });
             const { data: subcontratantes } = await supabase.from('subcontratantes').select('id, subcontratante');
-            if (subcontratantes) subcontratantes.forEach(s => window.cacheSubcontratantes[s.id] = s.subcontratante);
+            if (subcontratantes) subcontratantes.forEach(s => { window.cacheSubcontratantes[s.id] = s.subcontratante; });
             const { data: buses } = await supabase.from('buses').select('id, Interno');
-            if (buses) buses.forEach(b => window.cacheBuses[b.id] = b.Interno);
+            if (buses) buses.forEach(b => { window.cacheBuses[b.id] = b.Interno; });
         }
 
-        // --- CÁLCULOS ---
+        // --- CÁLCULOS DE KM Y SALDO ---
         async function getKmDisponiblesPorContratante(contratanteId) {
             if (!contratanteId) return 0;
             const { data: compras } = await supabase.from('cuentacorriente').select('kmcomprados').eq('contratante_id', contratanteId);
-            const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados)||0), 0) || 0;
-            const { data: subs } = await supabase.from('subcontratantes').select('id').eq('contratante', contratanteId);
-            const ids = subs?.map(s => s.id) || [];
+            const totalComprados = compras?.reduce((sum, c) => sum + (parseInt(c.kmcomprados) || 0), 0) || 0;
+            const { data: subcontratantes } = await supabase.from('subcontratantes').select('id').eq('contratante', contratanteId);
+            const ids = subcontratantes?.map(s => s.id) || [];
             if (ids.length === 0) return totalComprados;
-            const { data: ordenesCC } = await supabase.from('ordenes').select('km_descontados').in('subcontratante', ids).eq('forma_pago','cuenta_corriente');
-            const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados)||0), 0) || 0;
+            const { data: ordenesCC } = await supabase.from('ordenes').select('km_descontados').in('subcontratante', ids).eq('forma_pago', 'cuenta_corriente');
+            const totalDescontados = ordenesCC?.reduce((sum, o) => sum + (parseInt(o.km_descontados) || 0), 0) || 0;
             return totalComprados - totalDescontados;
         }
         async function getKmDisponibles(contratanteId) { return getKmDisponiblesPorContratante(contratanteId); }
@@ -966,19 +1008,22 @@
         async function getSaldoOrden(ordenId, cotizacion) {
             if (!ordenId) return 0;
             const { data: pagos } = await supabase.from('pagos').select('monto').eq('orden_id', ordenId);
-            const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto)||0), 0) || 0;
-            return (parseFloat(cotizacion)||0) - totalPagado;
+            const totalPagado = pagos?.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0) || 0;
+            return (parseFloat(cotizacion) || 0) - totalPagado;
         }
 
         // --- CARGA DE SUBCONTRATANTES ---
-        async function cargarSubcontratantesPorContratante(contratanteId, valorSel = null) {
+        async function cargarSubcontratantesPorContratante(contratanteId, valorSeleccionado = null) {
             const select = document.getElementById('field_subcontratante');
             if (!select) return;
             select.innerHTML = '<option value="">Seleccionar...</option>';
             if (!contratanteId) return;
             const { data: subs } = await supabase.from('subcontratantes').select('id, subcontratante').eq('contratante', contratanteId);
             if (subs && subs.length > 0) {
-                subs.forEach(s => select.innerHTML += `<option value="${s.id}" ${valorSel == s.id ? 'selected' : ''}>${s.subcontratante}</option>`);
+                for (let sub of subs) {
+                    const sel = (valorSeleccionado == sub.id) ? 'selected' : '';
+                    select.innerHTML += `<option value="${sub.id}" ${sel}>${sub.subcontratante}</option>`;
+                }
             } else {
                 select.innerHTML += '<option value="">No hay subcontratantes disponibles</option>';
             }
@@ -1016,13 +1061,13 @@
         }
 
         // --- IMPRESIÓN ---
-        function imprimirReporte(htmlContent) {
-            const w = window.open('', '_blank');
-            if (!w) { mostrarToast('Permita ventanas emergentes', true); return; }
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Imprimir</title><style>body{font-family:Arial;padding:10mm;}</style></head><body>${htmlContent}<script>window.onload=function(){window.print();window.close();};<\/script></body></html>`);
-            w.document.close();
+        function imprimirReporteOrden(htmlContent) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) { mostrarToast('Permita ventanas emergentes', true); return; }
+            printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orden de Viaje</title><style> body { font-family: Arial; padding: 10mm; } </style></head><body>${htmlContent}<script>window.onload = () => { window.print(); window.close(); };<\/script></body></html>`);
+            printWindow.document.close();
         }
-        function generarPDF(html) { imprimirReporte(html); }
+        function generarPDFOrden(htmlContent) { imprimirReporteOrden(htmlContent); }
 
         // --- VER INFORME DE ORDEN ---
         window.verInformeOrden = async (ordenId) => {
@@ -1090,8 +1135,8 @@
                 document.getElementById('modal-campos').innerHTML = `<div class="reporte-actions"><button class="btn-print" onclick="window.imprimirReporteActual()">🖨️ Imprimir</button><button class="btn-pdf" onclick="window.generarPDFActual()">📄 PDF</button></div>${reporteHtml}`;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
-                window.imprimirReporteActual = () => imprimirReporte(reporteHtml);
-                window.generarPDFActual = () => generarPDF(reporteHtml);
+                window.imprimirReporteActual = () => imprimirReporteOrden(reporteHtml);
+                window.generarPDFActual = () => generarPDFOrden(reporteHtml);
             } catch(e) { mostrarToast('Error al cargar informe: ' + e.message, true); }
         };
 
@@ -1101,19 +1146,21 @@
             const { data: orden } = await supabase.from('ordenes').select('cantidad_buses').eq('id', ordenId).single();
             const cantidadBuses = parseInt(orden?.cantidad_buses) || 0;
             if (cantidadBuses === 0) return { valido: true };
-            let query = supabase.from('carpetas').select('id', { count:'exact', head:true }).eq('orden_id', ordenId);
+            let query = supabase.from('carpetas').select('id', { count: 'exact', head: true }).eq('orden_id', ordenId);
             if (carpetaIdActual) query = query.neq('id', carpetaIdActual);
             const { count } = await query;
-            if (count >= cantidadBuses) return { valido: false, mensaje: `⚠️ Esta orden tiene ${cantidadBuses} bus(es) y ya tiene ${count} carpeta(s).` };
+            if (count >= cantidadBuses) {
+                return { valido: false, mensaje: `⚠️ Esta orden tiene ${cantidadBuses} bus(es) y ya tiene ${count} carpeta(s).` };
+            }
             return { valido: true };
         }
 
         // --- FILTRO POR CONTRATANTE ---
         async function filtrarPorContratante(data, tabla) {
             if (window.usuarioActual?.nivel !== 'contratante') return data;
-            const { data: cont } = await supabase.from('contratantes').select('id').eq('usuario_id', window.usuarioActual.id).single();
-            if (!cont) return [];
-            const { data: subs } = await supabase.from('subcontratantes').select('id').eq('contratante', cont.id);
+            const { data: contratanteData } = await supabase.from('contratantes').select('id').eq('usuario_id', window.usuarioActual.id).single();
+            if (!contratanteData) return [];
+            const { data: subs } = await supabase.from('subcontratantes').select('id').eq('contratante', contratanteData.id);
             const ids = subs?.map(s => s.id) || [];
             if (ids.length === 0) return [];
             if (tabla === 'ordenes') return data.filter(item => ids.includes(item.subcontratante));
@@ -1158,7 +1205,7 @@
             const nav = document.getElementById('navList');
             const tablas = getTablasPermitidas();
             let html = `<div class="nav-section-title">📋 MIS TABLAS</div>`;
-            tablas.forEach(t => html += `<button class="nav-item" onclick="cargarTabla('${t.id}')">${t.nombre}</button>`);
+            tablas.forEach(t => { html += `<button class="nav-item" onclick="cargarTabla('${t.id}')">${t.nombre}</button>`; });
             nav.innerHTML = html;
         }
 
@@ -1170,7 +1217,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDEN Y FILTROS (CORREGIDO) ---
+        // --- ORDEN Y FILTROS (CORRECCIÓN DEFINITIVA) ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1186,13 +1233,11 @@
 
             const fechaInput = document.getElementById('fechaFilter');
             if (fechaInput.style.display !== 'none' && fechaInput.value) {
-                const fechaFiltro = fechaInput.value; // YYYY-MM-DD
+                const fechaFiltro = fechaInput.value.trim(); // "YYYY-MM-DD"
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    // Extraemos solo la parte de fecha (YYYY-MM-DD) usando split('T')
-                    const fechaItem = String(item.fecha_ida).split('T')[0].trim();
-                    // Debug (puedes comentar después)
-                    // console.log(`Comparando: fechaItem="${fechaItem}" vs filtro="${fechaFiltro}"`);
+                    // Extrae solo la parte de fecha sin importar el formato
+                    const fechaItem = String(item.fecha_ida).replace('T',' ').trim().substring(0,10);
                     return fechaItem === fechaFiltro;
                 });
             }
@@ -1265,7 +1310,7 @@
             }
         };
 
-        // --- RENDERIZAR TABLA (horas sin segundos) ---
+        // --- RENDERIZAR TABLA (ahora incluye hora_ida) ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
@@ -1277,7 +1322,7 @@
             if (window.tablaActual === 'carpetas') {
                 columnas = ['id', 'orden_id', 'contratante_id', 'subcontratante_id', 'fecha_ida', 'hora_ida', 'origen', 'destino', 'interno_id'];
             } else if (window.tablaActual === 'ordenes') {
-                columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
+                columnas = ['id', 'empresas_id', 'contratante_id', 'subcontratante', 'fecha_ida', 'hora_ida', 'origen', 'destino', 'cantidad_buses', 'cotizacion', 'forma_pago', 'confecciono'];
                 esOrdenes = true;
             } else if (window.tablaActual === 'contratantes') {
                 columnas = ['id', 'contratante', 'telefono_cont', 'cuit', 'usuario_id'];
@@ -1287,7 +1332,15 @@
             }
 
             let html = '<div class="table-wrapper"><table class="data-table"><thead><tr>';
-            const nombresCols = { id:'ID', orden_id:'ORDEN ID', contratante_id:'CONTRATANTE', subcontratante_id:'SUBCONTRATANTE', fecha_ida:'FECHA IDA', hora_ida:'HORA IDA', origen:'ORIGEN', destino:'DESTINO', interno_id:'INTERNO ID', empresas_id:'EMPRESA', subcontratante:'SUBCONTRATANTE', cantidad_buses:'CANT. BUSES', cotizacion:'COTIZACIÓN', forma_pago:'FORMA PAGO', confecciono:'CONFECCIONÓ', contratante:'CONTRATANTE', telefono_cont:'TELÉFONO', cuit:'CUIT', usuario_id:'USUARIO ASIGNADO', nivel:'NIVEL', usuario:'USUARIO', nombre:'NOMBRE', contraseña:'CONTRASEÑA' };
+            const nombresCols = {
+                id:'ID', orden_id:'ORDEN ID', contratante_id:'CONTRATANTE', subcontratante_id:'SUBCONTRATANTE',
+                fecha_ida:'FECHA IDA', hora_ida:'HORA IDA', origen:'ORIGEN', destino:'DESTINO',
+                interno_id:'INTERNO ID', empresas_id:'EMPRESA', subcontratante:'SUBCONTRATANTE',
+                cantidad_buses:'CANT. BUSES', cotizacion:'COTIZACIÓN', forma_pago:'FORMA PAGO',
+                confecciono:'CONFECCIONÓ', contratante:'CONTRATANTE', telefono_cont:'TELÉFONO',
+                cuit:'CUIT', usuario_id:'USUARIO ASIGNADO', nivel:'NIVEL', usuario:'USUARIO',
+                nombre:'NOMBRE', contraseña:'CONTRASEÑA'
+            };
             columnas.forEach(col => {
                 const nombreMostrar = nombresCols[col] || col.replace(/_/g,' ').toUpperCase();
                 let flecha = '';
@@ -1366,7 +1419,7 @@
             });
         }
 
-        // --- MODALES Y ACCIONES (sin cambios lógicos, solo adaptación de horas) ---
+        // --- MODALES Y ACCIONES (sin cambios lógicos) ---
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
@@ -1446,7 +1499,6 @@
                 html += `<div class="form-group"><label>EMPRESA</label><select name="empresas_id" required><option value="">Seleccionar...</option>`;
                 if (empresas) empresas.forEach(e => html += `<option value="${e.id}" ${registro?.empresas_id == e.id ? 'selected' : ''}>${e.nombre}</option>`);
                 html += `</select></div>`;
-                // Fechas y horas
                 html += `<div class="form-group"><label>FECHA IDA</label><input type="date" name="fecha_ida" value="${registro?.fecha_ida ? new Date(registro.fecha_ida).toISOString().split('T')[0] : ''}" required></div>`;
                 html += `<div class="form-group"><label>HORA IDA</label><input type="time" name="hora_ida" value="${registro?.hora_ida || ''}"></div>`;
                 html += `<div class="form-group"><label>DIRECCIÓN ORIGEN</label><input type="text" name="direccion_origen" value="${registro?.direccion_origen || ''}"></div>`;
@@ -1709,8 +1761,8 @@
                 document.getElementById('modal-campos').innerHTML = hojaHtml;
                 document.getElementById('modal-footer').style.display = 'none';
                 document.getElementById('modal').classList.add('show');
-                window.imprimirHojaActual = () => imprimirReporte(hojaHtml);
-                window.generarPDFHojaActual = () => generarPDF(hojaHtml);
+                window.imprimirHojaActual = () => imprimirReporteOrden(hojaHtml);
+                window.generarPDFHojaActual = () => generarPDFOrden(hojaHtml);
             } catch(e) { mostrarToast('Error al cargar hoja: ' + e.message, true); }
         };
 
