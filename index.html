@@ -967,7 +967,6 @@
 
         function formatearHora(hora) {
             if (!hora) return '-';
-            // Supabase devuelve "HH:MM:SS" o similar; tomamos los primeros 5 caracteres
             if (typeof hora === 'string' && hora.length >= 5) return hora.substring(0,5);
             return hora;
         }
@@ -1217,7 +1216,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDEN Y FILTROS (CORRECCIÓN DEFINITIVA) ---
+        // --- ORDEN Y FILTROS (CORRECCIÓN DEFINITIVA CON COMPARACIÓN DE FECHAS REALES) ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1233,12 +1232,12 @@
 
             const fechaInput = document.getElementById('fechaFilter');
             if (fechaInput.style.display !== 'none' && fechaInput.value) {
-                const fechaFiltro = fechaInput.value.trim(); // "YYYY-MM-DD"
+                const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
+                const filtroTimestamp = new Date(fechaFiltro + 'T12:00:00').getTime(); // mediodía UTC evita desfases
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    // Extrae solo la parte de fecha sin importar el formato
-                    const fechaItem = String(item.fecha_ida).replace('T',' ').trim().substring(0,10);
-                    return fechaItem === fechaFiltro;
+                    const itemTimestamp = new Date(item.fecha_ida + 'T12:00:00').getTime();
+                    return itemTimestamp === filtroTimestamp;
                 });
             }
 
@@ -1310,7 +1309,7 @@
             }
         };
 
-        // --- RENDERIZAR TABLA (ahora incluye hora_ida) ---
+        // --- RENDERIZAR TABLA (hora_ida incluida) ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
@@ -1360,7 +1359,6 @@
                 html += '<tr>';
                 for (let col of columnas) {
                     let val = item[col];
-                    // Formatear horas
                     if ((col === 'hora_ida' || col === 'hora_regreso') && val) val = formatearHora(val);
                     if (col === 'nivel' && val) val = nombresNivelesCorto[val] || val;
                     if (window.tablaActual === 'carpetas') {
