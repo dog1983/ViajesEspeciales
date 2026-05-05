@@ -932,7 +932,7 @@
         window.cacheSubcontratantes = {};
         window.cacheBuses = {};
 
-        // --- UTILIDADES (FORMATEO DE FECHAS SIN ZONA HORARIA) ---
+        // --- UTILIDADES (FECHAS LOCALES) ---
         function mostrarToast(mensaje, esError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -946,7 +946,6 @@
             }, 3000);
         }
 
-        // Parsea un string YYYY-MM-DD sin afectar zona horaria
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return null;
             const partes = String(fechaStr).substring(0,10).split('-');
@@ -1221,7 +1220,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDEN Y FILTROS (CORRECCIÓN FINAL: COMPARACIÓN DIRECTA DE STRINGS YYYY-MM-DD) ---
+        // --- ORDEN Y FILTROS (FILTRO POR FECHA SIN DEPENDER DEL DISPLAY) ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1236,11 +1235,11 @@
             if (searchText) datos = datos.filter(item => JSON.stringify(Object.values(item)).toLowerCase().includes(searchText));
 
             const fechaInput = document.getElementById('fechaFilter');
-            if (fechaInput.style.display !== 'none' && fechaInput.value) {
+            // Verificamos directamente si la tabla actual admite filtro por fecha
+            if ((window.tablaActual === 'ordenes' || window.tablaActual === 'carpetas') && fechaInput.value) {
                 const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
-                    // Fecha almacenada como string YYYY-MM-DD, comparación directa
                     const fechaItem = String(item.fecha_ida).substring(0,10);
                     return fechaItem === fechaFiltro;
                 });
@@ -1314,7 +1313,7 @@
             }
         };
 
-        // --- RENDERIZAR TABLA (ahora con fechas locales correctas) ---
+        // --- RENDERIZAR TABLA ---
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
             if (!datos || datos.length === 0) {
@@ -1422,7 +1421,7 @@
             });
         }
 
-        // --- MODALES Y ACCIONES (sin cambios lógicos) ---
+        // --- MODALES Y ACCIONES ---
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
