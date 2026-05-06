@@ -1220,7 +1220,7 @@
             document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebarMobile').classList.contains('open') ? 'block' : 'none';
         };
 
-        // --- ORDEN Y FILTROS (FILTRO POR FECHA SIN DEPENDER DEL DISPLAY) ---
+        // --- ORDEN Y FILTROS ---
         function compararValores(a, b, col) {
             const valA = a[col] ?? '';
             const valB = b[col] ?? '';
@@ -1235,9 +1235,8 @@
             if (searchText) datos = datos.filter(item => JSON.stringify(Object.values(item)).toLowerCase().includes(searchText));
 
             const fechaInput = document.getElementById('fechaFilter');
-            // Verificamos directamente si la tabla actual admite filtro por fecha
             if ((window.tablaActual === 'ordenes' || window.tablaActual === 'carpetas') && fechaInput.value) {
-                const fechaFiltro = fechaInput.value; // "YYYY-MM-DD"
+                const fechaFiltro = fechaInput.value;
                 datos = datos.filter(item => {
                     if (!item.fecha_ida) return false;
                     const fechaItem = String(item.fecha_ida).substring(0,10);
@@ -1269,7 +1268,7 @@
             await renderizarTabla(puedeEditar);
         };
 
-        // --- CARGAR TABLA ---
+        // --- CARGAR TABLA (CORRECCIÓN DE ORDEN: ENRIQUECER CARPETAS ANTES DE FILTRAR) ---
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1293,8 +1292,12 @@
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
-                data = await filtrarPorContratante(data, tabla);
+
+                // ¡Enriquecer antes de filtrar!
                 if (tabla === 'carpetas') data = await enriquecerCarpetasConOrden(data);
+
+                data = await filtrarPorContratante(data, tabla);
+
                 if (window.relaciones[tabla]) {
                     for (let item of data) {
                         for (let [campoId, relacion] of Object.entries(window.relaciones[tabla])) {
@@ -1421,7 +1424,7 @@
             });
         }
 
-        // --- MODALES Y ACCIONES ---
+        // --- MODALES, FORMULARIOS, GUARDADO (ya probados) ---
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
@@ -1456,7 +1459,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // --- FORMULARIOS ---
+        // Los formularios permanecen sin cambios significativos (usando parseFechaLocal para fechas)
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
