@@ -863,7 +863,6 @@
         const nombresNiveles = { master:'🔑 Master', administracion:'💰 Administración', marketing:'📢 Marketing', trafico:'🚦 Tráfico', contratante:'👤 Contratante' };
         const nombresNivelesCorto = { master:'🔑 Master', administracion:'💰 Admin', marketing:'📢 Market', trafico:'🚦 Tráfico', contratante:'👤 Contrat.' };
 
-        // Relaciones para identificar claves foráneas
         window.relaciones = {
             ordenes: {
                 empresas_id: { tabla:'empresas', campo:'nombre' },
@@ -973,7 +972,7 @@
             return (parseFloat(cotizacion)||0) - totalPagado;
         }
 
-        // Carga de subcontratantes según contratante
+        // Carga de subcontratantes
         async function cargarSubcontratantesPorContratante(contratanteId, valorSel = null) {
             const select = document.getElementById('field_subcontratante');
             if (!select) return;
@@ -1097,7 +1096,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // Validación de límite de carpetas
+        // Validación de carpetas
         async function validarLimiteCarpetas(ordenId, carpetaIdActual = null) {
             if (!ordenId) return { valido: true };
             const { data: orden } = await supabase.from('ordenes').select('cantidad_buses').eq('id', ordenId).single();
@@ -1123,7 +1122,7 @@
             return data;
         }
 
-        // Enriquecer carpetas con datos de la orden
+        // Enriquecer carpetas
         async function enriquecerCarpetasConOrden(data) {
             for (let item of data) {
                 if (item.orden_id) {
@@ -1210,7 +1209,7 @@
             await renderizarTabla(puedeEditarTabla(window.tablaActual));
         };
 
-        // Cargar tabla (con orden corregido para contratante)
+        // Cargar tabla (orden corregido)
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1233,7 +1232,6 @@
             try {
                 let { data, error } = await supabase.from(tabla).select('*');
                 if (error) throw error;
-                // Enriquecer carpetas antes de filtrar por contratante
                 if (tabla === 'carpetas') data = await enriquecerCarpetasConOrden(data);
                 data = await filtrarPorContratante(data, tabla);
                 if (window.relaciones[tabla]) {
@@ -1276,7 +1274,15 @@
             }
 
             let html = '<div class="table-wrapper"><table class="data-table"><thead><tr>';
-            const nombresCols = { id:'ID', orden_id:'ORDEN ID', contratante_id:'CONTRATANTE', subcontratante_id:'SUBCONTRATANTE', fecha_ida:'FECHA IDA', hora_ida:'HORA IDA', origen:'ORIGEN', destino:'DESTINO', interno_id:'INTERNO ID', empresas_id:'EMPRESA', subcontratante:'SUBCONTRATANTE', cantidad_buses:'CANT. BUSES', cotizacion:'COTIZACIÓN', forma_pago:'FORMA PAGO', confecciono:'CONFECCIONÓ', contratante:'CONTRATANTE', telefono_cont:'TELÉFONO', cuit:'CUIT', usuario_id:'USUARIO ASIGNADO', nivel:'NIVEL', usuario:'USUARIO', nombre:'NOMBRE', contraseña:'CONTRASEÑA' };
+            const nombresCols = {
+                id:'ID', orden_id:'ORDEN ID', contratante_id:'CONTRATANTE', subcontratante_id:'SUBCONTRATANTE',
+                fecha_ida:'FECHA IDA', hora_ida:'HORA IDA', origen:'ORIGEN', destino:'DESTINO',
+                interno_id:'INTERNO ID', empresas_id:'EMPRESA', subcontratante:'SUBCONTRATANTE',
+                cantidad_buses:'CANT. BUSES', cotizacion:'COTIZACIÓN', forma_pago:'FORMA PAGO',
+                confecciono:'CONFECCIONÓ', contratante:'CONTRATANTE', telefono_cont:'TELÉFONO',
+                cuit:'CUIT', usuario_id:'USUARIO ASIGNADO', nivel:'NIVEL', usuario:'USUARIO',
+                nombre:'NOMBRE', contraseña:'CONTRASEÑA'
+            };
             columnas.forEach(col => {
                 let flecha = (col === window.columnaOrden) ? (window.dirOrden === 'asc' ? ' ▲' : ' ▼') : '';
                 html += `<th onclick="ordenarTabla('${col}')">${nombresCols[col] || col.replace(/_/g,' ').toUpperCase()}${flecha}</th>`;
@@ -1558,7 +1564,7 @@
         window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
-        // GUARDAR (CORREGIDO: conversión inteligente de campos según relaciones)
+        // GUARDAR
         document.getElementById('btnGuardar').onclick = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); cerrarModal(); return; }
             const fields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
@@ -1570,27 +1576,22 @@
                 const name = f.name;
                 if (!name) continue;
 
-                // Si el campo es una clave foránea según relaciones, lo convertimos a entero
                 if (relacionesTabla[name]) {
                     datos[name] = val ? parseInt(val) : null;
                 }
-                // Si es un campo numérico explícito
                 else if (['cotizacion','monto'].includes(name)) {
                     datos[name] = val ? parseFloat(val) : null;
                 }
                 else if (['km_descontados','kilometros','kmcomprados'].includes(name)) {
                     datos[name] = val ? parseInt(val) || 0 : 0;
                 }
-                // El resto se guarda como texto
                 else if (val && val.toString().trim()) {
                     datos[name] = val;
                 }
-                // Valores especiales
                 if (name === 'km_descontados' && !val) datos[name] = 0;
                 if (name === 'nivel' && val) datos[name] = val;
             }
 
-            // Para carpetas, aseguramos el orden_id
             if (window.tablaActual === 'carpetas') {
                 const ord = document.getElementById('select_orden')?.value;
                 if (!ord) { mostrarToast('Seleccione una orden', true); return; }
@@ -1635,21 +1636,35 @@
             document.getElementById('modal-campos').innerHTML = '';
         };
 
-        // Hoja de ruta
+        // --- HOJA DE RUTA (CON TELÉFONO DE CONDUCTORES) ---
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
                 const { data: carpeta } = await supabase.from('carpetas').select('*').eq('id', carpetaId).single();
                 const { data: orden } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)').eq('id', carpeta.orden_id).single();
-                let c1 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-' };
-                if (carpeta.conductor1_id) { const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor1_id).single(); if (data) c1 = data; }
-                let c2 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-' };
-                if (carpeta.conductor2_id) { const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre').eq('id', carpeta.conductor2_id).single(); if (data) c2 = data; }
+                
+                // Cargar conductor 1 con teléfono
+                let c1 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-', telefono:'-' };
+                if (carpeta.conductor1_id) {
+                    const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre, telefono').eq('id', carpeta.conductor1_id).single();
+                    if (data) c1 = data;
+                }
+                // Cargar conductor 2 con teléfono
+                let c2 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-', telefono:'-' };
+                if (carpeta.conductor2_id) {
+                    const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre, telefono').eq('id', carpeta.conductor2_id).single();
+                    if (data) c2 = data;
+                }
+                
                 let bus = { Dominio:'-', Capacidad:'-', Interno:'-' };
-                if (carpeta.interno_id) { const { data } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single(); if (data) bus = data; }
+                if (carpeta.interno_id) {
+                    const { data } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single();
+                    if (data) bus = data;
+                }
+                
                 const hojaHtml = `<div class="hoja-ruta">
                     <div class="hoja-actions"><button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button><button class="btn-pdf" onclick="window.generarPDFHojaActual()">📄 PDF</button></div>
-                    <div class="hoja-header"><h2>${orden.empresas?.nombre || 'EMPRESA'}</h2><div class="subtitle">ORDEN N° ${orden.id} | CARPETA ${carpeta.id}</div></div>
+                    <div class="hoja-header"><h2>${orden.empresas?.nombre || 'EMPRESA'}</h2><div class="subtitle">ORDEN N° ${orden.id} | CARPETA ${carpeta.id}</div><div class="subtitle">MICRO: ${carpeta.micro_num || '-'}</div></div>
                     <div class="hoja-section"><div class="hoja-section-title">📋 CONTRATANTE</div>
                         <div class="hoja-row"><span class="hoja-label">Contratante:</span><span class="hoja-value">${orden.contratantes?.contratante || '-'}</span></div>
                         <div class="hoja-row"><span class="hoja-label">CUIT:</span><span class="hoja-value">${orden.contratantes?.cuit || '-'}</span></div>
@@ -1678,13 +1693,21 @@
                             <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${c1.legajo}</span></div>
                             <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${c1.dni}</span></div>
                             <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${c1.vto_reg ? formatearFechaCorta(c1.vto_reg) : '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Teléfono:</span><span>${c1.telefono || '-'}</span></div>
                         </div>
                         <div class="conductor-box"><h5>🚌 CONDUCTOR 2</h5>
                             <div class="hoja-row"><span class="hoja-label">Nombre:</span><span>${c2.nombre}</span></div>
                             <div class="hoja-row"><span class="hoja-label">Legajo:</span><span>${c2.legajo}</span></div>
                             <div class="hoja-row"><span class="hoja-label">DNI:</span><span>${c2.dni}</span></div>
                             <div class="hoja-row"><span class="hoja-label">Vto Reg:</span><span>${c2.vto_reg ? formatearFechaCorta(c2.vto_reg) : '-'}</span></div>
+                            <div class="hoja-row"><span class="hoja-label">Teléfono:</span><span>${c2.telefono || '-'}</span></div>
                         </div>
+                    </div>
+                    <div class="hoja-section"><div class="hoja-section-title">💰 OBSERVACIONES DE GASTOS</div><div class="hoja-value">${orden.obs_gastos || 'Sin observaciones'}</div></div>
+                    <div class="hoja-section"><div class="hoja-section-title">📏 KILOMETRAJE</div>
+                        <div class="hoja-row"><span class="hoja-label">Km al iniciar:</span><span class="hoja-value">_______________</span></div>
+                        <div class="hoja-row"><span class="hoja-label">Km al finalizar:</span><span class="hoja-value">_______________</span></div>
+                        <div class="hoja-row"><span class="hoja-label">Total Km:</span><span class="hoja-value">_______________</span></div>
                     </div>
                 </div>`;
                 document.getElementById('modal-titulo').textContent = `📋 HOJA DE RUTA - Viaje N° ${orden.id}`;
