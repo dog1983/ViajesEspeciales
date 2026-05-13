@@ -284,6 +284,7 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .search-box {
@@ -319,6 +320,17 @@
             background: white;
             outline: none;
             width: 160px;
+            flex-shrink: 0;
+        }
+
+        .btn-todas {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background: white;
+            cursor: pointer;
+            white-space: nowrap;
             flex-shrink: 0;
         }
 
@@ -393,30 +405,11 @@
             flex-shrink: 0;
         }
 
-        .btn-edit {
-            background: #eab308;
-            color: white;
-        }
-
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-view {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-report {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-duplicate {
-            background: #8b5cf6;
-            color: white;
-        }
+        .btn-edit { background: #eab308; color: white; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-view { background: #3b82f6; color: white; }
+        .btn-report { background: #10b981; color: white; }
+        .btn-duplicate { background: #8b5cf6; color: white; }
 
         .btn-edit:active, .btn-delete:active, .btn-view:active, .btn-report:active, .btn-duplicate:active {
             transform: scale(0.95);
@@ -435,9 +428,7 @@
             align-items: flex-end;
         }
 
-        .modal.show {
-            display: flex;
-        }
+        .modal.show { display: flex; }
 
         .modal-content {
             background: white;
@@ -459,10 +450,7 @@
             z-index: 10;
         }
 
-        .modal-header h3 {
-            color: #1e293b;
-            font-size: 1.2rem;
-        }
+        .modal-header h3 { color: #1e293b; font-size: 1.2rem; }
 
         .modal-close {
             background: none;
@@ -475,17 +463,11 @@
             border-radius: 50%;
         }
 
-        .modal-close:hover {
-            background: #f1f5f9;
-        }
+        .modal-close:hover { background: #f1f5f9; }
 
-        .modal-body {
-            padding: 20px;
-        }
+        .modal-body { padding: 20px; }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 16px; }
 
         .form-group label {
             display: block;
@@ -506,9 +488,7 @@
             transition: border-color 0.2s;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: #3b82f6;
-        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3b82f6; }
 
         .form-group select {
             appearance: none;
@@ -519,10 +499,7 @@
             background-color: white;
         }
 
-        .form-group select:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-        }
+        .form-group select:disabled { background-color: #f1f5f9; color: #94a3b8; }
 
         .info-card {
             background: #f0fdf4;
@@ -532,29 +509,13 @@
             border: 1px solid #bbf7d0;
         }
 
-        .info-card h4 {
-            color: #166534;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
+        .info-card h4 { color: #166534; margin-bottom: 12px; font-size: 0.9rem; }
 
-        .info-row {
-            display: flex;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
+        .info-row { display: flex; margin-bottom: 8px; font-size: 0.85rem; }
 
-        .info-label {
-            font-weight: 600;
-            width: 110px;
-            color: #475569;
-            flex-shrink: 0;
-        }
+        .info-label { font-weight: 600; width: 110px; color: #475569; flex-shrink: 0; }
 
-        .info-value {
-            flex: 1;
-            color: #1e293b;
-        }
+        .info-value { flex: 1; color: #1e293b; }
 
         .modal-footer {
             padding: 20px;
@@ -574,38 +535,15 @@
             transition: transform 0.1s, opacity 0.2s;
         }
 
-        .btn-save {
-            background: #10b981;
-            color: white;
-        }
+        .btn-save { background: #10b981; color: white; }
+        .btn-cancel { background: #e2e8f0; color: #475569; }
 
-        .btn-cancel {
-            background: #e2e8f0;
-            color: #475569;
-        }
+        .modal-footer button:active { transform: scale(0.98); opacity: 0.9; }
 
-        .modal-footer button:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
+        .loading { text-align: center; padding: 40px; color: #64748b; }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #64748b;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-        }
-
-        .empty-state span {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 16px;
-        }
+        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+        .empty-state span { font-size: 3rem; display: block; margin-bottom: 16px; }
 
         .toast {
             position: fixed;
@@ -628,141 +566,34 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .hoja-ruta, .reporte {
-            font-family: Arial, Helvetica, sans-serif;
-            background: white;
-            padding: 0;
-            margin: 0 auto;
-        }
-        .hoja-header, .reporte-header {
-            text-align: center;
-            border-bottom: 2px solid #1e293b;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-        }
-        .hoja-header h2, .reporte-header h2 {
-            color: #1e293b;
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-        .hoja-header .subtitle, .reporte-header .subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
-        }
-        .hoja-section, .reporte-section {
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            background: white;
-        }
-        .hoja-section-title, .reporte-section-title {
-            font-weight: bold;
-            font-size: 0.8rem;
-            color: #1e293b;
-            margin-bottom: 8px;
-            border-left: 3px solid #3b82f6;
-            padding-left: 8px;
-        }
-        .hoja-row, .reporte-row {
-            display: flex;
-            margin-bottom: 6px;
-            font-size: 0.75rem;
-        }
-        .hoja-label, .reporte-label {
-            font-weight: 600;
-            width: 100px;
-            color: #475569;
-            flex-shrink: 0;
-        }
-        .hoja-value, .reporte-value {
-            flex: 1;
-            color: #1e293b;
-        }
-        .hoja-grid-2, .reporte-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .conductor-box {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px;
-            background: white;
-        }
-        .conductor-box h5 {
-            font-size: 0.7rem;
-            color: #3b82f6;
-            margin-bottom: 6px;
-        }
-        .viaje-destacado {
-            background: #eff6ff;
-            border: 2px solid #3b82f6;
-            margin-bottom: 12px;
-        }
-        .viaje-destacado .hoja-row, .viaje-destacado .reporte-row {
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-        .viaje-destacado .hoja-label, .viaje-destacado .reporte-label {
-            width: 115px;
-            font-weight: 700;
-            color: #1e40af;
-        }
-        .viaje-destacado .hoja-value, .viaje-destacado .reporte-value {
-            font-weight: 600;
-            color: #1e3a8a;
-        }
-        .texto-fijo, .texto-fijo-reporte {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 10px;
-            background: white;
-            min-height: 70px;
-            white-space: pre-wrap;
-            font-size: 0.75rem;
-            margin-top: 6px;
-        }
-        .texto-fijo.vacio, .texto-fijo-reporte.vacio {
-            color: #94a3b8;
-            font-style: italic;
-        }
-        .hoja-actions, .reporte-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            justify-content: flex-end;
-        }
-        .btn-print {
-            background: #64748b;
-            color: white;
-        }
-        .btn-pdf {
-            background: #ef4444;
-            color: white;
-        }
-        .monto {
-            font-weight: bold;
-            color: #10b981;
-        }
-        .saldo-rojo {
-            color: #ef4444 !important;
-            font-weight: bold;
-        }
-        .saldo-verde {
-            color: #10b981 !important;
-            font-weight: bold;
-        }
+        .hoja-ruta, .reporte { font-family: Arial, Helvetica, sans-serif; background: white; padding: 0; margin: 0 auto; }
+        .hoja-header, .reporte-header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 16px; }
+        .hoja-header h2, .reporte-header h2 { color: #1e293b; font-size: 1.2rem; margin-bottom: 4px; }
+        .hoja-header .subtitle, .reporte-header .subtitle { font-size: 0.75rem; color: #64748b; }
+        .hoja-section, .reporte-section { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: white; }
+        .hoja-section-title, .reporte-section-title { font-weight: bold; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+        .hoja-row, .reporte-row { display: flex; margin-bottom: 6px; font-size: 0.75rem; }
+        .hoja-label, .reporte-label { font-weight: 600; width: 100px; color: #475569; flex-shrink: 0; }
+        .hoja-value, .reporte-value { flex: 1; color: #1e293b; }
+        .hoja-grid-2, .reporte-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .conductor-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; background: white; }
+        .conductor-box h5 { font-size: 0.7rem; color: #3b82f6; margin-bottom: 6px; }
+        .viaje-destacado { background: #eff6ff; border: 2px solid #3b82f6; margin-bottom: 12px; }
+        .viaje-destacado .hoja-row, .viaje-destacado .reporte-row { font-size: 0.8rem; margin-bottom: 8px; }
+        .viaje-destacado .hoja-label, .viaje-destacado .reporte-label { width: 115px; font-weight: 700; color: #1e40af; }
+        .viaje-destacado .hoja-value, .viaje-destacado .reporte-value { font-weight: 600; color: #1e3a8a; }
+        .texto-fijo, .texto-fijo-reporte { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: white; min-height: 70px; white-space: pre-wrap; font-size: 0.75rem; margin-top: 6px; }
+        .texto-fijo.vacio, .texto-fijo-reporte.vacio { color: #94a3b8; font-style: italic; }
+        .hoja-actions, .reporte-actions { display: flex; gap: 10px; margin-bottom: 16px; justify-content: flex-end; }
+        .btn-print { background: #64748b; color: white; }
+        .btn-pdf { background: #ef4444; color: white; }
+        .monto { font-weight: bold; color: #10b981; }
+        .saldo-rojo { color: #ef4444 !important; font-weight: bold; }
+        .saldo-verde { color: #10b981 !important; font-weight: bold; }
 
         @media (max-width: 768px) {
-            .btn-edit, .btn-delete, .btn-view, .btn-report, .btn-duplicate {
-                padding: 5px 8px;
-                font-size: 0.65rem;
-            }
-            .actions-cell {
-                gap: 4px;
-            }
+            .btn-edit, .btn-delete, .btn-view, .btn-report, .btn-duplicate { padding: 5px 8px; font-size: 0.65rem; }
+            .actions-cell { gap: 4px; }
         }
     </style>
 </head>
@@ -803,6 +634,7 @@
                     <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filtrarTabla()">
                 </div>
                 <input type="date" id="fechaFilter" onchange="filtrarTabla()" style="display:none;" title="Filtrar por fecha de ida">
+                <button class="btn-todas" id="btnTodas" style="display:none;" onclick="toggleCargarTodo()">📅 Todas</button>
             </div>
             <div id="table-container">
                 <div class="loading">Cargando datos...</div>
@@ -837,6 +669,7 @@
         window.modalModo = 'form';
         window.columnaOrden = null;
         window.dirOrden = 'asc';
+        window.cargarTodo = false; // controla el botón "Todas"
 
         const configPermisos = {
             master: { puedeEditar: ['usuarios','contratantes','subcontratantes','empresas','conductores','buses','ordenes','carpetas','cuentacorriente','pagos'], soloVer: [] },
@@ -863,39 +696,16 @@
         const nombresNiveles = { master:'🔑 Master', administracion:'💰 Administración', marketing:'📢 Marketing', trafico:'🚦 Tráfico', contratante:'👤 Contratante' };
         const nombresNivelesCorto = { master:'🔑 Master', administracion:'💰 Admin', marketing:'📢 Market', trafico:'🚦 Tráfico', contratante:'👤 Contrat.' };
 
-        window.relaciones = {
-            ordenes: {
-                empresas_id: { tabla:'empresas', campo:'nombre' },
-                contratante_id: { tabla:'contratantes', campo:'contratante' },
-                subcontratante: { tabla:'subcontratantes', campo:'subcontratante' },
-                confecciono: { tabla:'usuarios', campo:'nombre' }
-            },
-            subcontratantes: {
-                contratante: { tabla:'contratantes', campo:'contratante' }
-            },
-            carpetas: {
-                orden_id: { tabla:'ordenes', campo:'id' },
-                conductor1_id: { tabla:'conductores', campo:'nombre' },
-                conductor2_id: { tabla:'conductores', campo:'nombre' },
-                interno_id: { tabla:'buses', campo:'Interno' }
-            },
-            conductores: {
-                empresa_id: { tabla:'empresas', campo:'nombre' }
-            },
-            buses: {
-                empresa_id: { tabla:'empresas', campo:'nombre' }
-            },
-            cuentacorriente: {
-                contratante_id: { tabla:'contratantes', campo:'contratante' },
-                usuario_id: { tabla:'usuarios', campo:'nombre' }
-            },
-            pagos: {
-                orden_id: { tabla:'ordenes', campo:'id' },
-                usuario_id: { tabla:'usuarios', campo:'nombre' }
-            },
-            contratantes: {
-                usuario_id: { tabla:'usuarios', campo:'nombre' }
-            }
+        // Relaciones para consultas relacionales
+        const selectRelacional = {
+            ordenes: '*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante), usuarios!confecciono(nombre)',
+            carpetas: '*, conductor1:conductor1_id(nombre, telefono, legajo, dni, vto_reg), conductor2:conductor2_id(nombre, telefono, legajo, dni, vto_reg), bus:interno_id(Interno, Dominio, Capacidad)',
+            contratantes: '*, usuarios!usuario_id(nombre)',
+            subcontratantes: '*, contratantes!contratante(contratante)',
+            conductores: '*, empresas!empresa_id(nombre)',
+            buses: '*, empresas!empresa_id(nombre)',
+            cuentacorriente: '*, contratantes!contratante_id(contratante), usuarios!usuario_id(nombre)',
+            pagos: '*, ordenes!orden_id(id), usuarios!usuario_id(nombre)'
         };
 
         window.cacheContratantes = {};
@@ -941,7 +751,7 @@
             return new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:0 }).format(monto);
         }
 
-        // Caché de nombres
+        // Caché de nombres (para tablas pequeñas como empresas, contratantes)
         async function cargarCacheNombres() {
             const { data: c } = await supabase.from('contratantes').select('id, contratante');
             if (c) c.forEach(x => window.cacheContratantes[x.id] = x.contratante);
@@ -1122,24 +932,6 @@
             return data;
         }
 
-        // Enriquecer carpetas
-        async function enriquecerCarpetasConOrden(data) {
-            for (let item of data) {
-                if (item.orden_id) {
-                    const { data: orden } = await supabase.from('ordenes').select('contratante_id, subcontratante, fecha_ida, hora_ida, origen, destino').eq('id', item.orden_id).single();
-                    if (orden) {
-                        item.contratante_id = orden.contratante_id;
-                        item.subcontratante_id = orden.subcontratante;
-                        item.fecha_ida = orden.fecha_ida;
-                        item.hora_ida = orden.hora_ida;
-                        item.origen = orden.origen;
-                        item.destino = orden.destino;
-                    }
-                }
-            }
-            return data;
-        }
-
         // Permisos
         function getTablasPermitidas() {
             if (!window.permisos) return [];
@@ -1209,7 +1001,43 @@
             await renderizarTabla(puedeEditarTabla(window.tablaActual));
         };
 
-        // Cargar tabla (orden corregido)
+        // Función para aplanar datos relacionales
+        function aplanarDatos(data, tabla) {
+            const mapa = {
+                ordenes: [
+                    { nested: 'empresas', field: 'nombre', target: 'empresas_id_nombre' },
+                    { nested: 'subcontratantes', field: 'subcontratante', target: 'subcontratante_nombre' },
+                    { nested: 'contratantes', field: 'contratante', target: 'contratante_id_nombre' },
+                    { nested: 'usuarios', field: 'nombre', target: 'confecciono_nombre' }
+                ],
+                carpetas: [
+                    { nested: 'conductor1', field: 'nombre', target: 'conductor1_nombre' },
+                    { nested: 'conductor2', field: 'nombre', target: 'conductor2_nombre' },
+                    { nested: 'bus', field: 'Interno', target: 'interno_id_nombre' }
+                ],
+                contratantes: [ { nested: 'usuarios', field: 'nombre', target: 'usuario_id_nombre' } ],
+                subcontratantes: [ { nested: 'contratantes', field: 'contratante', target: 'contratante_nombre' } ],
+                conductores: [ { nested: 'empresas', field: 'nombre', target: 'empresa_id_nombre' } ],
+                buses: [ { nested: 'empresas', field: 'nombre', target: 'empresa_id_nombre' } ],
+                cuentacorriente: [
+                    { nested: 'contratantes', field: 'contratante', target: 'contratante_id_nombre' },
+                    { nested: 'usuarios', field: 'nombre', target: 'usuario_id_nombre' }
+                ],
+                pagos: [ { nested: 'usuarios', field: 'nombre', target: 'usuario_id_nombre' } ]
+            };
+            const mapeo = mapa[tabla] || [];
+            return data.map(item => {
+                for (let { nested, field, target } of mapeo) {
+                    if (item[nested]) {
+                        item[target] = item[nested][field];
+                        delete item[nested];
+                    }
+                }
+                return item;
+            });
+        }
+
+        // Cargar tabla optimizada
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1219,7 +1047,13 @@
             document.getElementById('searchInput').value = '';
 
             const fechaFilter = document.getElementById('fechaFilter');
-            fechaFilter.style.display = (tabla === 'ordenes' || tabla === 'carpetas') ? 'inline-block' : 'none';
+            const btnTodas = document.getElementById('btnTodas');
+            const mostrarFecha = (tabla === 'ordenes' || tabla === 'carpetas');
+            fechaFilter.style.display = mostrarFecha ? 'inline-block' : 'none';
+            btnTodas.style.display = mostrarFecha ? 'inline-block' : 'none';
+            if (mostrarFecha) {
+                btnTodas.textContent = window.cargarTodo ? '📅 Últimos 90 días' : '📅 Todas';
+            }
 
             let titulo = tabla.charAt(0).toUpperCase() + tabla.slice(1);
             if (tabla === 'ordenes') titulo = '📦 Órdenes';
@@ -1230,26 +1064,40 @@
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
 
             try {
-                let { data, error } = await supabase.from(tabla).select('*');
-                if (error) throw error;
-                if (tabla === 'carpetas') data = await enriquecerCarpetasConOrden(data);
-                data = await filtrarPorContratante(data, tabla);
-                if (window.relaciones[tabla]) {
-                    for (let item of data) {
-                        for (let [campoId, rel] of Object.entries(window.relaciones[tabla])) {
-                            if (item[campoId]) {
-                                const { data: relData } = await supabase.from(rel.tabla).select(rel.campo).eq('id', item[campoId]).single();
-                                if (relData) item[`${campoId}_nombre`] = relData[rel.campo];
-                            }
-                        }
+                let query = supabase.from(tabla).select(selectRelacional[tabla] || '*');
+
+                // Filtro de fecha por defecto (últimos 90 días) a menos que se haya pedido "Todas"
+                if (mostrarFecha && !window.cargarTodo) {
+                    const fechaLimite = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    if (tabla === 'ordenes') {
+                        query = query.gte('fecha_ida', fechaLimite);
+                    } else if (tabla === 'carpetas') {
+                        // Filtramos por la fecha de ida de la orden asociada
+                        query = query.gte('ordenes.fecha_ida', fechaLimite);
                     }
                 }
+
+                let { data, error } = await query;
+                if (error) throw error;
+
+                // Para contratante, el filtro se aplica después porque depende de subcontratante_id
+                data = await filtrarPorContratante(data, tabla);
+
+                // Aplanar datos relacionales
+                data = aplanarDatos(data, tabla);
+
                 window.datosActuales = data;
                 aplicarFiltrosYOrden();
                 await renderizarTabla(puedeEditar);
             } catch (error) {
                 document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
             }
+        };
+
+        // Botón "Todas"
+        window.toggleCargarTodo = () => {
+            window.cargarTodo = !window.cargarTodo;
+            window.cargarTabla(window.tablaActual);
         };
 
         // Renderizar tabla
@@ -1298,6 +1146,8 @@
                 html += '<tr>';
                 for (let col of columnas) {
                     let val = item[col];
+                    // Si tenemos un campo aplanado, usarlo
+                    if (item[col + '_nombre'] !== undefined) val = item[col + '_nombre'];
                     if ((col === 'hora_ida' || col === 'hora_regreso') && val) val = formatearHora(val);
                     if (col === 'nivel' && val) val = nombresNivelesCorto[val] || val;
                     if (window.tablaActual === 'carpetas') {
@@ -1307,7 +1157,6 @@
                         else if ((col === 'origen' || col === 'destino') && !val) val = '-';
                         else if (col === 'interno_id' && val) val = window.cacheBuses[val] || val;
                     } else {
-                        if (window.relaciones[window.tablaActual]?.[col] && item[`${col}_nombre`]) val = item[`${col}_nombre`];
                         if (col.includes('fecha') && val && col !== 'hora_ida' && col !== 'hora_regreso') val = formatearFechaCorta(val);
                         if (col === 'cotizacion' && val) val = formatearMonto(val);
                         if (col === 'forma_pago') val = val === 'cuenta_corriente' ? '🏦 CC' : '💵 Directo';
@@ -1386,7 +1235,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // Formularios completos
+        // Formularios (igual que antes)
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
@@ -1476,7 +1325,7 @@
                     htmlForm += `<div class="form-group"><label>${label}</label><select name="${col}" required><option value="">Seleccionar...</option>`;
                     nivelesUsuario.forEach(n => htmlForm += `<option value="${n}" ${valor === n ? 'selected' : ''}>${nombresNiveles[n]}</option>`);
                     htmlForm += `</select></div>`;
-                } else if (window.relaciones[window.tablaActual]?.[col]) {
+                } else if (window.relaciones && window.relaciones[window.tablaActual] && window.relaciones[window.tablaActual][col]) {
                     const rel = window.relaciones[window.tablaActual][col];
                     const { data: opciones } = await supabase.from(rel.tabla).select('*');
                     htmlForm += `<div class="form-group"><label>${label}</label><select name="${col}"><option value="">Seleccionar...</option>`;
@@ -1636,31 +1485,16 @@
             document.getElementById('modal-campos').innerHTML = '';
         };
 
-        // --- HOJA DE RUTA (CON TELÉFONO DE CONDUCTORES) ---
+        // HOJA DE RUTA (con teléfonos de conductores)
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
-                const { data: carpeta } = await supabase.from('carpetas').select('*').eq('id', carpetaId).single();
+                const { data: carpeta } = await supabase.from('carpetas').select('*, conductor1:conductor1_id(nombre, telefono, legajo, dni, vto_reg), conductor2:conductor2_id(nombre, telefono, legajo, dni, vto_reg), bus:interno_id(Interno, Dominio, Capacidad)').eq('id', carpetaId).single();
                 const { data: orden } = await supabase.from('ordenes').select('*, empresas(nombre), subcontratantes(subcontratante, telefono), contratantes(contratante, cuit)').eq('id', carpeta.orden_id).single();
                 
-                // Cargar conductor 1 con teléfono
-                let c1 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-', telefono:'-' };
-                if (carpeta.conductor1_id) {
-                    const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre, telefono').eq('id', carpeta.conductor1_id).single();
-                    if (data) c1 = data;
-                }
-                // Cargar conductor 2 con teléfono
-                let c2 = { legajo:'-', dni:'-', vto_reg:'-', nombre:'-', telefono:'-' };
-                if (carpeta.conductor2_id) {
-                    const { data } = await supabase.from('conductores').select('legajo, dni, vto_reg, nombre, telefono').eq('id', carpeta.conductor2_id).single();
-                    if (data) c2 = data;
-                }
-                
-                let bus = { Dominio:'-', Capacidad:'-', Interno:'-' };
-                if (carpeta.interno_id) {
-                    const { data } = await supabase.from('buses').select('Dominio, Capacidad, Interno').eq('id', carpeta.interno_id).single();
-                    if (data) bus = data;
-                }
+                const c1 = carpeta.conductor1 || { nombre:'-', telefono:'-', legajo:'-', dni:'-', vto_reg:'-' };
+                const c2 = carpeta.conductor2 || { nombre:'-', telefono:'-', legajo:'-', dni:'-', vto_reg:'-' };
+                const bus = carpeta.bus || { Interno:'-', Dominio:'-', Capacidad:'-' };
                 
                 const hojaHtml = `<div class="hoja-ruta">
                     <div class="hoja-actions"><button class="btn-print" onclick="window.imprimirHojaActual()">🖨️ Imprimir</button><button class="btn-pdf" onclick="window.generarPDFHojaActual()">📄 PDF</button></div>
