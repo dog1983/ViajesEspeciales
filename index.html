@@ -751,7 +751,7 @@
             return new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:0 }).format(monto);
         }
 
-        // Caché de nombres (para tablas pequeñas como empresas, contratantes)
+        // Caché de nombres
         async function cargarCacheNombres() {
             const { data: c } = await supabase.from('contratantes').select('id, contratante');
             if (c) c.forEach(x => window.cacheContratantes[x.id] = x.contratante);
@@ -1037,7 +1037,7 @@
             });
         }
 
-        // Cargar tabla optimizada
+        // Cargar tabla optimizada (SOLO DESDE HOY)
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1052,7 +1052,7 @@
             fechaFilter.style.display = mostrarFecha ? 'inline-block' : 'none';
             btnTodas.style.display = mostrarFecha ? 'inline-block' : 'none';
             if (mostrarFecha) {
-                btnTodas.textContent = window.cargarTodo ? '📅 Últimos 90 días' : '📅 Todas';
+                btnTodas.textContent = window.cargarTodo ? '📅 Próximos' : '📅 Todas';
             }
 
             let titulo = tabla.charAt(0).toUpperCase() + tabla.slice(1);
@@ -1066,21 +1066,20 @@
             try {
                 let query = supabase.from(tabla).select(selectRelacional[tabla] || '*');
 
-                // Filtro de fecha por defecto (últimos 90 días) a menos que se haya pedido "Todas"
+                // Filtro por defecto: solo desde hoy (si no se pulsó "Todas")
                 if (mostrarFecha && !window.cargarTodo) {
-                    const fechaLimite = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const hoy = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
                     if (tabla === 'ordenes') {
-                        query = query.gte('fecha_ida', fechaLimite);
+                        query = query.gte('fecha_ida', hoy);
                     } else if (tabla === 'carpetas') {
-                        // Filtramos por la fecha de ida de la orden asociada
-                        query = query.gte('ordenes.fecha_ida', fechaLimite);
+                        query = query.gte('ordenes.fecha_ida', hoy);
                     }
                 }
 
                 let { data, error } = await query;
                 if (error) throw error;
 
-                // Para contratante, el filtro se aplica después porque depende de subcontratante_id
+                // Filtro adicional para contratante
                 data = await filtrarPorContratante(data, tabla);
 
                 // Aplanar datos relacionales
@@ -1094,7 +1093,7 @@
             }
         };
 
-        // Botón "Todas"
+        // Botón "Todas" (alterna entre todas y solo próximos)
         window.toggleCargarTodo = () => {
             window.cargarTodo = !window.cargarTodo;
             window.cargarTabla(window.tablaActual);
@@ -1146,7 +1145,6 @@
                 html += '<tr>';
                 for (let col of columnas) {
                     let val = item[col];
-                    // Si tenemos un campo aplanado, usarlo
                     if (item[col + '_nombre'] !== undefined) val = item[col + '_nombre'];
                     if ((col === 'hora_ida' || col === 'hora_regreso') && val) val = formatearHora(val);
                     if (col === 'nivel' && val) val = nombresNivelesCorto[val] || val;
@@ -1235,7 +1233,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // Formularios (igual que antes)
+        // Formularios
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
