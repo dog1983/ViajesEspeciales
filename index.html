@@ -696,10 +696,14 @@
         const nombresNiveles = { master:'🔑 Master', administracion:'💰 Administración', marketing:'📢 Marketing', trafico:'🚦 Tráfico', contratante:'👤 Contratante' };
         const nombresNivelesCorto = { master:'🔑 Master', administracion:'💰 Admin', marketing:'📢 Market', trafico:'🚦 Tráfico', contratante:'👤 Contrat.' };
 
-        // Relaciones para consultas relacionales
+        // Relaciones para consultas relacionales (CORREGIDO: carpetas incluye ordenes)
         const selectRelacional = {
             ordenes: '*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante), usuarios!confecciono(nombre)',
-            carpetas: '*, conductor1:conductor1_id(nombre, telefono, legajo, dni, vto_reg), conductor2:conductor2_id(nombre, telefono, legajo, dni, vto_reg), bus:interno_id(Interno, Dominio, Capacidad)',
+            carpetas: `*, 
+                       conductor1:conductor1_id(nombre, telefono, legajo, dni, vto_reg), 
+                       conductor2:conductor2_id(nombre, telefono, legajo, dni, vto_reg), 
+                       bus:interno_id(Interno, Dominio, Capacidad),
+                       ordenes!orden_id(fecha_ida)`,
             contratantes: '*, usuarios!usuario_id(nombre)',
             subcontratantes: '*, contratantes!contratante(contratante)',
             conductores: '*, empresas!empresa_id(nombre)',
@@ -1001,7 +1005,7 @@
             await renderizarTabla(puedeEditarTabla(window.tablaActual));
         };
 
-        // Función para aplanar datos relacionales
+        // Función para aplanar datos relacionales (CORREGIDA para carpetas)
         function aplanarDatos(data, tabla) {
             const mapa = {
                 ordenes: [
@@ -1013,7 +1017,8 @@
                 carpetas: [
                     { nested: 'conductor1', field: 'nombre', target: 'conductor1_nombre' },
                     { nested: 'conductor2', field: 'nombre', target: 'conductor2_nombre' },
-                    { nested: 'bus', field: 'Interno', target: 'interno_id_nombre' }
+                    { nested: 'bus', field: 'Interno', target: 'interno_id_nombre' },
+                    { nested: 'ordenes', field: 'fecha_ida', target: 'fecha_ida' }  // copia la fecha desde la orden
                 ],
                 contratantes: [ { nested: 'usuarios', field: 'nombre', target: 'usuario_id_nombre' } ],
                 subcontratantes: [ { nested: 'contratantes', field: 'contratante', target: 'contratante_nombre' } ],
@@ -1037,7 +1042,7 @@
             });
         }
 
-        // Cargar tabla optimizada (SOLO DESDE HOY)
+        // Cargar tabla optimizada (FILTRO DESDE HOY, CORREGIDO)
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1068,7 +1073,7 @@
 
                 // Filtro por defecto: solo desde hoy (si no se pulsó "Todas")
                 if (mostrarFecha && !window.cargarTodo) {
-                    const hoy = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                    const hoy = new Date().toISOString().split('T')[0];
                     if (tabla === 'ordenes') {
                         query = query.gte('fecha_ida', hoy);
                     } else if (tabla === 'carpetas') {
@@ -1093,7 +1098,7 @@
             }
         };
 
-        // Botón "Todas" (alterna entre todas y solo próximos)
+        // Botón "Todas"
         window.toggleCargarTodo = () => {
             window.cargarTodo = !window.cargarTodo;
             window.cargarTabla(window.tablaActual);
