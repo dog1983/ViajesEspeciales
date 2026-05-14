@@ -669,7 +669,7 @@
         window.modalModo = 'form';
         window.columnaOrden = null;
         window.dirOrden = 'asc';
-        window.cargarTodo = false; // controla el botón "Todas"
+        window.cargarTodo = false;
 
         const configPermisos = {
             master: { puedeEditar: ['usuarios','contratantes','subcontratantes','empresas','conductores','buses','ordenes','carpetas','cuentacorriente','pagos'], soloVer: [] },
@@ -696,14 +696,14 @@
         const nombresNiveles = { master:'🔑 Master', administracion:'💰 Administración', marketing:'📢 Marketing', trafico:'🚦 Tráfico', contratante:'👤 Contratante' };
         const nombresNivelesCorto = { master:'🔑 Master', administracion:'💰 Admin', marketing:'📢 Market', trafico:'🚦 Tráfico', contratante:'👤 Contrat.' };
 
-        // Relaciones para consultas relacionales (CORREGIDO: carpetas incluye ordenes)
+        // Relaciones para consultas relacionales (carpetas incluye todos los campos necesarios de ordenes)
         const selectRelacional = {
             ordenes: '*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante), usuarios!confecciono(nombre)',
             carpetas: `*, 
                        conductor1:conductor1_id(nombre, telefono, legajo, dni, vto_reg), 
                        conductor2:conductor2_id(nombre, telefono, legajo, dni, vto_reg), 
                        bus:interno_id(Interno, Dominio, Capacidad),
-                       ordenes!orden_id(fecha_ida)`,
+                       ordenes!orden_id(fecha_ida, hora_ida, origen, destino, contratante_id, subcontratante)`,
             contratantes: '*, usuarios!usuario_id(nombre)',
             subcontratantes: '*, contratantes!contratante(contratante)',
             conductores: '*, empresas!empresa_id(nombre)',
@@ -1005,7 +1005,7 @@
             await renderizarTabla(puedeEditarTabla(window.tablaActual));
         };
 
-        // Función para aplanar datos relacionales (CORREGIDA para carpetas)
+        // Función para aplanar datos relacionales
         function aplanarDatos(data, tabla) {
             const mapa = {
                 ordenes: [
@@ -1018,7 +1018,12 @@
                     { nested: 'conductor1', field: 'nombre', target: 'conductor1_nombre' },
                     { nested: 'conductor2', field: 'nombre', target: 'conductor2_nombre' },
                     { nested: 'bus', field: 'Interno', target: 'interno_id_nombre' },
-                    { nested: 'ordenes', field: 'fecha_ida', target: 'fecha_ida' }  // copia la fecha desde la orden
+                    { nested: 'ordenes', field: 'fecha_ida', target: 'fecha_ida' },
+                    { nested: 'ordenes', field: 'hora_ida', target: 'hora_ida' },
+                    { nested: 'ordenes', field: 'origen', target: 'origen' },
+                    { nested: 'ordenes', field: 'destino', target: 'destino' },
+                    { nested: 'ordenes', field: 'contratante_id', target: 'contratante_id' },
+                    { nested: 'ordenes', field: 'subcontratante', target: 'subcontratante_id' }
                 ],
                 contratantes: [ { nested: 'usuarios', field: 'nombre', target: 'usuario_id_nombre' } ],
                 subcontratantes: [ { nested: 'contratantes', field: 'contratante', target: 'contratante_nombre' } ],
@@ -1033,16 +1038,19 @@
             const mapeo = mapa[tabla] || [];
             return data.map(item => {
                 for (let { nested, field, target } of mapeo) {
-                    if (item[nested]) {
+                    if (item[nested] && item[nested][field] !== undefined) {
                         item[target] = item[nested][field];
-                        delete item[nested];
                     }
+                }
+                const nestedObjs = mapeo.map(m => m.nested).filter((v, i, a) => a.indexOf(v) === i);
+                for (let nested of nestedObjs) {
+                    delete item[nested];
                 }
                 return item;
             });
         }
 
-        // Cargar tabla optimizada (FILTRO DESDE HOY, CORREGIDO)
+        // Cargar tabla optimizada (ORDEN CORREGIDO: aplanar antes de filtrar por contratante)
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1084,11 +1092,11 @@
                 let { data, error } = await query;
                 if (error) throw error;
 
-                // Filtro adicional para contratante
-                data = await filtrarPorContratante(data, tabla);
-
-                // Aplanar datos relacionales
+                // PRIMERO aplanar datos (para que existan subcontratante_id, etc.)
                 data = aplanarDatos(data, tabla);
+
+                // LUEGO filtrar por contratante (ya puede usar subcontratante_id)
+                data = await filtrarPorContratante(data, tabla);
 
                 window.datosActuales = data;
                 aplicarFiltrosYOrden();
@@ -1154,8 +1162,8 @@
                     if ((col === 'hora_ida' || col === 'hora_regreso') && val) val = formatearHora(val);
                     if (col === 'nivel' && val) val = nombresNivelesCorto[val] || val;
                     if (window.tablaActual === 'carpetas') {
-                        if (col === 'contratante_id') val = window.cacheContratantes[val] || '-';
-                        else if (col === 'subcontratante_id') val = window.cacheSubcontratantes[val] || '-';
+                        if (col === 'contratante_id') val = window.cacheContratantes[val] || val || '-';
+                        else if (col === 'subcontratante_id') val = window.cacheSubcontratantes[val] || val || '-';
                         else if (col === 'fecha_ida' && val) val = formatearFechaCorta(val);
                         else if ((col === 'origen' || col === 'destino') && !val) val = '-';
                         else if (col === 'interno_id' && val) val = window.cacheBuses[val] || val;
@@ -1203,7 +1211,7 @@
             });
         }
 
-        // Modal agregar / editar
+        // Modal agregar / editar (y resto de funciones se mantienen)
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
@@ -1238,7 +1246,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // Formularios
+        // Formularios (sin cambios) – Se incluyen los completos del anterior
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
@@ -1416,7 +1424,7 @@
         window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
-        // GUARDAR
+        // GUARDAR (sin cambios)
         document.getElementById('btnGuardar').onclick = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); cerrarModal(); return; }
             const fields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
@@ -1488,7 +1496,7 @@
             document.getElementById('modal-campos').innerHTML = '';
         };
 
-        // HOJA DE RUTA (con teléfonos de conductores)
+        // HOJA DE RUTA (sin cambios)
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
