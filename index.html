@@ -696,7 +696,7 @@
         const nombresNiveles = { master:'🔑 Master', administracion:'💰 Administración', marketing:'📢 Marketing', trafico:'🚦 Tráfico', contratante:'👤 Contratante' };
         const nombresNivelesCorto = { master:'🔑 Master', administracion:'💰 Admin', marketing:'📢 Market', trafico:'🚦 Tráfico', contratante:'👤 Contrat.' };
 
-        // Relaciones para consultas relacionales (carpetas incluye todos los campos necesarios de ordenes)
+        // Relaciones para consultas relacionales
         const selectRelacional = {
             ordenes: '*, empresas(nombre), subcontratantes(subcontratante), contratantes(contratante), usuarios!confecciono(nombre)',
             carpetas: `*, 
@@ -1050,12 +1050,18 @@
             });
         }
 
-        // Cargar tabla optimizada (ORDEN CORREGIDO: aplanar antes de filtrar por contratante)
+        // Cargar tabla optimizada (CORREGIDO: limpiar datos al cargar y verificar vacíos)
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
             const puedeEditar = puedeEditarTabla(tabla);
-            window.columnaOrden = null; window.dirOrden = 'asc';
+            window.columnaOrden = null; 
+            window.dirOrden = 'asc';
+            
+            // LIMPIAR datos anteriores inmediatamente
+            window.datosActuales = [];
+            window.datosFiltrados = [];
+            
             document.getElementById('fechaFilter').value = '';
             document.getElementById('searchInput').value = '';
 
@@ -1079,7 +1085,6 @@
             try {
                 let query = supabase.from(tabla).select(selectRelacional[tabla] || '*');
 
-                // Filtro por defecto: solo desde hoy (si no se pulsó "Todas")
                 if (mostrarFecha && !window.cargarTodo) {
                     const hoy = new Date().toISOString().split('T')[0];
                     if (tabla === 'ordenes') {
@@ -1092,10 +1097,18 @@
                 let { data, error } = await query;
                 if (error) throw error;
 
-                // PRIMERO aplanar datos (para que existan subcontratante_id, etc.)
+                // Si no hay datos, mostrar mensaje y salir
+                if (!data || data.length === 0) {
+                    window.datosActuales = [];
+                    window.datosFiltrados = [];
+                    document.getElementById('table-container').innerHTML = '<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>';
+                    return;
+                }
+
+                // PRIMERO aplanar datos
                 data = aplanarDatos(data, tabla);
 
-                // LUEGO filtrar por contratante (ya puede usar subcontratante_id)
+                // LUEGO filtrar por contratante
                 data = await filtrarPorContratante(data, tabla);
 
                 window.datosActuales = data;
@@ -1211,7 +1224,7 @@
             });
         }
 
-        // Modal agregar / editar (y resto de funciones se mantienen)
+        // Modal agregar / editar
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
@@ -1246,7 +1259,7 @@
             } catch(e) { mostrarToast('Error: ' + e.message, true); }
         };
 
-        // Formularios (sin cambios) – Se incluyen los completos del anterior
+        // Formularios
         async function cargarFormulario(registro = null) {
             const container = document.getElementById('modal-campos');
             if (window.tablaActual === 'carpetas') {
@@ -1424,7 +1437,7 @@
         window.cargarDatosOrden = cargarDatosOrden;
         window.actualizarKmDescontados = actualizarKmDescontados;
 
-        // GUARDAR (sin cambios)
+        // GUARDAR
         document.getElementById('btnGuardar').onclick = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); cerrarModal(); return; }
             const fields = document.querySelectorAll('#modal-campos input, #modal-campos select, #modal-campos textarea');
@@ -1496,7 +1509,7 @@
             document.getElementById('modal-campos').innerHTML = '';
         };
 
-        // HOJA DE RUTA (sin cambios)
+        // HOJA DE RUTA
         window.verDetalleCarpeta = async (carpetaId) => {
             try {
                 mostrarToast('Cargando hoja de ruta...');
