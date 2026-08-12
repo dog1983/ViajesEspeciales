@@ -967,8 +967,7 @@
             });
         }
 
-        // ==================== FUNCIONES CORREGIDAS ====================
-
+        // ==================== FUNCIÓN CARGARTABLA CORREGIDA ====================
         window.cargarTabla = async (tabla) => {
             if (!puedeVerTabla(tabla)) { mostrarToast('No tiene permiso', true); return; }
             window.tablaActual = tabla;
@@ -1001,54 +1000,122 @@
             toggleSidebar();
 
             try {
-                let query = supabase.from(tabla).select(selectRelacional[tabla] || '*');
-
-                if (mostrarFecha && !window.cargarTodo) {
+                let data = [];
+                
+                // CORREGIDO: Para carpetas con filtro de fecha, usar consultas separadas
+                if (tabla === 'carpetas' && mostrarFecha && !window.cargarTodo) {
                     const hoy = new Date().toISOString().split('T')[0];
-                    if (tabla === 'ordenes') {
-                        query = query.gte('fecha_ida', hoy);
-                    } else if (tabla === 'carpetas') {
-                        query = query.gte('ordenes.fecha_ida', hoy);
+                    
+                    // 1. Obtener todas las carpetas
+                    const { data: carpetasData, error: carpetasError } = await supabase
+                        .from('carpetas')
+                        .select('*');
+                    
+                    if (carpetasError) throw carpetasError;
+                    
+                    if (!carpetasData || carpetasData.length === 0) {
+                        document.getElementById('table-container').innerHTML = '<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>';
+                        return;
                     }
+                    
+                    // 2. Obtener solo las órdenes desde hoy
+                    const ordenIds = [...new Set(carpetasData.map(c => c.orden_id))];
+                    const { data: ordenesData } = await supabase
+                        .from('ordenes')
+                        .select('id, fecha_ida, hora_ida, origen, destino, contratante_id, subcontratante')
+                        .in('id', ordenIds)
+                        .gte('fecha_ida', hoy);
+                    
+                    const ordenesMap = {};
+                    if (ordenesData) {
+                        ordenesData.forEach(o => { ordenesMap[o.id] = o; });
+                    }
+                    
+                    // 3. Filtrar carpetas que tienen orden en el rango
+                    const carpetasFiltradas = carpetasData.filter(c => ordenesMap[c.orden_id]);
+                    
+                    if (carpetasFiltradas.length === 0) {
+                        document.getElementById('table-container').innerHTML = '<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>';
+                        return;
+                    }
+                    
+                    // 4. Obtener conductores y buses
+                    const conductorIds = [...new Set([
+                        ...carpetasFiltradas.map(c => c.conductor1_id).filter(Boolean),
+                        ...carpetasFiltradas.map(c => c.conductor2_id).filter(Boolean)
+                    ])];
+                    const busIds = [...new Set(carpetasFiltradas.map(c => c.interno_id).filter(Boolean))];
+                    
+                    const [conductoresResult, busesResult] = await Promise.all([
+                        conductorIds.length > 0 
+                            ? supabase.from('conductores').select('id, nombre, telefono, legajo, dni, vto_reg').in('id', conductorIds)
+                            : { data: [] },
+                        busIds.length > 0
+                            ? supabase.from('buses').select('id, Interno, Dominio, Capacidad').in('id', busIds)
+                            : { data: [] }
+                    ]);
+                    
+                    const conductoresMap = {};
+                    if (conductoresResult.data) conductoresResult.data.forEach(c => { conductoresMap[c.id] = c; });
+                    const busesMap = {};
+                    if (busesResult.data) busesResult.data.forEach(b => { busesMap[b.id] = b; });
+                    
+                    // 5. Armar los datos completos
+                    data = carpetasFiltradas.map(c => ({
+                        ...c,
+                        ordenes: ordenesMap[c.orden_id] || null,
+                        conductor1: conductoresMap[c.conductor1_id] || null,
+                        conductor2: conductoresMap[c.conductor2_id] || null,
+                        bus: busesMap[c.interno_id] || null
+                    }));
+                    
+                } else {
+                    // Para otras tablas o "Todas", usar consulta relacional normal
+                    let query = supabase.from(tabla).select(selectRelacional[tabla] || '*');
+                    
+                    if (mostrarFecha && !window.cargarTodo && tabla === 'ordenes') {
+                        const hoy = new Date().toISOString().split('T')[0];
+                        query = query.gte('fecha_ida', hoy);
+                    }
+                    
+                    const result = await query;
+                    if (result.error) throw result.error;
+                    data = result.data || [];
                 }
-
-                let { data, error } = await query;
-                if (error) throw error;
-
-                // Si no hay datos, mostrar mensaje y salir inmediatamente
+                
+                // Si no hay datos después de todo, mostrar mensaje
                 if (!data || data.length === 0) {
                     document.getElementById('table-container').innerHTML = '<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>';
                     return;
                 }
-
-                // PRIMERO aplanar datos
+                
+                // Aplanar datos
                 data = aplanarDatos(data, tabla);
-
-                // LUEGO filtrar por contratante
+                
+                // Filtrar por contratante
                 data = await filtrarPorContratante(data, tabla);
-
+                
                 // Verificar nuevamente después del filtro
                 if (!data || data.length === 0) {
                     document.getElementById('table-container').innerHTML = '<div class="empty-state"><span>📭</span><p>No hay datos disponibles</p></div>';
                     return;
                 }
-
+                
                 window.datosActuales = data;
                 aplicarFiltrosYOrden();
                 await renderizarTabla(puedeEditar);
+                
             } catch (error) {
+                console.error('Error en cargarTabla:', error);
                 document.getElementById('table-container').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
             }
         };
 
         window.toggleCargarTodo = () => {
             window.cargarTodo = !window.cargarTodo;
-            // Limpiar la tabla inmediatamente para evitar mostrar datos viejos
             document.getElementById('table-container').innerHTML = '<div class="loading">Cargando datos...</div>';
             window.cargarTabla(window.tablaActual);
         };
-
-        // ==================== FIN DE FUNCIONES CORREGIDAS ====================
 
         async function renderizarTabla(puedeEditar) {
             const datos = window.datosFiltrados;
@@ -1148,6 +1215,7 @@
             });
         }
 
+        // Modal agregar / editar
         window.mostrarModalAgregar = async () => {
             if (!puedeEditarTabla(window.tablaActual)) { mostrarToast('No tiene permiso', true); return; }
             window.modalModo = 'form'; window.editandoId = null;
